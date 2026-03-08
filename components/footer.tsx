@@ -43,9 +43,15 @@ export function Footer() {
           <div>
             <h3 className="text-sm font-bold text-[#1D1D1D] uppercase tracking-wider mb-6">Quick Links</h3>
             <ul className="space-y-4">
-              {["Home", "About Us", "Programs", "Events", "Partnership", "Contact"].map((link) => (
-                <li key={link}>
-                  <a href="#" className="text-sm text-[#666666] hover:text-[#4CC0D8] transition-colors">{link}</a>
+              {[
+                { name: "Home", href: "/" },
+                { name: "Programs", href: "/programs" },
+                { name: "Events", href: "/events" },
+                { name: "Partnership", href: "/partnership" },
+                { name: "Contact", href: "/contact" }
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-sm text-[#666666] hover:text-[#4CC0D8] transition-colors">{link.name}</Link>
                 </li>
               ))}
             </ul>
@@ -55,9 +61,12 @@ export function Footer() {
           <div>
             <h3 className="text-sm font-bold text-[#1D1D1D] uppercase tracking-wider mb-6">Resources</h3>
             <ul className="space-y-4">
-              {["Support", "FAQ"].map((link) => (
-                <li key={link}>
-                  <a href="#" className="text-sm text-[#666666] hover:text-[#4CC0D8] transition-colors">{link}</a>
+              {[
+                { name: "Support", href: "/support" },
+                { name: "FAQ", href: "/support/faq" }
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-sm text-[#666666] hover:text-[#4CC0D8] transition-colors">{link.name}</Link>
                 </li>
               ))}
             </ul>
