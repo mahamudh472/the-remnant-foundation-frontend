@@ -16,6 +16,7 @@ import {
   Headphones,
   LogOut,
 } from "lucide-react"
+import { useAuthStore } from "@/lib/store/auth-store"
 
 const MENU_ITEMS = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -52,13 +53,17 @@ const MENU_ITEMS = [
 
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const logout = useAuthStore((s) => s.logout)
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6">
       <h3 className="mb-4 text-sm font-bold text-[#1D1D1D]">Main Menu</h3>
       <nav className="space-y-1">
         {MENU_ITEMS.map((item) => {
-          const isActive = pathname === item.href
+          const isActive =
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
+              : pathname.startsWith(item.href)
           return (
             <Link
               key={item.name}
@@ -86,7 +91,10 @@ export function DashboardSidebar() {
         <h3 className="mb-4 text-sm font-bold text-[#1D1D1D]">
           Account Settings
         </h3>
-        <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 transition-all hover:bg-red-50">
+        <button
+          onClick={() => logout()}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 transition-all hover:bg-red-50"
+        >
           <LogOut className="h-4 w-4" />
           Logout
         </button>

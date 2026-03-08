@@ -1,20 +1,23 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { useAuthStore } from "@/lib/store/auth-store"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-
   const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter()
+  const login = useAuthStore((s) => s.login)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement login logic
-    console.log("Login:", { email, password })
+    login(email, password)
+    router.push("/dashboard")
   }
 
   return (

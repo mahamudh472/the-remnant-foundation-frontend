@@ -21,6 +21,7 @@ import {
   HelpCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAuthStore } from "@/lib/store/auth-store"
 
 const PUBLIC_NAV_ITEMS = [
   { name: "Home", href: "/", icon: Compass, hasDropdown: false },
@@ -56,8 +57,8 @@ const AUTH_NAV_ITEMS = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false)
-  const [isLoggedIn, setIsLoggedIn] = React.useState(true) // Simulating logged in state
   const [showProfileDropdown, setShowProfileDropdown] = React.useState(false)
+  const { isLoggedIn, user, logout } = useAuthStore()
   const pathname = usePathname()
 
   return (
@@ -144,10 +145,10 @@ export function Navbar() {
                     </div>
                     <div className="hidden text-left md:block">
                       <p className="text-xs font-bold text-[#1D1D1D]">
-                        Mosabbir
+                        {user?.name ?? "User"}
                       </p>
-                      <p className="text-[10px] font-medium text-[#9CA3AF]">
-                        Student
+                      <p className="text-[10px] font-medium text-[#9CA3AF] capitalize">
+                        {user?.role ?? "Student"}
                       </p>
                     </div>
                     <ChevronDown
@@ -173,7 +174,13 @@ export function Navbar() {
                         </Link>
                       ))}
                       <div className="my-2 h-px bg-gray-50" />
-                      <button className="group flex w-full items-center gap-3 rounded-xl p-3 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-50">
+                      <button
+                        onClick={() => {
+                          logout()
+                          setShowProfileDropdown(false)
+                        }}
+                        className="group flex w-full items-center gap-3 rounded-xl p-3 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-50"
+                      >
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-50 bg-white text-red-400 transition-all group-hover:bg-red-500 group-hover:text-white">
                           <LogOut className="h-4 w-4" />
                         </div>
