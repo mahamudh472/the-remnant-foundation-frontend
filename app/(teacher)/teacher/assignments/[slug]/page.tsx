@@ -78,9 +78,7 @@ export default function AssignmentDetailPage() {
         <h2 className="text-2xl font-bold text-[#1D1D1D]">
           {ASSIGNMENT.title}
         </h2>
-        <p className="mt-1 text-sm text-[#666666]">
-          {ASSIGNMENT.description}
-        </p>
+        <p className="mt-1 text-sm text-[#666666]">{ASSIGNMENT.description}</p>
       </div>
 
       {/* Assignment Info Card */}
@@ -207,9 +205,7 @@ export default function AssignmentDetailPage() {
         <CardContent className="p-6">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-bold text-[#1D1D1D]">Student Submissions</h3>
-            <span className="text-xs text-[#9CA3AF]">
-              2 of 3 submitted
-            </span>
+            <span className="text-xs text-[#9CA3AF]">2 of 3 submitted</span>
           </div>
           <div className="space-y-3">
             {SUBMISSIONS.map((sub) => (

@@ -3,17 +3,16 @@
 import React from "react"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
-import {
-  ArrowLeft,
-  Check,
-  Upload,
-  Search,
-  X,
-  CheckCircle2,
-} from "lucide-react"
+import { ArrowLeft, Check, Upload, Search, X, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const STEPS = ["Basic Info", "Assign to", "Content", "Evaluation", "Review"] as const
+const STEPS = [
+  "Basic Info",
+  "Assign to",
+  "Content",
+  "Evaluation",
+  "Review",
+] as const
 
 export default function AddAssignmentPage() {
   const [currentStep, setCurrentStep] = React.useState(0)
@@ -236,7 +235,9 @@ function StepAssignTo() {
 /*  Step 3: Content                                                     */
 /* ------------------------------------------------------------------ */
 function StepContent() {
-  const [files, setFiles] = React.useState(["problem-solving-concept-with-books.jpg"])
+  const [files, setFiles] = React.useState([
+    "problem-solving-concept-with-books.jpg",
+  ])
 
   return (
     <div className="space-y-5">
@@ -370,9 +371,7 @@ function StepReview() {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-base font-bold text-[#1D1D1D]">
-          Review & Publish
-        </h3>
+        <h3 className="text-base font-bold text-[#1D1D1D]">Review & Publish</h3>
         <p className="text-sm text-[#666666]">
           Review assignment details before publishing
         </p>
@@ -390,9 +389,7 @@ function StepReview() {
                 className="flex items-center justify-between text-sm"
               >
                 <span className="text-[#666666]">{item.label}</span>
-                <span className="font-medium text-[#1D1D1D]">
-                  {item.value}
-                </span>
+                <span className="font-medium text-[#1D1D1D]">{item.value}</span>
               </div>
             ))}
           </div>

@@ -3,15 +3,7 @@
 import React from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Search,
-  Eye,
-  Pencil,
-  Plus,
-  Save,
-  ChevronDown,
-} from "lucide-react"
-
+import { Search, Eye, Pencil, Plus, Save, ChevronDown } from "lucide-react"
 
 const QUIZZES = [
   {
@@ -64,7 +56,12 @@ const QUIZZES = [
   },
 ]
 
-const GRADE_OPTIONS = ["All Grades", "Children (6–12)", "Teen (14–18)", "Adults (26+)"]
+const GRADE_OPTIONS = [
+  "All Grades",
+  "Children (6–12)",
+  "Teen (14–18)",
+  "Adults (26+)",
+]
 const PROGRAM_OPTIONS = ["All Programs", "Bible Studies", "Theology", "Ethics"]
 
 export default function TeacherQuizPage() {
