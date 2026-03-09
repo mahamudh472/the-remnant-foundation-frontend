@@ -21,6 +21,7 @@ interface AuthState {
   isLoggedIn: boolean
   login: (email: string, password: string) => void
   logout: () => void
+  switchRole: () => void
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -32,5 +33,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   logout: () => {
     set({ user: null, isLoggedIn: false })
+  },
+  switchRole: () => {
+    set((state) => {
+      if (!state.user) return state
+      return {
+        user: {
+          ...state.user,
+          role: state.user.role === "student" ? "teacher" : "student",
+        },
+      }
+    })
   },
 }))

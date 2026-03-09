@@ -1,11 +1,18 @@
 "use client"
 
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { Pencil } from "lucide-react"
 import { useAuthStore } from "@/lib/store/auth-store"
 
 export function ProfileBanner() {
-  const user = useAuthStore((s) => s.user)
+  const { user, switchRole } = useAuthStore()
+  const router = useRouter()
+
+  const handleSwitch = () => {
+    switchRole()
+    router.push("/teacher")
+  }
 
   return (
     <div className="relative mt-8 overflow-hidden rounded-2xl bg-gradient-to-r from-[#FFF5E0] via-[#E8F8FB] to-[#E0F4FF] p-6 sm:p-8">
@@ -36,7 +43,10 @@ export function ProfileBanner() {
           </p>
         </div>
         <div className="sm:ml-auto">
-          <button className="rounded-lg bg-[#F59E0B] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#D97706]">
+          <button
+            onClick={handleSwitch}
+            className="rounded-lg bg-[#F59E0B] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#D97706]"
+          >
             Switch to Teacher
           </button>
         </div>

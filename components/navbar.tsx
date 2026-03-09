@@ -55,11 +55,44 @@ const AUTH_NAV_ITEMS = [
   { name: "AI Guide", href: "/ai-guide", icon: HelpCircle, hasDropdown: false },
 ]
 
+const TEACHER_NAV_ITEMS = [
+  {
+    name: "Dashboard",
+    href: "/teacher",
+    icon: LayoutDashboard,
+    hasDropdown: false,
+  },
+  {
+    name: "Courses",
+    href: "/teacher/courses",
+    icon: BookOpen,
+    hasDropdown: false,
+  },
+  {
+    name: "Live Classes",
+    href: "/teacher/live-classes",
+    icon: Users,
+    hasDropdown: false,
+  },
+  {
+    name: "Student!",
+    href: "/teacher/students",
+    icon: Compass,
+    hasDropdown: false,
+  },
+]
+
 export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false)
   const [showProfileDropdown, setShowProfileDropdown] = React.useState(false)
   const { isLoggedIn, user, logout } = useAuthStore()
   const pathname = usePathname()
+  const isTeacher = user?.role === "teacher"
+  const navItems = !isLoggedIn
+    ? PUBLIC_NAV_ITEMS
+    : isTeacher
+      ? TEACHER_NAV_ITEMS
+      : AUTH_NAV_ITEMS
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-gray-100/50 bg-white backdrop-blur-md">
@@ -81,12 +114,12 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex lg:items-center lg:gap-8">
-            {(isLoggedIn ? AUTH_NAV_ITEMS : PUBLIC_NAV_ITEMS).map((item) => (
+            {navItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-1 text-sm font-bold transition-colors hover:text-[#4CC0D8]",
+                  "flex items-center gap-1 text-sm transition-colors hover:text-[#4CC0D8]",
                   pathname === item.href ||
                     (item.href !== "/" && pathname.startsWith(item.href))
                     ? "text-[#4CC0D8]"
@@ -119,14 +152,6 @@ export function Navbar() {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                {/* Cart */}
-                <button className="relative rounded-xl p-2.5 text-[#1D1D1D] transition-all hover:bg-gray-50">
-                  <ShoppingCart className="h-5 w-5" />
-                  <span className="absolute top-2 right-2 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-[#4CC0D8] text-[10px] font-bold text-white">
-                    1
-                  </span>
-                </button>
-
                 {/* Profile */}
                 <div className="relative">
                   <button
@@ -161,7 +186,7 @@ export function Navbar() {
 
                   {showProfileDropdown && (
                     <div className="absolute right-0 mt-4 flex w-60 animate-in flex-col gap-1 rounded-3xl border border-gray-100 bg-white p-3 shadow-2xl ring-1 shadow-gray-200/50 ring-black/5 duration-200 fade-in zoom-in">
-                      {AUTH_NAV_ITEMS.map((item) => (
+                      {navItems.map((item) => (
                         <Link
                           key={item.name}
                           href={item.href}
