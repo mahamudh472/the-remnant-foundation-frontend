@@ -3,24 +3,24 @@
 import React from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  ChevronRight,
   Plus,
   Trash2,
   Upload,
   Check,
-  GripVertical,
-  ToggleLeft,
-  ToggleRight,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Switch } from "@/components/ui/switch"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 const STEPS = [
-  "Course Info",
-  "Age & Access",
-  "Content",
-  "Quiz & Assessment",
-  "Certificate",
-  "Review & Publish",
+  { label: "Course Info", subtitle: "Basic details" },
+  { label: "Age & Access", subtitle: "Visibility rules" },
+  { label: "Course Info", subtitle: "Content setup" },
+  { label: "Quiz", subtitle: "Assessments" },
+  { label: "Review", subtitle: "Course Certificate" },
 ] as const
 
 export default function AddCoursePage() {
@@ -32,39 +32,52 @@ export default function AddCoursePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <h2 className="text-lg font-bold text-[#1D1D1D]">Add New Course</h2>
+      <div>
+        <h3 className="text-2xl font-bold text-[#1D1D1D]">Create New Course</h3>
+        <p className="mt-1 text-sm text-[#9CA3AF]">
+          Follow the steps to set up your course
+        </p>
+      </div>
 
       {/* Step Indicator */}
-      <div className="flex items-center gap-2">
+      <div className="flex w-full items-center justify-between">
         {STEPS.map((step, i) => (
-          <React.Fragment key={step}>
+          <React.Fragment key={i}>
             <button
               onClick={() => setCurrentStep(i)}
-              className={cn(
-                "flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all",
-                i === currentStep
-                  ? "bg-[#4CC0D8] text-white"
-                  : i < currentStep
-                    ? "bg-[#EBF7F9] text-[#4CC0D8]"
-                    : "bg-[#F8F9FC] text-[#9CA3AF]"
-              )}
+              className="flex flex-col items-center gap-2"
             >
-              <span
+              <div
                 className={cn(
-                  "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold",
+                  "flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold transition-all",
                   i === currentStep
-                    ? "bg-white/20 text-white"
+                    ? "bg-[#4CC0D8] text-white shadow-[0_0_0_4px_rgba(76,192,216,0.2)]"
                     : i < currentStep
                       ? "bg-[#4CC0D8] text-white"
-                      : "bg-gray-200 text-[#9CA3AF]"
+                      : "bg-[#E5E7EB] text-[#9CA3AF]"
                 )}
               >
-                {i < currentStep ? <Check className="h-3 w-3" /> : i + 1}
-              </span>
-              <span className="hidden sm:inline">{step}</span>
+                {i < currentStep ? <Check className="h-5 w-5" /> : i + 1}
+              </div>
+              <div className="text-center">
+                <p
+                  className={cn(
+                    "text-sm font-medium",
+                    i <= currentStep ? "text-[#1D1D1D]" : "text-[#9CA3AF]"
+                  )}
+                >
+                  {step.label}
+                </p>
+                <p className="text-xs text-[#9CA3AF]">{step.subtitle}</p>
+              </div>
             </button>
             {i < STEPS.length - 1 && (
-              <ChevronRight className="h-4 w-4 shrink-0 text-[#9CA3AF]" />
+              <div
+                className={cn(
+                  "mx-2 -mt-8 h-[2px] flex-1",
+                  i < currentStep ? "bg-[#4CC0D8]" : "bg-[#E5E7EB]"
+                )}
+              />
             )}
           </React.Fragment>
         ))}
@@ -75,30 +88,35 @@ export default function AddCoursePage() {
       {currentStep === 1 && <StepAgeAccess />}
       {currentStep === 2 && <StepContent />}
       {currentStep === 3 && <StepQuiz />}
-      {currentStep === 4 && <StepCertificate />}
-      {currentStep === 5 && <StepReview />}
+      {currentStep === 4 && <StepReview />}
 
       {/* Navigation */}
       <div className="flex items-center justify-between pt-4">
         <button
           onClick={goPrev}
           disabled={currentStep === 0}
-          className="rounded-lg border border-gray-200 px-6 py-2.5 text-sm font-semibold text-[#666666] transition-colors hover:bg-gray-50 disabled:opacity-40"
+          className="flex items-center gap-1 text-sm font-medium text-[#666666] transition-colors hover:text-[#1D1D1D] disabled:opacity-40"
         >
+          <ChevronRight className="h-4 w-4 rotate-180" />
           Previous
         </button>
-        {currentStep < STEPS.length - 1 ? (
-          <button
-            onClick={goNext}
-            className="rounded-lg bg-[#4CC0D8] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#3AB0C8]"
-          >
-            Next Step
+        <div className="flex items-center gap-3">
+          <button className="rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-semibold text-[#666666] transition-colors hover:bg-gray-50">
+            Save Draft
           </button>
-        ) : (
-          <button className="rounded-lg bg-[#10B981] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#059669]">
-            Publish Course
-          </button>
-        )}
+          {currentStep < STEPS.length - 1 ? (
+            <button
+              onClick={goNext}
+              className="rounded-lg bg-[#4CC0D8] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#3AB0C8]"
+            >
+              Next Step
+            </button>
+          ) : (
+            <button className="rounded-lg bg-[#10B981] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#059669]">
+              Publish Course
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -123,50 +141,7 @@ function StepCourseInfo() {
               className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
             />
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-[#666666]">
-              Category
-            </label>
-            <select className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]">
-              <option>Select Category</option>
-              <option>Bible Studies</option>
-              <option>Theology</option>
-              <option>History</option>
-              <option>Ethics</option>
-              <option>Music & Worship</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-[#666666]">
-              Level
-            </label>
-            <select className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]">
-              <option>Select Level</option>
-              <option>Beginner</option>
-              <option>Intermediate</option>
-              <option>Advanced</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-[#666666]">
-              Language
-            </label>
-            <select className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]">
-              <option>English</option>
-              <option>Spanish</option>
-              <option>French</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-[#666666]">
-              Price ($)
-            </label>
-            <input
-              type="number"
-              placeholder="0.00"
-              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
-            />
-          </div>
+
           <div className="sm:col-span-2">
             <label className="mb-1 block text-xs font-medium text-[#666666]">
               Short Description
@@ -177,6 +152,38 @@ function StepCourseInfo() {
               className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
             />
           </div>
+
+          <div>
+            <label className="mb-1 block text-xs font-medium text-[#666666]">
+              Category
+            </label>
+            <select className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]">
+              <option>Spiritual</option>
+              <option>Educational</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-[#666666]">
+              Program
+            </label>
+            <select className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]">
+              <option>Kids</option>
+              <option>Teen</option>
+              <option>Adults</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-xs font-medium text-[#666666]">
+              Price ($)
+            </label>
+            <input
+              type="number"
+              placeholder="0.00"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
+            />
+          </div>
+
           <div className="sm:col-span-2">
             <label className="mb-1 block text-xs font-medium text-[#666666]">
               Course Thumbnail
@@ -191,16 +198,6 @@ function StepCourseInfo() {
               </div>
             </div>
           </div>
-          <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-medium text-[#666666]">
-              Intro Video URL
-            </label>
-            <input
-              type="url"
-              placeholder="https://youtube.com/..."
-              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
-            />
-          </div>
         </div>
       </CardContent>
     </Card>
@@ -211,21 +208,12 @@ function StepCourseInfo() {
 /*  Step 2: Age & Access                                               */
 /* ------------------------------------------------------------------ */
 function StepAgeAccess() {
-  const [selectedAge, setSelectedAge] = React.useState("All Ages")
-  const ages = [
-    "All Ages",
-    "Kids (6-12)",
-    "Teens (13-18)",
-    "Young Adults (19-25)",
-    "Adults (26+)",
-  ]
-
   return (
     <Card className="border-gray-100 shadow-none">
       <CardContent className="space-y-5 p-6">
         <h3 className="font-bold text-[#1D1D1D]">Age Group & Access</h3>
 
-        <div>
+        {/* <div>
           <label className="mb-2 block text-xs font-medium text-[#666666]">
             Age Group
           </label>
@@ -245,32 +233,21 @@ function StepAgeAccess() {
               </button>
             ))}
           </div>
-        </div>
+        </div> */}
 
         <div>
           <label className="mb-2 block text-xs font-medium text-[#666666]">
-            Course Visibility
+            Age Group*
           </label>
           <select className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]">
-            <option>Public - Anyone can enroll</option>
-            <option>Private - Invite only</option>
-            <option>Password Protected</option>
+            <option>5-12 Years</option>
+            <option>13-18 Years</option>
+            <option>19-25 Years</option>
           </select>
         </div>
 
-        <div>
-          <label className="mb-2 block text-xs font-medium text-[#666666]">
-            Prerequisites
-          </label>
-          <textarea
-            rows={3}
-            placeholder="Any courses or knowledge required before enrollment..."
-            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
-          />
-        </div>
-
-        <div className="rounded-xl bg-[#FFF5E0] p-4">
-          <p className="text-xs text-[#B45309]">
+        <div className="rounded-xl bg-primary/10 p-4">
+          <p className="text-xs text-primary">
             <strong>Note:</strong> Selecting an age group helps recommend your
             course to the right audience. Content should be appropriate for the
             selected group.
@@ -288,40 +265,43 @@ function StepContent() {
   const [modules, setModules] = React.useState([
     {
       id: 1,
-      title: "Module 1: Introduction",
-      lessons: [
-        {
-          id: 1,
-          title: "Welcome & Overview",
-          type: "Video",
-          duration: "10 min",
-        },
-        { id: 2, title: "Course Objectives", type: "Text", duration: "5 min" },
-      ],
+      title: "Module 1 Title",
+      open: false,
+      lessons: [] as {
+        id: number
+        title: string
+        videoLink: string
+        description: string
+      }[],
     },
     {
       id: 2,
-      title: "Module 2: Core Concepts",
-      lessons: [
-        {
-          id: 3,
-          title: "Understanding Scripture",
-          type: "Video",
-          duration: "25 min",
-        },
-      ],
+      title: "Module 2 Title",
+      open: true,
+      lessons: [{ id: 1, title: "", videoLink: "", description: "" }],
     },
   ])
+
+  const toggleModule = (moduleId: number) => {
+    setModules((prev) =>
+      prev.map((m) => (m.id === moduleId ? { ...m, open: !m.open } : m))
+    )
+  }
 
   const addModule = () => {
     setModules((prev) => [
       ...prev,
       {
-        id: prev.length + 1,
-        title: `Module ${prev.length + 1}: New Module`,
+        id: Date.now(),
+        title: `Module ${prev.length + 1} Title`,
+        open: true,
         lessons: [],
       },
     ])
+  }
+
+  const removeModule = (moduleId: number) => {
+    setModules((prev) => prev.filter((m) => m.id !== moduleId))
   }
 
   const addLesson = (moduleId: number) => {
@@ -330,14 +310,10 @@ function StepContent() {
         m.id === moduleId
           ? {
               ...m,
+              open: true,
               lessons: [
                 ...m.lessons,
-                {
-                  id: Date.now(),
-                  title: "New Lesson",
-                  type: "Video",
-                  duration: "0 min",
-                },
+                { id: Date.now(), title: "", videoLink: "", description: "" },
               ],
             }
           : m
@@ -345,79 +321,138 @@ function StepContent() {
     )
   }
 
-  const removeModule = (moduleId: number) => {
-    setModules((prev) => prev.filter((m) => m.id !== moduleId))
+  const removeLesson = (moduleId: number, lessonId: number) => {
+    setModules((prev) =>
+      prev.map((m) =>
+        m.id === moduleId
+          ? { ...m, lessons: m.lessons.filter((l) => l.id !== lessonId) }
+          : m
+      )
+    )
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-bold text-[#1D1D1D]">Course Content</h3>
-        <button
-          onClick={addModule}
-          className="flex items-center gap-1 text-sm font-semibold text-[#4CC0D8] hover:underline"
-        >
-          <Plus className="h-4 w-4" />
-          Add Module
-        </button>
-      </div>
-
       {modules.map((mod) => (
-        <Card key={mod.id} className="border-gray-100 shadow-none">
-          <CardContent className="p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <GripVertical className="h-4 w-4 text-[#9CA3AF]" />
-                <input
-                  type="text"
-                  defaultValue={mod.title}
-                  className="border-none bg-transparent text-sm font-bold text-[#1D1D1D] outline-none focus:underline"
-                />
+        <Card
+          key={mod.id}
+          className="overflow-hidden border-gray-200 shadow-none"
+        >
+          <CardContent className="p-0">
+            {/* Module Header */}
+            <div className="flex items-center gap-3 px-4">
+              <button
+                onClick={() => toggleModule(mod.id)}
+                className="text-[#9CA3AF] transition-transform"
+              >
+                {mod.open ? (
+                  <ChevronDown className="h-5 w-5" />
+                ) : (
+                  <ChevronRight className="h-5 w-5" />
+                )}
+              </button>
+              <input
+                type="text"
+                placeholder={"Type module title..."}
+                className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#4CC0D8]"
+              />
+              <div className="flex h-10 w-24 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-[#F8F9FC] transition-colors hover:border-[#4CC0D8]">
+                <Upload className="h-4 w-4 text-[#9CA3AF]" />
               </div>
+              <span className="rounded-lg border border-gray-200 px-3 py-2 text-xs whitespace-nowrap text-[#9CA3AF]">
+                {mod.lessons.length} lessons
+              </span>
               <button
                 onClick={() => removeModule(mod.id)}
-                className="text-red-400 hover:text-red-600"
+                className="rounded-lg bg-red-50 p-2 text-red-400 transition-colors hover:bg-red-100 hover:text-red-600"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="space-y-2 pl-6">
-              {mod.lessons.map((lesson) => (
-                <div
-                  key={lesson.id}
-                  className="flex items-center justify-between rounded-lg border border-gray-100 p-3"
+            {/* Module Body (Lessons) */}
+            {mod.open && (
+              <div className="space-y-4 p-4">
+                {mod.lessons.map((lesson) => (
+                  <div
+                    key={lesson.id}
+                    className="space-y-3 rounded-xl border border-gray-100 bg-[#FAFBFC] p-4"
+                  >
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto_auto]">
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-[#666666]">
+                          Lesson Title
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Type lesson title..."
+                          className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-[#666666]">
+                          Video Link
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="Past video link"
+                          className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-[#666666]">
+                          Offline Download
+                        </label>
+                        <button className="flex items-center gap-1.5 rounded-lg bg-[#4CC0D8] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#3AB0C8]">
+                          <Plus className="h-3.5 w-3.5" />
+                          Add Quiz
+                        </button>
+                      </div>
+                      <div className="flex items-end">
+                        <button
+                          onClick={() => removeLesson(mod.id, lesson.id)}
+                          className="rounded-lg bg-red-50 p-2 text-red-400 transition-colors hover:bg-red-100 hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-[#666666]">
+                        Lesson Descriptions
+                      </label>
+                      <textarea
+                        rows={4}
+                        placeholder="Type lesson description..."
+                        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  onClick={() => addLesson(mod.id)}
+                  className="flex w-full items-center justify-end"
+                  variant={"ghost"}
                 >
-                  <div className="flex items-center gap-3">
-                    <GripVertical className="h-3.5 w-3.5 text-[#9CA3AF]" />
-                    <span className="text-sm text-[#1D1D1D]">
-                      {lesson.title}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="rounded bg-[#F8F9FC] px-2 py-0.5 text-xs text-[#9CA3AF]">
-                      {lesson.type}
-                    </span>
-                    <span className="text-xs text-[#9CA3AF]">
-                      {lesson.duration}
-                    </span>
-                    <button className="text-red-400 hover:text-red-600">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              <button
-                onClick={() => addLesson(mod.id)}
-                className="flex items-center gap-1 py-2 text-xs font-semibold text-[#4CC0D8] hover:underline"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Add Lesson
-              </button>
-            </div>
+                  <Plus className="h-4 w-4" />
+                  Add Lesson
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       ))}
+
+      {/* Add Module */}
+      <Button
+        onClick={addModule}
+        variant={"ghost"}
+        className="flex w-full items-center justify-end"
+      >
+        <Plus className="h-4 w-4" />
+        Add Module
+      </Button>
     </div>
   )
 }
@@ -443,13 +478,17 @@ function StepQuiz() {
               Add quizzes at the end of each module
             </p>
           </div>
-          <button onClick={() => setQuizEnabled(!quizEnabled)}>
+          {/* <button onClick={() => setQuizEnabled(!quizEnabled)}>
             {quizEnabled ? (
               <ToggleRight className="h-8 w-8 text-[#4CC0D8]" />
             ) : (
               <ToggleLeft className="h-8 w-8 text-[#9CA3AF]" />
             )}
-          </button>
+          </button> */}
+          <Switch
+            checked={quizEnabled}
+            onCheckedChange={(checked) => setQuizEnabled(checked)}
+          />
         </div>
 
         {quizEnabled && (
@@ -507,13 +546,10 @@ function StepQuiz() {
                   Students must pass the quiz to receive a certificate
                 </p>
               </div>
-              <button onClick={() => setCertQuiz(!certQuiz)}>
-                {certQuiz ? (
-                  <ToggleRight className="h-8 w-8 text-[#4CC0D8]" />
-                ) : (
-                  <ToggleLeft className="h-8 w-8 text-[#9CA3AF]" />
-                )}
-              </button>
+              <Switch
+                checked={certQuiz}
+                onCheckedChange={(checked) => setCertQuiz(checked)}
+              />
             </div>
           </>
         )}
@@ -523,75 +559,7 @@ function StepQuiz() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Step 5: Certificate                                                */
-/* ------------------------------------------------------------------ */
-function StepCertificate() {
-  return (
-    <Card className="border-gray-100 shadow-none">
-      <CardContent className="space-y-5 p-6">
-        <h3 className="font-bold text-[#1D1D1D]">Certificate Settings</h3>
-
-        <div>
-          <label className="mb-1 block text-xs font-medium text-[#666666]">
-            Certificate Title
-          </label>
-          <input
-            type="text"
-            defaultValue="Certificate of Completion"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs font-medium text-[#666666]">
-            Certificate Template
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            {["Classic", "Modern", "Elegant"].map((template, i) => (
-              <button
-                key={template}
-                className={cn(
-                  "flex h-32 items-center justify-center rounded-lg border-2 text-sm font-semibold transition-all",
-                  i === 0
-                    ? "border-[#4CC0D8] bg-[#EBF7F9] text-[#4CC0D8]"
-                    : "border-gray-200 bg-[#F8F9FC] text-[#666666] hover:border-[#4CC0D8]"
-                )}
-              >
-                {template}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs font-medium text-[#666666]">
-            Custom Logo
-          </label>
-          <div className="flex h-32 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-[#F8F9FC] transition-colors hover:border-[#4CC0D8]">
-            <div className="text-center">
-              <Upload className="mx-auto h-6 w-6 text-[#9CA3AF]" />
-              <p className="mt-1 text-xs text-[#9CA3AF]">Upload logo</p>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs font-medium text-[#666666]">
-            Signature Name
-          </label>
-          <input
-            type="text"
-            placeholder="Instructor name for signature"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
-          />
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/*  Step 6: Review & Publish                                           */
+/*  Step 5: Review                                                     */
 /* ------------------------------------------------------------------ */
 function StepReview() {
   const sections = [
@@ -625,13 +593,6 @@ function StepReview() {
         { label: "Quizzes Enabled", value: "Yes" },
         { label: "Passing Score", value: "70%" },
         { label: "Max Attempts", value: "3" },
-      ],
-    },
-    {
-      title: "Certificate",
-      items: [
-        { label: "Template", value: "Classic" },
-        { label: "Certificate Title", value: "Certificate of Completion" },
       ],
     },
   ]

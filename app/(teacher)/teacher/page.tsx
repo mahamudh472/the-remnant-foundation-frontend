@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -10,8 +9,9 @@ import {
   Users,
   GraduationCap,
   MoreVertical,
-  Star,
 } from "lucide-react"
+import CourseCard from "@/components/teacher/course-card"
+import { POPULAR_COURSES } from "@/constants/teacher"
 
 const STATS = [
   {
@@ -48,45 +48,6 @@ const STATS = [
     icon: GraduationCap,
     color: "#EC4899",
     bg: "#FFF0F7",
-  },
-]
-
-const POPULAR_COURSES = [
-  {
-    title: "Exploring the Bible: An Introduction",
-    instructor: "Sarah Williams",
-    rating: 4.5,
-    reviews: 451,
-    price: 50.0,
-    image: "/assets/pngs/For web/course-1.png",
-    tag: "Featured",
-  },
-  {
-    title: "Faith and Modern Science",
-    instructor: "Dr. James Carter",
-    rating: 4.7,
-    reviews: 320,
-    price: 65.0,
-    image: "/assets/pngs/For web/course-2.png",
-    tag: "Best Seller",
-  },
-  {
-    title: "Christian Ethics in Today's World",
-    instructor: "Pastor David Lee",
-    rating: 4.3,
-    reviews: 289,
-    price: 45.0,
-    image: "/assets/pngs/For web/course-3.png",
-    tag: "New",
-  },
-  {
-    title: "History of the Reformation",
-    instructor: "Prof. Mary Johnson",
-    rating: 4.6,
-    reviews: 198,
-    price: 55.0,
-    image: "/assets/pngs/For web/course-4.png",
-    tag: "Featured",
   },
 ]
 
@@ -135,7 +96,7 @@ export default function TeacherDashboardPage() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {STATS.map((stat) => (
           <Card key={stat.label} className="border-gray-100 py-0 shadow-none">
-            <CardContent className="flex items-center gap-3 p-4">
+            <CardContent className="flex justify-center items-center gap-3 p-4">
               <div
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
                 style={{ backgroundColor: stat.bg }}
@@ -166,50 +127,7 @@ export default function TeacherDashboardPage() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {POPULAR_COURSES.map((course) => (
-            <Card
-              key={course.title}
-              className="group overflow-hidden border-gray-100 p-0 shadow-none"
-            >
-              <div className="relative aspect-video overflow-hidden bg-gray-100">
-                <Image
-                  src={course.image}
-                  alt={course.title}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
-                />
-                <span className="absolute top-2 left-2 rounded bg-[#4CC0D8] px-2 py-0.5 text-xs font-semibold text-white">
-                  {course.tag}
-                </span>
-              </div>
-              <CardContent className="space-y-2 p-4">
-                <h3 className="line-clamp-2 text-sm font-bold text-[#1D1D1D]">
-                  {course.title}
-                </h3>
-                <p className="text-xs text-[#9CA3AF]">{course.instructor}</p>
-                <div className="flex items-center gap-1">
-                  <Star className="h-3.5 w-3.5 fill-[#F59E0B] text-[#F59E0B]" />
-                  <span className="text-xs font-medium text-[#1D1D1D]">
-                    {course.rating}
-                  </span>
-                  <span className="text-xs text-[#9CA3AF]">
-                    ({course.reviews})
-                  </span>
-                </div>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-sm font-bold text-[#4CC0D8]">
-                    ${course.price.toFixed(2)}
-                  </span>
-                  <div className="flex gap-2">
-                    <button className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-[#666666] transition-colors hover:border-[#4CC0D8] hover:text-[#4CC0D8]">
-                      Re-Edit
-                    </button>
-                    <button className="rounded-lg bg-[#4CC0D8] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#3AB0C8]">
-                      Watch Now
-                    </button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <CourseCard key={course.title} course={course} />
           ))}
         </div>
       </div>

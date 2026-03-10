@@ -97,15 +97,15 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-gray-100/50 bg-white backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-2">
             <Image
               src="/assets/logo.png"
               alt="The Remnant Foundation Logo"
-              width={40}
-              height={40}
-              className="h-10 w-auto"
+              width={20}
+              height={20}
+              className="h-8 w-auto"
             />
             <span className="text-xl font-bold tracking-tight text-[#1D1D1D]">
               Remnant
@@ -137,17 +137,10 @@ export function Navbar() {
             {!isLoggedIn ? (
               <div className="hidden items-center gap-4 sm:flex">
                 <Link href="/login">
-                  <Button
-                    variant="ghost"
-                    className="text-sm font-bold text-[#1D1D1D] hover:bg-transparent hover:text-[#4CC0D8]"
-                  >
-                    Login
-                  </Button>
+                  <Button variant="ghost">Login</Button>
                 </Link>
                 <Link href="/signup">
-                  <Button className="h-10 rounded-lg bg-[#4CC0D8] px-6 font-bold text-white shadow-lg shadow-[#4CC0D8]/20 hover:bg-[#3AB0C8]">
-                    Sign Up
-                  </Button>
+                  <Button className="px-4">Sign Up</Button>
                 </Link>
               </div>
             ) : (

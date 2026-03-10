@@ -54,7 +54,7 @@ export function TeacherSidebar() {
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
                 isActive
                   ? "bg-[#EBF7F9] text-[#4CC0D8]"
-                  : "text-[#666666] hover:bg-[#F8F9FC] hover:text-[#4CC0D8]"
+                  : "hover:bg-[#F8F9FC] hover:text-[#4CC0D8]"
               )}
             >
               <item.icon
@@ -70,9 +70,9 @@ export function TeacherSidebar() {
       </nav>
 
       <div className="mt-6 border-t border-gray-100 pt-6">
-        <h3 className="mb-4 text-sm font-bold text-[#1D1D1D]">
+        {/* <h3 className="mb-4 text-sm font-bold text-[#1D1D1D]">
           Account Settings
-        </h3>
+        </h3> */}
         <button
           onClick={() => logout()}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 transition-all hover:bg-red-50"

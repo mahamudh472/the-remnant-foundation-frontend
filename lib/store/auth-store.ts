@@ -12,7 +12,7 @@ const DUMMY_USER: User = {
   id: "1",
   name: "MosabbiR",
   email: "mosabbir@remnant.org",
-  role: "student",
+  role: "teacher",
   avatar: "/assets/pngs/Profile.png",
 }
 
