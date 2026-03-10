@@ -102,21 +102,18 @@ export default function LiveClassesPage() {
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { label: "Total Classes", value: CLASSES.length, color: "#4CC0D8" },
+          { label: "Total Classes", value: CLASSES.length.toString() },
           {
             label: "Upcoming",
-            value: CLASSES.filter((c) => c.status === "Upcoming").length,
-            color: "#4CC0D8",
+            value: CLASSES.filter((c) => c.status === "Upcoming").length.toString(),
           },
           {
             label: "Completed",
-            value: CLASSES.filter((c) => c.status === "Completed").length,
-            color: "#666666",
+            value: CLASSES.filter((c) => c.status === "Completed").length.toString(),
           },
           {
             label: "Total Students",
-            value: CLASSES.reduce((s, c) => s + c.students, 0),
-            color: "#F59E0B",
+            value: CLASSES.reduce((s, c) => s + c.students, 0).toString(),
           },
         ].map((stat) => (
             <StatCard key={stat.label} stat={stat} />

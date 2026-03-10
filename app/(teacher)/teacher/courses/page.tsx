@@ -1,18 +1,8 @@
 "use client"
 
 import React from "react"
-import Image from "next/image"
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
 import {
-  BookOpen,
-  Clock,
-  FileText,
-  DollarSign,
-  Gift,
-  Star,
-  Trash2,
-  Pencil,
   Plus,
   ChevronLeft,
   ChevronRight,

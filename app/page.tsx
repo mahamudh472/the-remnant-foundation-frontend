@@ -8,7 +8,6 @@ import { Features } from "@/app/home/features"
 import { AgeLearning } from "@/app/home/age-learning"
 import { Trusted } from "@/app/home/trusted"
 import { Cta } from "@/app/home/cta"
-import { NavigationMenuDemo } from "@/components/common/desktop-nav"
 
 export default function HomePage() {
   return (

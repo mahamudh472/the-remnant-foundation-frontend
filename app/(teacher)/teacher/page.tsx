@@ -17,38 +17,23 @@ import StatCard from "@/components/common/stat-card"
 const STATS = [
   {
     label: "Enrolled Courses",
-    value: 957,
-    icon: BookOpen,
-    color: "#4CC0D8",
-    bg: "#EBF7F9",
+    value: "957",
   },
   {
     label: "Active Courses",
-    value: 19,
-    icon: PlayCircle,
-    color: "#F59E0B",
-    bg: "#FFF5E0",
+    value: "19",
   },
   {
     label: "Completed Courses",
-    value: 79,
-    icon: CheckCircle2,
-    color: "#10B981",
-    bg: "#ECFDF5",
+    value: "79",
   },
   {
     label: "Total Students",
-    value: 241,
-    icon: Users,
-    color: "#8B5CF6",
-    bg: "#F3EEFF",
+    value: "241",
   },
   {
     label: "Total Courses",
-    value: 72,
-    icon: GraduationCap,
-    color: "#EC4899",
-    bg: "#FFF0F7",
+    value: "72",
   },
 ]
 
