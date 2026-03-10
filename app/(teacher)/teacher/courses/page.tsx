@@ -25,38 +25,23 @@ import StatCard from "@/components/common/stat-card"
 const STAT_CARDS = [
   {
     label: "Active Courses",
-    value: 12,
-    icon: BookOpen,
-    color: "#4CC0D8",
-    bg: "#EBF7F9",
+    value: "12",
   },
   {
     label: "Pending Courses",
-    value: 3,
-    icon: Clock,
-    color: "#F59E0B",
-    bg: "#FFF5E0",
+    value: "3",
   },
   {
     label: "Draft Courses",
-    value: 5,
-    icon: FileText,
-    color: "#8B5CF6",
-    bg: "#F3EEFF",
+    value: "5",
   },
   {
     label: "Free Courses",
-    value: 4,
-    icon: Gift,
-    color: "#10B981",
-    bg: "#ECFDF5",
+    value: "4",
   },
   {
     label: "Paid Courses",
-    value: 8,
-    icon: DollarSign,
-    color: "#EC4899",
-    bg: "#FFF0F7",
+    value: "8",
   },
 ]
 
