@@ -1,6 +1,6 @@
 import { Card, CardContent } from "../ui/card"
 
-function StatCard({ stat }: { stat: { label: string; value: number; icon: any; color: string; bg: string } }) {
+function StatCard({ stat }: { stat: { label: string; value: string } }) {
   return (
     <Card key={stat.label} className="border-none py-0 shadow-none">
       <CardContent className="flex items-center gap-3 bg-primary/15 p-4">

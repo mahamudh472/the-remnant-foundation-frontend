@@ -2,28 +2,21 @@ import Image from "next/image"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import {
-  BookOpen,
-  BookMarked,
-  CheckCircle2,
   Star,
   ArrowRight,
   Play,
   Heart,
-  FileText,
   Download,
 } from "lucide-react"
+import StatCard from "@/components/common/stat-card"
 
 const STATS = [
-  { label: "Enrolled Courses", value: "12", icon: BookOpen, color: "#4CC0D8" },
-  { label: "Active Courses", value: "03", icon: BookMarked, color: "#F59E0B" },
-  {
-    label: "Completed Courses",
-    value: "10",
-    icon: CheckCircle2,
-    color: "#22C55E",
-  },
+  { label: "Enrolled Courses", value: "12" },
+  { label: "Active Courses", value: "03" },
+  { label: "Completed Courses", value: "10" },
+  { label: "Quiz Progress", value: "80%" },
+  { label: "Rating Progress", value: "4.9" },
 ]
 
 const RECENT_COURSES = [
@@ -117,51 +110,10 @@ export default function DashboardPage() {
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="flex flex-wrap gap-4">
         {STATS.map((stat) => (
-          <Card key={stat.label} className="border-gray-100 shadow-none">
-            <CardContent className="flex items-center gap-4 p-5">
-              <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl"
-                style={{ backgroundColor: `${stat.color}15` }}
-              >
-                <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
-              </div>
-              <div>
-                <p className="text-sm text-[#9CA3AF]">{stat.label}</p>
-                <p className="text-2xl font-bold text-[#1D1D1D]">
-                  {stat.value}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard key={stat.label} stat={stat} />
         ))}
-      </div>
-
-      {/* Progress Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Card className="border-gray-100 shadow-none">
-          <CardContent className="p-5">
-            <div className="mb-2 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#4CC0D8]/10">
-                <FileText className="h-5 w-5 text-[#4CC0D8]" />
-              </div>
-              <p className="text-sm text-[#9CA3AF]">Quiz Progress</p>
-            </div>
-            <p className="text-3xl font-bold text-[#1D1D1D]">80%</p>
-          </CardContent>
-        </Card>
-        <Card className="border-gray-100 shadow-none">
-          <CardContent className="p-5">
-            <div className="mb-2 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F59E0B]/10">
-                <Star className="h-5 w-5 text-[#F59E0B]" />
-              </div>
-              <p className="text-sm text-[#9CA3AF]">Rating Progress</p>
-            </div>
-            <p className="text-3xl font-bold text-[#1D1D1D]">4.9</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Recently Enrolled Courses */}
