@@ -83,7 +83,7 @@ export default function AssignmentDetailPage() {
 
       {/* Assignment Info Card */}
       <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
+        <CardContent>
           {/* Header row */}
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -154,7 +154,7 @@ export default function AssignmentDetailPage() {
 
       {/* Instructions */}
       <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
+        <CardContent>
           <h3 className="mb-3 font-bold text-[#1D1D1D]">Instructions</h3>
           <p className="text-sm leading-relaxed text-[#666666]">
             {ASSIGNMENT.instructions}
@@ -164,7 +164,7 @@ export default function AssignmentDetailPage() {
 
       {/* Attached Files */}
       <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
+        <CardContent>
           <h3 className="mb-3 font-bold text-[#1D1D1D]">Attached Files</h3>
           <div className="space-y-2">
             {ASSIGNMENT.attachedFiles.map((file) => (
@@ -187,7 +187,7 @@ export default function AssignmentDetailPage() {
 
       {/* Submission Rules */}
       <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
+        <CardContent>
           <h3 className="mb-3 font-bold text-[#1D1D1D]">Submission Rules</h3>
           <ul className="space-y-1.5">
             {ASSIGNMENT.submissionRules.map((rule) => (
@@ -202,7 +202,7 @@ export default function AssignmentDetailPage() {
 
       {/* Student Submissions */}
       <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
+        <CardContent>
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-bold text-[#1D1D1D]">Student Submissions</h3>
             <span className="text-xs text-[#9CA3AF]">2 of 3 submitted</span>

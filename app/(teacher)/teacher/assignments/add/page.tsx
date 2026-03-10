@@ -5,6 +5,10 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowLeft, Check, Upload, Search, X, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 
 const STEPS = [
   "Basic Info",
@@ -92,24 +96,20 @@ export default function AddAssignmentPage() {
           Save Draft
         </button>
         <div className="flex gap-3">
-          <button
+          <Button
             onClick={goPrev}
             disabled={currentStep === 0}
-            className="rounded-lg border border-gray-200 px-6 py-2.5 text-sm font-semibold text-[#666666] transition-colors hover:bg-gray-50 disabled:opacity-40"
+            variant={"outline"}
+            className="px-4"
           >
             Previous
-          </button>
+          </Button>
           {currentStep < STEPS.length - 1 ? (
-            <button
-              onClick={goNext}
-              className="rounded-lg bg-[#F59E0B] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#D97706]"
-            >
+            <Button onClick={goNext} className="px-4">
               Next Step
-            </button>
+            </Button>
           ) : (
-            <button className="rounded-lg bg-[#F59E0B] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#D97706]">
-              Publish Assignment
-            </button>
+            <Button className="px-6 py-2.5">Publish Assignment</Button>
           )}
         </div>
       </div>
@@ -143,6 +143,16 @@ function StepBasicInfo() {
             className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
           />
         </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-[#666666]">
+            Assignment Title *
+          </label>
+          <Textarea
+            rows={10}
+            placeholder="short description..."
+            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
+          />
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -168,32 +178,6 @@ function StepBasicInfo() {
               type="date"
               className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
             />
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-[#666666]">
-              Grade *
-            </label>
-            <select className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]">
-              <option>Select grade</option>
-              <option>Children (6–12)</option>
-              <option>Junior (11–13)</option>
-              <option>Teen (14–18)</option>
-              <option>Young Adults (19–25)</option>
-              <option>Adults (26+)</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-[#666666]">
-              Visibility
-            </label>
-            <select className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]">
-              <option>Published</option>
-              <option>Draft</option>
-              <option>Scheduled</option>
-            </select>
           </div>
         </div>
       </div>
@@ -235,9 +219,7 @@ function StepAssignTo() {
 /*  Step 3: Content                                                     */
 /* ------------------------------------------------------------------ */
 function StepContent() {
-  const [files, setFiles] = React.useState([
-    "problem-solving-concept-with-books.jpg",
-  ])
+  const [files, setFiles] = React.useState([])
 
   return (
     <div className="space-y-5">
@@ -298,27 +280,23 @@ function StepContent() {
 
       {/* Submission Options */}
       <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-4">
-          <h4 className="mb-3 text-sm font-bold text-[#1D1D1D]">
+        <CardContent>
+          <h4 className="mb-3 text-lg">
             Submission Options
           </h4>
           <div className="space-y-2">
-            <label className="flex items-center justify-between text-sm text-[#666666]">
-              Allow File Submission
-              <input
-                type="checkbox"
-                defaultChecked
-                className="h-4 w-4 accent-[#4CC0D8]"
-              />
-            </label>
-            <label className="flex items-center justify-between text-sm text-[#666666]">
-              Allow Text Answer
-              <input
-                type="checkbox"
-                defaultChecked
-                className="h-4 w-4 accent-[#4CC0D8]"
-              />
-            </label>
+            <div className="flex gap-2">
+              <Checkbox id="terms-checkbox" name="terms-checkbox" />
+              <Label htmlFor="terms-checkbox">
+                Allow File Submission
+              </Label>
+            </div>
+            <div className="flex gap-2">
+              <Checkbox id="terms-checkbox" name="terms-checkbox" />
+              <Label htmlFor="terms-checkbox">
+                Allow Text Answer
+              </Label>
+            </div>
           </div>
         </CardContent>
       </Card>

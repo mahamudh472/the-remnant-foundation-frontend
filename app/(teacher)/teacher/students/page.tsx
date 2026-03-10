@@ -21,7 +21,7 @@ const STUDENTS = [
     location: "Newyork",
     joinDate: "22 Aug 2025",
     courses: 10,
-    image: "/assets/pngs/For web/instructor-1.png",
+    image: "/assets/pngs/student.png",
   },
   {
     name: "Mona Nancy",
@@ -29,7 +29,7 @@ const STUDENTS = [
     location: "Los Angeles",
     joinDate: "15 Jul 2025",
     courses: 8,
-    image: "/assets/pngs/For web/instructor-2.png",
+    image: "/assets/pngs/student.png",
   },
   {
     name: "Patrick Alleman",
@@ -37,7 +37,7 @@ const STUDENTS = [
     location: "Alabama",
     joinDate: "18 Jun 2025",
     courses: 12,
-    image: "/assets/pngs/For web/instructor-3.png",
+    image: "/assets/pngs/student.png",
   },
   {
     name: "Olive Paxson",
@@ -45,7 +45,7 @@ const STUDENTS = [
     location: "Brisbane",
     joinDate: "03 May 2025",
     courses: 7,
-    image: "/assets/pngs/For web/instructor-4.png",
+    image: "/assets/pngs/student.png",
   },
   {
     name: "Chris Thomas",
@@ -53,7 +53,7 @@ const STUDENTS = [
     location: "Newyork",
     joinDate: "14 Apr 2025",
     courses: 4,
-    image: "/assets/pngs/For web/instructor-1.png",
+    image: "/assets/pngs/student.png",
   },
   {
     name: "Joyce Perron",
@@ -61,7 +61,7 @@ const STUDENTS = [
     location: "Ontario",
     joinDate: "17 Mar 2025",
     courses: 6,
-    image: "/assets/pngs/For web/instructor-2.png",
+    image: "/assets/pngs/student.png",
   },
 ]
 
