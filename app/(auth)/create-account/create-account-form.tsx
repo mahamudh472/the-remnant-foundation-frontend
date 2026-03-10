@@ -5,11 +5,13 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Eye, EyeClosed } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export function CreateAccountForm() {
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false)
 
@@ -17,6 +19,7 @@ export function CreateAccountForm() {
     e.preventDefault()
     // TODO: Implement create account logic
     console.log("Create Account:", { fullName, email, password })
+    router.push("/otp")
   }
 
   return (

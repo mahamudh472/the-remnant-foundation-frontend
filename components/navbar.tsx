@@ -5,15 +5,12 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { DesktopNav } from "@/components/common/desktop-nav"
 import {
   ChevronDown,
   Menu,
   X,
-  ShoppingCart,
-  User,
-  Bell,
   LogOut,
-  Settings,
   LayoutDashboard,
   BookOpen,
   Users,
@@ -112,25 +109,29 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex lg:items-center lg:gap-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-1 text-sm transition-colors hover:text-[#4CC0D8]",
-                  pathname === item.href ||
-                    (item.href !== "/" && pathname.startsWith(item.href))
-                    ? "text-[#4CC0D8]"
-                    : "text-[#1D1D1D]"
-                )}
-              >
-                {item.name}
-                {item.hasDropdown && <ChevronDown className="h-4 w-4" />}
-              </Link>
-            ))}
-          </div>
+          {/* Desktop Navigation — public (logged out) */}
+          {!isLoggedIn && <DesktopNav />}
+
+          {/* Desktop Navigation — logged in */}
+          {isLoggedIn && (
+            <div className="hidden lg:flex lg:items-center lg:gap-8">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "text-sm font-semibold transition-colors hover:text-[#4CC0D8]",
+                    pathname === item.href ||
+                      (item.href !== "/" && pathname.startsWith(item.href))
+                      ? "text-[#4CC0D8]"
+                      : "text-[#1D1D1D]"
+                  )}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          )}
 
           {/* Right Actions */}
           <div className="flex items-center gap-4">
