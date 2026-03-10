@@ -14,6 +14,8 @@ import {
   MessageSquare,
   Headphones,
   LogOut,
+  Video,
+  Radio,
 } from "lucide-react"
 import { useAuthStore } from "@/lib/store/auth-store"
 
@@ -21,10 +23,11 @@ const MENU_ITEMS = [
   { name: "Dashboard", href: "/teacher", icon: LayoutDashboard },
   { name: "My Profile", href: "/teacher/profile", icon: User },
   { name: "Courses", href: "/teacher/courses", icon: BookOpen },
+  { name: "Live Classes", href: "/teacher/live-classes", icon: Radio },
   { name: "Assignments", href: "/teacher/assignments", icon: ClipboardList },
   { name: "Students", href: "/teacher/students", icon: Users },
   { name: "Quiz", href: "/teacher/quiz", icon: HelpCircle },
-  { name: "Certificates", href: "/teacher/certificates", icon: Award },
+//   { name: "Certificates", href: "/teacher/certificates", icon: Award },
   { name: "Follow-Up", href: "/teacher/follow-up", icon: MessageSquare },
   {
     name: "Support Tickets",

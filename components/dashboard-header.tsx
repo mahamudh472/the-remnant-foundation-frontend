@@ -28,6 +28,8 @@ const PAGE_TITLES: Record<string, string> = {
   "/teacher/certificates": "Certificates",
   "/teacher/follow-up": "Follow-Up",
   "/teacher/support-tickets": "Support Tickets",
+  "/teacher/live-classes": "Live Classes",
+  "/teacher/live-classes/create": "Create Live Classes",
 }
 
 export function DashboardHeader() {
@@ -35,12 +37,12 @@ export function DashboardHeader() {
   const router = useRouter()
   const { user, switchRole } = useAuthStore()
 
-//   const isTeacher = user?.role === "teacher"
-   const isTeacher = pathname.startsWith("/teacher")
+  //   const isTeacher = user?.role === "teacher"
+  const isTeacher = pathname.startsWith("/teacher")
 
   const handleSwitch = () => {
     switchRole()
-    router.push(pathname === '/teacher' ? "/dashboard" : "/teacher")
+    router.push(pathname === "/teacher" ? "/dashboard" : "/teacher")
   }
 
   // Find the best matching title
@@ -63,7 +65,7 @@ export function DashboardHeader() {
         <span className="text-gray-500">{title}</span>
       </nav>
 
-      <div className="flex items-center gap-3 bg-primary/10 px-4 rounded-2xl">
+      <div className="flex items-center gap-3 rounded-2xl bg-primary/10 px-4">
         <div className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-primary" />
           <span className="text-sm font-medium text-[#1D1D1D]">

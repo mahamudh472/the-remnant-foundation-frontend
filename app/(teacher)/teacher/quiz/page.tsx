@@ -1,12 +1,14 @@
 "use client"
 
 import React from "react"
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Search, Eye, Pencil, Plus, Save, ChevronDown } from "lucide-react"
 
 const QUIZZES = [
   {
+    id: "1",
     title: "Introduction to Bible Stories",
     grade: "Children (6–12)",
     course: "Old Testament Stories",
@@ -15,6 +17,7 @@ const QUIZZES = [
     status: "Published" as const,
   },
   {
+    id: "2",
     title: "Introduction to Bible Stories",
     grade: "Children (6–12)",
     course: "Old Testament Stories",
@@ -23,6 +26,7 @@ const QUIZZES = [
     status: "Published" as const,
   },
   {
+    id: "3",
     title: "Introduction to Bible Stories",
     grade: "Children (6–12)",
     course: "Old Testament Stories",
@@ -31,6 +35,7 @@ const QUIZZES = [
     status: "Published" as const,
   },
   {
+    id: "4",
     title: "Introduction to Bible Stories",
     grade: "Children (6–12)",
     course: "Old Testament Stories",
@@ -39,6 +44,7 @@ const QUIZZES = [
     status: "Published" as const,
   },
   {
+    id: "5",
     title: "Introduction to Bible Stories",
     grade: "Children (6–12)",
     course: "Old Testament Stories",
@@ -47,6 +53,7 @@ const QUIZZES = [
     status: "Published" as const,
   },
   {
+    id: "6",
     title: "Introduction to Bible Stories",
     grade: "Children (6–12)",
     course: "Old Testament Stories",
@@ -84,10 +91,13 @@ export default function TeacherQuizPage() {
             <Save className="h-4 w-4" />
             Save Draft
           </button>
-          <button className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-[#1D1D1D] transition-colors hover:bg-gray-50">
+          <Link
+            href="/teacher/quiz/add"
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-[#1D1D1D] transition-colors hover:bg-gray-50"
+          >
             <Plus className="h-4 w-4" />
             Add Quiz
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -186,10 +196,13 @@ export default function TeacherQuizPage() {
               </div>
 
               <div className="mt-4 flex items-center gap-2">
-                <button className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#4CC0D8] py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#3AB0C8]">
+                <Link
+                  href={`/teacher/quiz/${quiz.id}`}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#4CC0D8] py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#3AB0C8]"
+                >
                   <Eye className="h-3.5 w-3.5" />
                   View
-                </button>
+                </Link>
                 <button className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-[#9CA3AF] transition-colors hover:border-[#4CC0D8] hover:text-[#4CC0D8]">
                   <Pencil className="h-3.5 w-3.5" />
                 </button>

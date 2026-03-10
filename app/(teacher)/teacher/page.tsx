@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import CourseCard from "@/components/teacher/course-card"
 import { POPULAR_COURSES } from "@/constants/teacher"
+import StatCard from "@/components/common/stat-card"
 
 const STATS = [
   {
@@ -95,20 +96,7 @@ export default function TeacherDashboardPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {STATS.map((stat) => (
-          <Card key={stat.label} className="border-gray-100 py-0 shadow-none">
-            <CardContent className="flex justify-center items-center gap-3 p-4">
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-                style={{ backgroundColor: stat.bg }}
-              >
-                <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-[#1D1D1D]">{stat.value}</p>
-                <p className="text-xs text-[#9CA3AF]">{stat.label}</p>
-              </div>
-            </CardContent>
-          </Card>
+         <StatCard key={stat.label} stat={stat} />
         ))}
       </div>
 

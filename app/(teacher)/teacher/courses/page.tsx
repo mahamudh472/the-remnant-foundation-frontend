@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils"
 import MyCourseCard from "@/components/teacher/my-course-card"
 import { COURSES } from "@/constants/teacher"
+import StatCard from "@/components/common/stat-card"
 
 const STAT_CARDS = [
   {
@@ -87,14 +88,7 @@ export default function TeacherCoursesPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {STAT_CARDS.map((stat) => (
-          <Card key={stat.label} className="py-0 border-none shadow-none">
-            <CardContent className="flex items-center gap-3 p-4 bg-primary/15">
-              <div>
-                <p className="text-lg font-bold text-black">{stat.value}</p>
-                <p className="text-xs text-gray-500">{stat.label}</p>
-              </div>
-            </CardContent>
-          </Card>
+            <StatCard key={stat.label} stat={stat} />
         ))}
       </div>
 
