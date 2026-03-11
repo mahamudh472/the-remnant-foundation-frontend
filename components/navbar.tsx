@@ -23,12 +23,12 @@ import { useAuthStore } from "@/lib/store/auth-store"
 const PUBLIC_NAV_ITEMS = [
   { name: "Home", href: "/", icon: Compass, hasDropdown: false },
   { name: "Programs", href: "/programs", icon: BookOpen, hasDropdown: true },
-  { name: "events", href: "/events", icon: Users, hasDropdown: false },
+  { name: "Events", href: "/events", icon: Users, hasDropdown: false },
   {
     name: "Partnership",
     href: "/partnership",
     icon: LayoutDashboard,
-    hasDropdown: true,
+    hasDropdown: false,
   },
   { name: "Courses", href: "/courses", icon: BookOpen, hasDropdown: true },
   { name: "Contact", href: "/contact", icon: HelpCircle, hasDropdown: false },
@@ -51,6 +51,20 @@ const AUTH_NAV_ITEMS = [
   },
   { name: "AI Guide", href: "/ai-guide", icon: HelpCircle, hasDropdown: false },
 ]
+
+const MOBILE_SUB_ITEMS: Record<string, { name: string; href: string }[]> = {
+  Programs: [
+    { name: "Skills Development School", href: "/programs/skills" },
+    { name: "Reform", href: "/programs/reform" },
+    { name: "Ignite", href: "/programs/ignite" },
+  ],
+  Courses: [
+    { name: "All Classes", href: "/courses" },
+    { name: "Kids (5–10)", href: "/courses?age=kids" },
+    { name: "Teen (14–18)", href: "/courses?age=teen" },
+    { name: "Young Adults (19–25)", href: "/courses?age=young-adults" },
+  ],
+}
 
 const TEACHER_NAV_ITEMS = [
   {
@@ -81,6 +95,7 @@ const TEACHER_NAV_ITEMS = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false)
+  const [expandedItem, setExpandedItem] = React.useState<string | null>(null)
   const [showProfileDropdown, setShowProfileDropdown] = React.useState(false)
   const { isLoggedIn, user, logout } = useAuthStore()
   const pathname = usePathname()
@@ -221,7 +236,10 @@ export function Navbar() {
             {/* Mobile menu button */}
             <div className="lg:hidden">
               <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => {
+                  setIsOpen(!isOpen)
+                  setExpandedItem(null)
+                }}
                 className="inline-flex items-center justify-center rounded-xl border border-gray-100 bg-white p-2 text-[#1D1D1D] shadow-sm hover:bg-gray-50"
               >
                 {isOpen ? (
@@ -239,26 +257,75 @@ export function Navbar() {
       {isOpen && (
         <div className="animate-in border-t border-gray-100 bg-white/95 backdrop-blur-md duration-300 slide-in-from-top lg:hidden">
           <div className="space-y-1 px-4 py-6">
-            {PUBLIC_NAV_ITEMS.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "block rounded-xl px-3 py-4 text-base font-bold transition-all",
-                  pathname === item.href
-                    ? "bg-[#EBF7F9] text-[#4CC0D8]"
-                    : "text-[#1D1D1D] hover:bg-gray-50"
-                )}
-                onClick={() => setIsOpen(false)}
-              >
-                <div className="flex items-center justify-between">
-                  {item.name}
-                  {item.hasDropdown && (
-                    <ChevronDown className="h-4 w-4 opacity-50" />
+            {navItems.map((item) => {
+              const subItems = MOBILE_SUB_ITEMS[item.name]
+              const isExpanded = expandedItem === item.name
+              const isActive =
+                item.href !== "#" &&
+                (pathname === item.href ||
+                  (item.href !== "/" && pathname.startsWith(item.href)))
+
+              if (item.hasDropdown && subItems) {
+                return (
+                  <div key={item.name}>
+                    <button
+                      onClick={() =>
+                        setExpandedItem(isExpanded ? null : item.name)
+                      }
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-xl px-3 py-4 text-base font-bold transition-all",
+                        isExpanded || isActive
+                          ? "bg-[#EBF7F9] text-[#4CC0D8]"
+                          : "text-[#1D1D1D] hover:bg-gray-50"
+                      )}
+                    >
+                      {item.name}
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 transition-transform duration-200",
+                          isExpanded && "rotate-180"
+                        )}
+                      />
+                    </button>
+                    {isExpanded && (
+                      <div className="mt-1 mb-2 ml-3 space-y-0.5 border-l-2 border-[#4CC0D8]/20 pl-3">
+                        {subItems.map((sub) => (
+                          <Link
+                            key={sub.name}
+                            href={sub.href}
+                            className={cn(
+                              "block rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors",
+                              pathname === sub.href
+                                ? "text-[#4CC0D8]"
+                                : "text-[#666666] hover:text-[#4CC0D8]"
+                            )}
+                            onClick={() => setIsOpen(false)}
+                          >
+                            {sub.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "block rounded-xl px-3 py-4 text-base font-bold transition-all",
+                    isActive
+                      ? "bg-[#EBF7F9] text-[#4CC0D8]"
+                      : "text-[#1D1D1D] hover:bg-gray-50"
                   )}
-                </div>
-              </Link>
-            ))}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              )
+            })}
             {!isLoggedIn && (
               <div className="mt-8 grid grid-cols-2 gap-4 border-t border-gray-100 pt-6">
                 <Link href="/login" onClick={() => setIsOpen(false)}>

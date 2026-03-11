@@ -1,8 +1,8 @@
 import { Geist, Geist_Mono, Inter, Urbanist } from "next/font/google"
-
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
+import { Metadata } from "next"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 const urbanist = Urbanist({ subsets: ["latin"], variable: "--font-urbanist" })
@@ -11,6 +11,12 @@ const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 })
+
+export const metadata: Metadata = {
+  title: "School - Remnant Foundation",
+  description:
+    "A modern learning platform for spiritual growth and connection. Explore courses, live classes, and a vibrant community to deepen your faith and understanding.",
+}
 
 export default function RootLayout({
   children,

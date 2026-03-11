@@ -36,7 +36,7 @@ export default function ContactPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 item-start">
 
               {/* Send Us a Message Form */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm transition-all hover:shadow-md">
+              <div className="bg-white rounded-xl p-8 border border-gray-100 transition-all">
                 <h2 className="text-2xl font-bold text-[#1D1D1D] mb-8">Send Us a Message</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -19,7 +19,7 @@ export function Trusted() {
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="flex flex-wrap gap-8 justify-center items-center">
           {STATS.map((stat) => (
             <div key={stat.label} className="space-y-2">
               <p className="text-4xl font-extrabold text-[#4CC0D8] md:text-5xl">
