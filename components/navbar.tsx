@@ -138,10 +138,17 @@ export function Navbar() {
             {!isLoggedIn ? (
               <div className="hidden items-center gap-4 sm:flex">
                 <Link href="/login">
-                  <Button variant="ghost">Login</Button>
+                  <Button
+                    variant="ghost"
+                    className="font-semibold text-[#1D1D1D] hover:bg-gray-100"
+                  >
+                    Login
+                  </Button>
                 </Link>
                 <Link href="/signup">
-                  <Button className="px-4">Sign Up</Button>
+                  <Button className="bg-[#4CC0D8] px-4 font-semibold text-white hover:bg-[#3AB0C8]">
+                    Sign Up
+                  </Button>
                 </Link>
               </div>
             ) : (

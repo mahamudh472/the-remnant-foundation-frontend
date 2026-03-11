@@ -13,7 +13,11 @@ import {
 import { cn } from "@/lib/utils"
 
 const PROGRAMS_ITEMS = [
-  { name: "Skills Development School", href: "/programs/skills", highlight: true },
+  {
+    name: "Skills Development School",
+    href: "/programs/skills",
+    highlight: true,
+  },
   { name: "Reform", href: "/programs/reform" },
   { name: "Ignite", href: "/programs/ignite" },
 ]
@@ -42,7 +46,7 @@ function NavDropdown({
         <NavigationMenuItem>
           <NavigationMenuTrigger
             className={cn(
-              "px-3 font-semibold hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent",
+              "bg-transparent px-3 font-semibold hover:bg-transparent focus:bg-transparent data-popup-open:bg-transparent data-open:bg-transparent data-open:hover:bg-transparent data-open:focus:bg-transparent",
               active ? "text-[#4CC0D8]" : "text-[#1D1D1D]"
             )}
           >
