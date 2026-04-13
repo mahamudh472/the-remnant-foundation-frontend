@@ -6,20 +6,38 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Eye, EyeClosed } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { getApiErrorMessage } from "@/lib/api/client"
+import { useRegisterMutation } from "@/hooks/api/use-auth"
+import { useAuthStore } from "@/lib/store/auth-store"
+import { toast } from "sonner"
 
 export function CreateAccountForm() {
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const router = useRouter();
+  const router = useRouter()
+  const registerMutation = useRegisterMutation()
+  const setOtpFlow = useAuthStore((state) => state.setOtpFlow)
+  const setVerifiedResetOtp = useAuthStore((state) => state.setVerifiedResetOtp)
 
   const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement create account logic
-    console.log("Create Account:", { fullName, email, password })
-    router.push("/otp")
+
+    try {
+      await registerMutation.mutateAsync({
+        full_name: fullName,
+        email,
+        password,
+      })
+      setOtpFlow("register")
+      setVerifiedResetOtp(null)
+      toast.success("OTP sent to your email")
+      router.push("/otp?from=register")
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to create account"))
+    }
   }
 
   return (
@@ -38,7 +56,7 @@ export function CreateAccountForm() {
       {/* Title */}
       <div className="space-y-2 text-center">
         <h1 className="text-[28px] font-bold tracking-tight text-[#1D1D1D]">
-          Create a account
+          Create an account
         </h1>
         <p className="text-sm text-[#666666]">
           See what is going on with your business
@@ -142,9 +160,10 @@ export function CreateAccountForm() {
 
         <Button
           type="submit"
+          disabled={registerMutation.isPending}
           className="h-11 w-full rounded bg-[#4CC0D8] font-semibold text-white hover:bg-[#3AB0C8]"
         >
-          Sign up
+          {registerMutation.isPending ? "Creating account..." : "Sign up"}
         </Button>
       </form>
 

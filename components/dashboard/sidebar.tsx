@@ -16,7 +16,7 @@ import {
   Headphones,
   LogOut,
 } from "lucide-react"
-import { useAuthStore } from "@/lib/store/auth-store"
+import { useLogoutMutation } from "@/hooks/api/use-auth"
 
 const MENU_ITEMS = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -53,7 +53,7 @@ const MENU_ITEMS = [
 
 export function DashboardSidebar() {
   const pathname = usePathname()
-  const logout = useAuthStore((s) => s.logout)
+  const logoutMutation = useLogoutMutation()
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6">
@@ -92,7 +92,8 @@ export function DashboardSidebar() {
           Account Settings
         </h3>
         <button
-          onClick={() => logout()}
+          onClick={() => logoutMutation.mutate()}
+          disabled={logoutMutation.isPending}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 transition-all hover:bg-red-50"
         >
           <LogOut className="h-4 w-4" />

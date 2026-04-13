@@ -8,31 +8,71 @@ export interface User {
   avatar: string
 }
 
-const DUMMY_USER: User = {
-  id: "1",
-  name: "MosabbiR",
-  email: "mosabbir@remnant.org",
-  role: "teacher",
-  avatar: "/assets/pngs/Profile.png",
+export interface AuthTokens {
+  access: string
+  refresh: string
 }
+
+export type OtpFlow = "register" | "forgot-password" | null
 
 interface AuthState {
   user: User | null
+  accessToken: string | null
+  refreshToken: string | null
+  pendingEmail: string | null
+  otpFlow: OtpFlow
+  verifiedResetOtp: string | null
   isLoggedIn: boolean
-  login: (email: string, password: string) => void
+  setTokens: (tokens: AuthTokens) => void
+  setUser: (user: User | null) => void
+  setPendingEmail: (email: string) => void
+  setOtpFlow: (flow: OtpFlow) => void
+  setVerifiedResetOtp: (otp: string | null) => void
+  clearPendingEmail: () => void
   logout: () => void
   switchRole: () => void
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
+  accessToken: null,
+  refreshToken: null,
+  pendingEmail: null,
+  otpFlow: null,
+  verifiedResetOtp: null,
   isLoggedIn: false,
-  login: (_email: string, _password: string) => {
-    // Dummy login — always succeeds with the dummy user
-    set({ user: DUMMY_USER, isLoggedIn: true })
+  setTokens: ({ access, refresh }) => {
+    set({
+      accessToken: access,
+      refreshToken: refresh,
+      isLoggedIn: Boolean(access),
+    })
+  },
+  setUser: (user) => {
+    set({ user })
+  },
+  setPendingEmail: (email) => {
+    set({ pendingEmail: email })
+  },
+  setOtpFlow: (flow) => {
+    set({ otpFlow: flow })
+  },
+  setVerifiedResetOtp: (otp) => {
+    set({ verifiedResetOtp: otp })
+  },
+  clearPendingEmail: () => {
+    set({ pendingEmail: null })
   },
   logout: () => {
-    set({ user: null, isLoggedIn: false })
+    set({
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      pendingEmail: null,
+      otpFlow: null,
+      verifiedResetOtp: null,
+      isLoggedIn: false,
+    })
   },
   switchRole: () => {
     set((state) => {

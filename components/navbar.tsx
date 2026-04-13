@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuthStore } from "@/lib/store/auth-store"
+import { useLogoutMutation } from "@/hooks/api/use-auth"
 
 const PUBLIC_NAV_ITEMS = [
   { name: "Home", href: "/", icon: Compass, hasDropdown: false },
@@ -97,7 +98,8 @@ export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false)
   const [expandedItem, setExpandedItem] = React.useState<string | null>(null)
   const [showProfileDropdown, setShowProfileDropdown] = React.useState(false)
-  const { isLoggedIn, user, logout } = useAuthStore()
+  const { isLoggedIn, user } = useAuthStore()
+  const logoutMutation = useLogoutMutation()
   const pathname = usePathname()
   const isTeacher = user?.role === "teacher"
   const navItems = !isLoggedIn
@@ -217,9 +219,10 @@ export function Navbar() {
                       <div className="my-2 h-px bg-gray-50" />
                       <button
                         onClick={() => {
-                          logout()
+                          logoutMutation.mutate()
                           setShowProfileDropdown(false)
                         }}
+                        disabled={logoutMutation.isPending}
                         className="group flex w-full items-center gap-3 rounded-xl p-3 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-50"
                       >
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-50 bg-white text-red-400 transition-all group-hover:bg-red-500 group-hover:text-white">

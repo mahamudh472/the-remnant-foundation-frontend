@@ -5,19 +5,27 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { useAuthStore } from "@/lib/store/auth-store"
+import { getApiErrorMessage } from "@/lib/api/client"
+import { useLoginMutation } from "@/hooks/api/use-auth"
+import { toast } from "sonner"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
-  const login = useAuthStore((s) => s.login)
+  const loginMutation = useLoginMutation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    login(email, password)
-    router.push("/dashboard")
+
+    try {
+      await loginMutation.mutateAsync({ email, password })
+      toast.success("Logged in successfully")
+      router.push("/dashboard")
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to log in"))
+    }
   }
 
   return (
@@ -180,9 +188,10 @@ export function LoginForm() {
 
         <Button
           type="submit"
+          disabled={loginMutation.isPending}
           className="h-11 w-full rounded bg-[#4CC0D8] font-semibold text-white hover:bg-[#3AB0C8]"
         >
-          Login
+          {loginMutation.isPending ? "Logging in..." : "Login"}
         </Button>
       </form>
 

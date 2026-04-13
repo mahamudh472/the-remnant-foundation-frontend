@@ -17,7 +17,7 @@ import {
   Video,
   Radio,
 } from "lucide-react"
-import { useAuthStore } from "@/lib/store/auth-store"
+import { useLogoutMutation } from "@/hooks/api/use-auth"
 
 const MENU_ITEMS = [
   { name: "Dashboard", href: "/teacher", icon: LayoutDashboard },
@@ -27,7 +27,7 @@ const MENU_ITEMS = [
   { name: "Assignments", href: "/teacher/assignments", icon: ClipboardList },
   { name: "Students", href: "/teacher/students", icon: Users },
   { name: "Quiz", href: "/teacher/quiz", icon: HelpCircle },
-//   { name: "Certificates", href: "/teacher/certificates", icon: Award },
+  //   { name: "Certificates", href: "/teacher/certificates", icon: Award },
   { name: "Follow-Up", href: "/teacher/follow-up", icon: MessageSquare },
   {
     name: "Support Tickets",
@@ -38,7 +38,7 @@ const MENU_ITEMS = [
 
 export function TeacherSidebar() {
   const pathname = usePathname()
-  const logout = useAuthStore((s) => s.logout)
+  const logoutMutation = useLogoutMutation()
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6">
@@ -77,7 +77,8 @@ export function TeacherSidebar() {
           Account Settings
         </h3> */}
         <button
-          onClick={() => logout()}
+          onClick={() => logoutMutation.mutate()}
+          disabled={logoutMutation.isPending}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 transition-all hover:bg-red-50"
         >
           <LogOut className="h-4 w-4" />

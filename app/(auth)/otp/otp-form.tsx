@@ -1,19 +1,56 @@
 "use client"
 
-import { useState, useRef, KeyboardEvent, ClipboardEvent } from "react"
-import { useRouter } from "next/navigation"
+import {
+  useState,
+  useRef,
+  useEffect,
+  KeyboardEvent,
+  ClipboardEvent,
+} from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
+import { getApiErrorMessage } from "@/lib/api/client"
+import {
+  useCheckOtpMutation,
+  useResendOtpMutation,
+  useVerifyEmailMutation,
+} from "@/hooks/api/use-auth"
+import { useAuthStore } from "@/lib/store/auth-store"
+import { toast } from "sonner"
 
-const OTP_LENGTH = 6
+const OTP_LENGTH = 4
 
 export function OtpForm() {
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""))
   const [resendCooldown, setResendCooldown] = useState(0)
   const inputsRef = useRef<Array<HTMLInputElement | null>>([])
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const source = searchParams.get("from")
+  const pendingEmail = useAuthStore((state) => state.pendingEmail)
+  const otpFlow = useAuthStore((state) => state.otpFlow)
+  const setOtpFlow = useAuthStore((state) => state.setOtpFlow)
+  const setVerifiedResetOtp = useAuthStore((state) => state.setVerifiedResetOtp)
+  const verifyMutation = useVerifyEmailMutation()
+  const checkOtpMutation = useCheckOtpMutation()
+  const resendMutation = useResendOtpMutation()
+  const flow =
+    source === "forgot-password" || source === "register"
+      ? source
+      : otpFlow || "register"
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+
+    const timer = window.setTimeout(() => {
+      setResendCooldown((previous) => Math.max(previous - 1, 0))
+    }, 1000)
+
+    return () => window.clearTimeout(timer)
+  }, [resendCooldown])
 
   const focusAt = (index: number) => {
     if (index >= 0 && index < OTP_LENGTH) {
@@ -59,29 +96,47 @@ export function OtpForm() {
     focusAt(Math.min(pasted.length, OTP_LENGTH - 1))
   }
 
-  const handleResend = () => {
-    // TODO: call resend OTP API
-    setResendCooldown(60)
-    const interval = setInterval(() => {
-      setResendCooldown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
+  const handleResend = async () => {
+    if (!pendingEmail) return
+
+    try {
+      await resendMutation.mutateAsync({ email: pendingEmail })
+      setResendCooldown(60)
+      toast.success("OTP resent successfully")
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to resend OTP"))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const code = otp.join("")
-    if (code.length < OTP_LENGTH) return
-    // TODO: verify OTP with API
-    router.push("/login")
+    if (code.length < OTP_LENGTH || !pendingEmail) return
+
+    try {
+      if (flow === "forgot-password") {
+        await checkOtpMutation.mutateAsync({ email: pendingEmail, otp: code })
+        setVerifiedResetOtp(code)
+        setOtpFlow("forgot-password")
+        toast.success("OTP verified successfully")
+        router.push("/forgot-password?step=reset")
+      } else {
+        await verifyMutation.mutateAsync({ email: pendingEmail, otp: code })
+        setOtpFlow(null)
+        setVerifiedResetOtp(null)
+        toast.success("Email verified successfully")
+        router.push("/login")
+      }
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to verify OTP"))
+    }
   }
 
   const isComplete = otp.every((d) => d !== "")
+  const isVerifying =
+    flow === "forgot-password"
+      ? checkOtpMutation.isPending
+      : verifyMutation.isPending
 
   return (
     <div className="w-full max-w-[400px] space-y-8">
@@ -99,11 +154,12 @@ export function OtpForm() {
       {/* Title */}
       <div className="space-y-2 text-center">
         <h1 className="text-[28px] font-bold tracking-tight text-[#1D1D1D]">
-          Verify your Email
+          {flow === "forgot-password" ? "Verify OTP" : "Verify your Email"}
         </h1>
         <p className="text-sm text-[#666666]">
-          We sent a {OTP_LENGTH}-digit code to your email address. Enter it
-          below to continue.
+          {pendingEmail
+            ? `We sent a ${OTP_LENGTH}-digit code to ${pendingEmail}. Enter it below to continue.`
+            : "Start from registration or forgot password to continue."}
         </p>
       </div>
 
@@ -132,10 +188,10 @@ export function OtpForm() {
 
         <Button
           type="submit"
-          disabled={!isComplete}
+          disabled={!isComplete || isVerifying || !pendingEmail}
           className="h-11 w-full rounded bg-[#4CC0D8] font-semibold text-white hover:bg-[#3AB0C8] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Verify Code
+          {isVerifying ? "Verifying..." : "Verify Code"}
         </Button>
       </form>
 
@@ -150,20 +206,23 @@ export function OtpForm() {
           <button
             type="button"
             onClick={handleResend}
-            className="font-medium text-[#4CC0D8] hover:underline"
+            disabled={resendMutation.isPending || !pendingEmail}
+            className="font-medium text-[#4CC0D8] hover:underline disabled:text-[#9CA3AF] disabled:no-underline"
           >
-            Resend code
+            {resendMutation.isPending ? "Resending..." : "Resend code"}
           </button>
         )}
       </p>
 
       {/* Back link */}
       <Link
-        href="/login"
+        href={flow === "forgot-password" ? "/forgot-password" : "/login"}
         className="flex items-center justify-center gap-2 text-sm font-medium text-[#666666] hover:text-[#1D1D1D]"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Login
+        {flow === "forgot-password"
+          ? "Back to Forgot Password"
+          : "Back to Login"}
       </Link>
     </div>
   )

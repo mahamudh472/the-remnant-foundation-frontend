@@ -1,6 +1,8 @@
-import { Geist, Geist_Mono, Inter, Urbanist } from "next/font/google"
+import { Geist_Mono, Inter, Urbanist } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { QueryProvider } from "@/components/providers/query-provider"
+import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 import { Metadata } from "next"
 
@@ -36,7 +38,12 @@ export default function RootLayout({
       )}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <QueryProvider>
+            {children}
+            <Toaster position="top-right" />
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
