@@ -208,6 +208,49 @@ export interface StudentPastLiveClassesResponse {
   results: StudentPastLiveClassItem[]
 }
 
+export interface StudentCourseModuleItem {
+  module_id: number
+  module_name: string
+}
+
+export interface StudentCourseModulesResponse {
+  progress_percentage: number
+  modules: StudentCourseModuleItem[]
+}
+
+export interface StudentModuleLessonItem {
+  lesson_id: number
+  title: string
+  description: string
+  complete: boolean
+}
+
+export interface StudentModuleQuizItem {
+  quiz_id: number
+  title: string
+  complete: boolean
+}
+
+export interface StudentModuleAssignmentItem {
+  assignment_id: number
+  title: string
+  complete: boolean
+}
+
+export interface StudentModuleContentResponse {
+  lessons: StudentModuleLessonItem[]
+  quizzes: StudentModuleQuizItem[]
+  assignments: StudentModuleAssignmentItem[]
+}
+
+export interface StudentCompleteLessonResponse {
+  message: string
+  lesson_id: number
+  complete: boolean
+  progress_percentage: number
+  completed_at: string | null
+}
+
 export function getTeacherStudents(
   accessToken: string,
   params: GetTeacherStudentsParams = {}
@@ -363,4 +406,34 @@ export function getStudentPastLiveClasses(
     method: "GET",
     token: accessToken,
   })
+}
+
+export function getStudentCourseModules(accessToken: string, courseId: number) {
+  return apiRequest<StudentCourseModulesResponse>(
+    `student/enrolled-courses/${courseId}/modules/`,
+    {
+      method: "GET",
+      token: accessToken,
+    }
+  )
+}
+
+export function getStudentModuleContent(accessToken: string, moduleId: number) {
+  return apiRequest<StudentModuleContentResponse>(
+    `student/modules/${moduleId}/content/`,
+    {
+      method: "GET",
+      token: accessToken,
+    }
+  )
+}
+
+export function completeStudentLesson(accessToken: string, lessonId: number) {
+  return apiRequest<StudentCompleteLessonResponse>(
+    `student/lessons/${lessonId}/complete/`,
+    {
+      method: "POST",
+      token: accessToken,
+    }
+  )
 }

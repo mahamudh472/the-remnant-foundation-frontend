@@ -178,7 +178,7 @@ export default function EnrolledCoursesPage() {
                   />
                 </div>
                 <Link
-                  href={`/courses/${course.course_id}`}
+                  href={`/dashboard/enrolled-courses/${course.course_id}`}
                   className="inline-flex items-center gap-1 rounded-md bg-[#4CC0D8] px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#3AB0C8]"
                 >
                   Start Now <ArrowRight className="h-3 w-3" />

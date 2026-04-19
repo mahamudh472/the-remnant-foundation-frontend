@@ -1,7 +1,15 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
+import {
+  completeStudentLesson,
+  getStudentCourseModules,
   getStudentEnrolledCourses,
   getStudentDashboard,
+  getStudentModuleContent,
   getStudentPastLiveClasses,
   getStudentProfile,
   getStudentUpcomingLiveClasses,
@@ -41,6 +49,10 @@ export const studentsKeys = {
     params: GetStudentLiveClassesParams,
     accessToken: string | null
   ) => ["students", "live-classes", "past", accessToken, params] as const,
+  courseModules: (courseId: number | string, accessToken: string | null) =>
+    ["students", "course-modules", accessToken, courseId] as const,
+  moduleContent: (moduleId: number | string, accessToken: string | null) =>
+    ["students", "module-content", accessToken, moduleId] as const,
 }
 
 export function useTeacherStudentsQuery(params: GetTeacherStudentsParams = {}) {
@@ -182,5 +194,80 @@ export function useStudentPastLiveClassesQuery(
     },
     enabled: Boolean(accessToken),
     placeholderData: keepPreviousData,
+  })
+}
+
+export function useStudentCourseModulesQuery(
+  courseId?: number,
+  enabled = true
+) {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: studentsKeys.courseModules(courseId ?? "unknown", accessToken),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      if (!courseId) {
+        throw new Error("Missing course id")
+      }
+
+      return getStudentCourseModules(accessToken, courseId)
+    },
+    enabled: Boolean(accessToken && courseId) && enabled,
+  })
+}
+
+export function useStudentModuleContentQuery(
+  moduleId?: number,
+  enabled = true
+) {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: studentsKeys.moduleContent(moduleId ?? "unknown", accessToken),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      if (!moduleId) {
+        throw new Error("Missing module id")
+      }
+
+      return getStudentModuleContent(accessToken, moduleId)
+    },
+    enabled: Boolean(accessToken && moduleId) && enabled,
+  })
+}
+
+export interface CompleteStudentLessonMutationPayload {
+  lessonId: number
+  courseId: number
+  moduleId: number
+}
+
+export function useCompleteStudentLessonMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ lessonId }: CompleteStudentLessonMutationPayload) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return completeStudentLesson(accessToken, lessonId)
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: studentsKeys.courseModules(variables.courseId, accessToken),
+      })
+      queryClient.invalidateQueries({
+        queryKey: studentsKeys.moduleContent(variables.moduleId, accessToken),
+      })
+    },
   })
 }
