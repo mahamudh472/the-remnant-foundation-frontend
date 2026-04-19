@@ -2,9 +2,12 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import {
   getStudentEnrolledCourses,
   getStudentDashboard,
+  getStudentPastLiveClasses,
   getStudentProfile,
+  getStudentUpcomingLiveClasses,
   getStudentWishlist,
   type GetStudentEnrolledCoursesParams,
+  type GetStudentLiveClassesParams,
   type StudentEnrolledStatus,
   getTeacherStudentDetails,
   getTeacherStudents,
@@ -30,6 +33,14 @@ export const studentsKeys = {
     params: GetStudentEnrolledCoursesParams,
     accessToken: string | null
   ) => ["students", "enrolled-courses", accessToken, params] as const,
+  upcomingLiveClasses: (
+    params: GetStudentLiveClassesParams,
+    accessToken: string | null
+  ) => ["students", "live-classes", "upcoming", accessToken, params] as const,
+  pastLiveClasses: (
+    params: GetStudentLiveClassesParams,
+    accessToken: string | null
+  ) => ["students", "live-classes", "past", accessToken, params] as const,
 }
 
 export function useTeacherStudentsQuery(params: GetTeacherStudentsParams = {}) {
@@ -133,5 +144,43 @@ export function useStudentWishlistQuery() {
       return getStudentWishlist(accessToken)
     },
     enabled: Boolean(accessToken),
+  })
+}
+
+export function useStudentUpcomingLiveClassesQuery(
+  params: GetStudentLiveClassesParams = {}
+) {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: studentsKeys.upcomingLiveClasses(params, accessToken),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return getStudentUpcomingLiveClasses(accessToken, params)
+    },
+    enabled: Boolean(accessToken),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useStudentPastLiveClassesQuery(
+  params: GetStudentLiveClassesParams = {}
+) {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: studentsKeys.pastLiveClasses(params, accessToken),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return getStudentPastLiveClasses(accessToken, params)
+    },
+    enabled: Boolean(accessToken),
+    placeholderData: keepPreviousData,
   })
 }
