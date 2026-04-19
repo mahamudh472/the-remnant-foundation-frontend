@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { createJSONStorage, persist } from "zustand/middleware"
 
 export interface User {
   id: string
@@ -33,7 +34,7 @@ interface AuthState {
   switchRole: () => void
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+const initialAuthState = {
   user: null,
   accessToken: null,
   refreshToken: null,
@@ -41,48 +42,74 @@ export const useAuthStore = create<AuthState>((set) => ({
   otpFlow: null,
   verifiedResetOtp: null,
   isLoggedIn: false,
-  setTokens: ({ access, refresh }) => {
-    set({
-      accessToken: access,
-      refreshToken: refresh,
-      isLoggedIn: Boolean(access),
-    })
-  },
-  setUser: (user) => {
-    set({ user })
-  },
-  setPendingEmail: (email) => {
-    set({ pendingEmail: email })
-  },
-  setOtpFlow: (flow) => {
-    set({ otpFlow: flow })
-  },
-  setVerifiedResetOtp: (otp) => {
-    set({ verifiedResetOtp: otp })
-  },
-  clearPendingEmail: () => {
-    set({ pendingEmail: null })
-  },
-  logout: () => {
-    set({
-      user: null,
-      accessToken: null,
-      refreshToken: null,
-      pendingEmail: null,
-      otpFlow: null,
-      verifiedResetOtp: null,
-      isLoggedIn: false,
-    })
-  },
-  switchRole: () => {
-    set((state) => {
-      if (!state.user) return state
-      return {
-        user: {
-          ...state.user,
-          role: state.user.role === "student" ? "teacher" : "student",
-        },
-      }
-    })
-  },
-}))
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      ...initialAuthState,
+      setTokens: ({ access, refresh }) => {
+        set({
+          accessToken: access,
+          refreshToken: refresh,
+          isLoggedIn: Boolean(access),
+        })
+      },
+      setUser: (user) => {
+        set((state) => ({ user, isLoggedIn: Boolean(state.accessToken) }))
+      },
+      setPendingEmail: (email) => {
+        set({ pendingEmail: email })
+      },
+      setOtpFlow: (flow) => {
+        set({ otpFlow: flow })
+      },
+      setVerifiedResetOtp: (otp) => {
+        set({ verifiedResetOtp: otp })
+      },
+      clearPendingEmail: () => {
+        set({ pendingEmail: null })
+      },
+      logout: () => {
+        set({
+          ...initialAuthState,
+        })
+      },
+      switchRole: () => {
+        set((state) => {
+          if (!state.user) return state
+          return {
+            user: {
+              ...state.user,
+              role: state.user.role === "student" ? "teacher" : "student",
+            },
+          }
+        })
+      },
+    }),
+    {
+      name: "remnant-auth-store",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        user: state.user,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+        pendingEmail: state.pendingEmail,
+        otpFlow: state.otpFlow,
+        verifiedResetOtp: state.verifiedResetOtp,
+        isLoggedIn: state.isLoggedIn,
+      }),
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<AuthState>
+
+        return {
+          ...currentState,
+          ...persisted,
+          isLoggedIn: Boolean(
+            persisted.accessToken ?? currentState.accessToken
+          ),
+        }
+      },
+    }
+  )
+)

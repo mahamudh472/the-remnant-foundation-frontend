@@ -2,49 +2,93 @@
 
 import React from "react"
 import Link from "next/link"
-import {
-  Plus,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react"
+import { Plus, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import MyCourseCard from "@/components/teacher/my-course-card"
-import { COURSES } from "@/constants/teacher"
 import StatCard from "@/components/common/stat-card"
-
-const STAT_CARDS = [
-  {
-    label: "Active Courses",
-    value: "12",
-  },
-  {
-    label: "Pending Courses",
-    value: "3",
-  },
-  {
-    label: "Draft Courses",
-    value: "5",
-  },
-  {
-    label: "Free Courses",
-    value: "4",
-  },
-  {
-    label: "Paid Courses",
-    value: "8",
-  },
-]
+import {
+  useTeacherCoursesCountByFilterQuery,
+  useTeacherCoursesQuery,
+  type TeacherCoursesFilter,
+} from "@/hooks/api/use-teachers"
+import { getApiErrorMessage } from "@/lib/api/client"
 
 const TABS = ["Publish", "Pending", "Draft", "Inactive"] as const
+const PAGE_SIZE = 9
+const FALLBACK_THUMBNAIL = "/assets/pngs/For web/web course image.png"
+
+function toFilter(tab: (typeof TABS)[number]): TeacherCoursesFilter {
+  switch (tab) {
+    case "Publish":
+      return "publish"
+    case "Pending":
+      return "pending"
+    case "Draft":
+      return "draft"
+    case "Inactive":
+      return "inactive"
+  }
+}
 
 export default function TeacherCoursesPage() {
   const [activeTab, setActiveTab] =
     React.useState<(typeof TABS)[number]>("Publish")
+  const [page, setPage] = React.useState(1)
 
-  const filtered =
-    activeTab === "Publish"
-      ? COURSES
-      : COURSES.filter((c) => c.status === activeTab)
+  const activeFilter = toFilter(activeTab)
+
+  const coursesQuery = useTeacherCoursesQuery({
+    page,
+    page_size: PAGE_SIZE,
+    filter: activeFilter,
+  })
+
+  const publishCountQuery = useTeacherCoursesCountByFilterQuery("publish")
+  const pendingCountQuery = useTeacherCoursesCountByFilterQuery("pending")
+  const draftCountQuery = useTeacherCoursesCountByFilterQuery("draft")
+  const inactiveCountQuery = useTeacherCoursesCountByFilterQuery("inactive")
+
+  const results = coursesQuery.data?.results || []
+  const totalCount = coursesQuery.data?.count || 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+
+  const freeCoursesOnPage = results.filter(
+    (course) => Number.parseFloat(course.price) <= 0
+  ).length
+  const paidCoursesOnPage = results.length - freeCoursesOnPage
+
+  const statCards = [
+    {
+      label: "Published Courses",
+      value: String(publishCountQuery.data?.count ?? 0),
+    },
+    {
+      label: "Pending Courses",
+      value: String(pendingCountQuery.data?.count ?? 0),
+    },
+    {
+      label: "Draft Courses",
+      value: String(draftCountQuery.data?.count ?? 0),
+    },
+    {
+      label: "Inactive Courses",
+      value: String(inactiveCountQuery.data?.count ?? 0),
+    },
+    {
+      label: "Total Courses",
+      value: String(
+        (publishCountQuery.data?.count ?? 0) +
+          (pendingCountQuery.data?.count ?? 0) +
+          (draftCountQuery.data?.count ?? 0) +
+          (inactiveCountQuery.data?.count ?? 0)
+      ),
+    },
+  ]
+
+  const onTabChange = (tab: (typeof TABS)[number]) => {
+    setActiveTab(tab)
+    setPage(1)
+  }
 
   return (
     <div className="space-y-6">
@@ -62,17 +106,23 @@ export default function TeacherCoursesPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        {STAT_CARDS.map((stat) => (
-            <StatCard key={stat.label} stat={stat} />
+        {statCards.map((stat) => (
+          <StatCard key={stat.label} stat={stat} />
         ))}
       </div>
+
+      {coursesQuery.isError && (
+        <div className="rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-500">
+          {getApiErrorMessage(coursesQuery.error, "Failed to load courses")}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-gray-100">
         {TABS.map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => onTabChange(tab)}
             className={cn(
               "border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors",
               activeTab === tab
@@ -86,36 +136,82 @@ export default function TeacherCoursesPage() {
       </div>
 
       {/* Course Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((course) => (
-          <MyCourseCard key={course.title} course={course} />
-        ))}
-      </div>
-
-      {/* Pagination */}
-      {filtered.length <= 0 ? (
+      {coursesQuery.isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((skeleton) => (
+            <div
+              key={skeleton}
+              className="h-80 animate-pulse rounded-xl bg-gray-100"
+            />
+          ))}
+        </div>
+      ) : results.length === 0 ? (
         <p className="text-center text-sm text-[#9CA3AF]">
           No courses found in this category.
         </p>
       ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {results.map((course) => (
+              <MyCourseCard
+                key={course.id}
+                course={{
+                  id: course.id,
+                  title: course.title,
+                  image:
+                    course.thumbnail && !course.thumbnail.startsWith("http")
+                      ? course.thumbnail
+                      : FALLBACK_THUMBNAIL,
+                  instructor: "You",
+                  lessons: course.lessons_count,
+                  time: "",
+                  price: Number.parseFloat(course.price),
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-[#9CA3AF]">
+            <span>
+              Showing {results.length} of {totalCount} ({activeTab})
+            </span>
+            <span>
+              Free on page: {freeCoursesOnPage}, Paid on page: {paidCoursesOnPage}
+            </span>
+          </div>
+        </>
+      )}
+
+      {/* Pagination */}
+      {!coursesQuery.isLoading && results.length > 0 && totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 pt-4">
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-[#9CA3AF] hover:border-[#4CC0D8] hover:text-[#4CC0D8]">
+          <button
+            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+            disabled={page === 1}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-[#9CA3AF] hover:border-[#4CC0D8] hover:text-[#4CC0D8] disabled:opacity-40"
+          >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          {[1, 2, 3].map((page) => (
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+            (pageNumber) => (
             <button
-              key={page}
+              key={pageNumber}
+              onClick={() => setPage(pageNumber)}
               className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium transition-colors",
-                page === 1
+                pageNumber === page
                   ? "bg-[#4CC0D8] text-white"
                   : "border border-gray-200 text-[#666666] hover:border-[#4CC0D8] hover:text-[#4CC0D8]"
               )}
             >
-              {page}
+              {pageNumber}
             </button>
-          ))}
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-[#9CA3AF] hover:border-[#4CC0D8] hover:text-[#4CC0D8]">
+            ))}
+          <button
+            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={page === totalPages}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-[#9CA3AF] hover:border-[#4CC0D8] hover:text-[#4CC0D8] disabled:opacity-40"
+          >
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>

@@ -3,7 +3,37 @@ import { Badge } from "../ui/badge"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
-export default function AssigmentCard({ assignment }) {
+type AssignmentCardData = {
+  id: number | string
+  title: string
+  grade: string
+  course: string
+  type: string
+  dueDate: string
+  status: string
+  submissions?: number
+  total?: number
+}
+
+type AssignmentCardProps = {
+  assignment: AssignmentCardData
+}
+
+const STATUS_BADGE_STYLES: Record<string, string> = {
+  published: "bg-[#EBF7F9] text-[#4CC0D8]",
+  pending: "bg-amber-50 text-amber-600",
+  draft: "bg-slate-100 text-slate-600",
+  paused: "bg-rose-50 text-rose-600",
+  closed: "bg-emerald-50 text-emerald-600",
+}
+
+export default function AssigmentCard({ assignment }: AssignmentCardProps) {
+  const normalizedStatus = assignment.status.toLowerCase()
+  const progressAllowed =
+    typeof assignment.submissions === "number" &&
+    typeof assignment.total === "number" &&
+    assignment.total > 0
+
   return (
     <Card
       key={assignment.title}
@@ -17,11 +47,8 @@ export default function AssigmentCard({ assignment }) {
           <Badge
             className={cn(
               "ml-2 shrink-0 text-[10px]",
-              assignment.status === "Published"
-                ? "bg-[#EBF7F9] text-[#4CC0D8]"
-                : assignment.status === "Closed"
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "bg-amber-50 text-amber-600"
+              STATUS_BADGE_STYLES[normalizedStatus] ??
+                "bg-gray-100 text-gray-600"
             )}
           >
             {assignment.status}
@@ -44,25 +71,31 @@ export default function AssigmentCard({ assignment }) {
         </div>
 
         <div className="mt-4 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-1 text-xs">
-              <span className="font-semibold text-[#1D1D1D]">
-                {assignment.submissions}
-              </span>
-              <span className="text-[#9CA3AF]">
-                / {assignment.total} submissions
-              </span>
+          {progressAllowed ? (
+            <div>
+              <div className="flex items-center gap-1 text-xs">
+                <span className="font-semibold text-[#1D1D1D]">
+                  {assignment.submissions}
+                </span>
+                <span className="text-[#9CA3AF]">
+                  / {assignment.total} submissions
+                </span>
+              </div>
+              <div className="mt-1 h-1.5 w-32 overflow-hidden rounded-full bg-gray-100">
+                <div
+                  className="h-full rounded-full bg-[#4CC0D8] transition-all"
+                  style={{
+                    width: `${((assignment.submissions ?? 0) / (assignment.total ?? 1)) * 100}%`,
+                  }}
+                />
+              </div>
             </div>
-            {/* Progress bar */}
-            <div className="mt-1 h-1.5 w-32 overflow-hidden rounded-full bg-gray-100">
-              <div
-                className="h-full rounded-full bg-[#4CC0D8] transition-all"
-                style={{
-                  width: `${(assignment.submissions / assignment.total) * 100}%`,
-                }}
-              />
+          ) : (
+            <div className="text-xs text-[#9CA3AF]">
+              No submission stats available
             </div>
-          </div>
+          )}
+
           <Link
             href={`/teacher/assignments/${assignment.id}`}
             className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold transition-colors hover:border-[#4CC0D8] hover:text-[#4CC0D8]"

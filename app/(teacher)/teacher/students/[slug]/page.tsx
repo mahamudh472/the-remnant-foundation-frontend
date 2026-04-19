@@ -1,85 +1,60 @@
 "use client"
 
 import Image from "next/image"
+import { useParams } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { CheckCircle2 } from "lucide-react"
-
-const STUDENT = {
-  firstName: "Emma",
-  lastName: "Johnson",
-  username: "emma.j2024",
-  email: "emma.johnson@email.com",
-  phone: "+1 (555) 123-4567",
-  gender: "Female",
-  dob: "2/3/2026",
-  age: "0 years",
-  about:
-    "Passionate about science and mathematics. Love exploring new concepts and working on group projects. Aspiring to pursue",
-  image: "/assets/pngs/For web/instructor-1.png",
-}
-
-const COURSE_PROGRESS = [
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "90%",
-    quiz: "88%",
-    liveClasses: "90%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "56%",
-    quiz: "88%",
-    liveClasses: "56%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "80%",
-    quiz: "88%",
-    liveClasses: "80%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "45%",
-    quiz: "88%",
-    liveClasses: "45%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "56%",
-    quiz: "88%",
-    liveClasses: "56%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "80%",
-    quiz: "88%",
-    liveClasses: "80%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "90%",
-    quiz: "88%",
-    liveClasses: "90%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "45%",
-    quiz: "88%",
-    liveClasses: "45%",
-  },
-]
+import { useTeacherStudentDetailsQuery } from "@/hooks/api/use-students"
+import { getApiErrorMessage } from "@/lib/api/client"
 
 export default function StudentDetailPage() {
+  const params = useParams<{ slug: string }>()
+  const slug = params?.slug
+  const studentId = Number(slug)
+
+  const { data, isLoading, isError, error } = useTeacherStudentDetailsQuery(
+    Number.isFinite(studentId) ? studentId : undefined
+  )
+
+  const student = data?.student
+  const coursePerformance = data?.course_performance || []
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 w-48 animate-pulse rounded bg-gray-100" />
+        <div className="h-24 w-24 animate-pulse rounded-full bg-gray-100" />
+        <div className="h-64 animate-pulse rounded-2xl bg-gray-100" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="py-16 text-center text-red-500">
+        {getApiErrorMessage(error, "Failed to load student details.")}
+      </div>
+    )
+  }
+
+  if (!student) {
+    return (
+      <div className="py-16 text-center text-gray-500">Student not found.</div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-bold text-[#1D1D1D]">My Profile</h2>
+      <h2 className="text-lg font-bold text-[#1D1D1D]">Student Profile</h2>
 
       {/* Avatar */}
       <div className="relative inline-block">
         <div className="h-24 w-24 overflow-hidden rounded-full bg-gray-200">
           <Image
-            src={STUDENT.image}
-            alt={STUDENT.firstName}
+            src={student.avatar || "/assets/pngs/student.png"}
+            alt={
+              `${student.first_name} ${student.last_name}`.trim() || "Student"
+            }
             width={96}
             height={96}
             className="h-full w-full object-cover"
@@ -100,49 +75,49 @@ export default function StudentDetailPage() {
             <div>
               <p className="text-xs text-[#9CA3AF]">First Name</p>
               <p className="text-sm font-medium text-[#1D1D1D]">
-                {STUDENT.firstName}
+                {student.first_name || "-"}
               </p>
             </div>
             <div>
               <p className="text-xs text-[#9CA3AF]">Last Name</p>
               <p className="text-sm font-medium text-[#1D1D1D]">
-                {STUDENT.lastName}
+                {student.last_name || "-"}
               </p>
             </div>
             <div>
               <p className="text-xs text-[#9CA3AF]">Username</p>
               <p className="text-sm font-medium text-[#1D1D1D]">
-                {STUDENT.username}
+                {student.username || "-"}
               </p>
             </div>
             <div>
               <p className="text-xs text-[#9CA3AF]">Email</p>
               <p className="text-sm font-medium text-[#1D1D1D]">
-                {STUDENT.email}
+                {student.email || "-"}
               </p>
             </div>
             <div>
               <p className="text-xs text-[#9CA3AF]">Phone Number</p>
               <p className="text-sm font-medium text-[#1D1D1D]">
-                {STUDENT.phone}
+                {student.phone_number || "-"}
               </p>
             </div>
             <div>
               <p className="text-xs text-[#9CA3AF]">Gender</p>
               <p className="text-sm font-medium text-[#1D1D1D]">
-                {STUDENT.gender}
+                {student.gender || "-"}
               </p>
             </div>
             <div>
               <p className="text-xs text-[#9CA3AF]">Date of Birth</p>
               <p className="text-sm font-medium text-[#1D1D1D]">
-                {STUDENT.dob}
+                {formatDate(student.date_of_birth)}
               </p>
             </div>
             <div>
               <p className="text-xs text-[#9CA3AF]">Age</p>
               <p className="text-sm font-medium text-[#1D1D1D]">
-                {STUDENT.age}
+                {student.age === null ? "-" : `${student.age} years`}
               </p>
             </div>
           </div>
@@ -156,7 +131,7 @@ export default function StudentDetailPage() {
             About Student
           </h3>
           <p className="text-sm leading-relaxed text-[#666666]">
-            {STUDENT.about}
+            {student.about_student || "No about info provided."}
           </p>
         </CardContent>
       </Card>
@@ -182,26 +157,56 @@ export default function StudentDetailPage() {
               </tr>
             </thead>
             <tbody>
-              {COURSE_PROGRESS.map((row, i) => (
-                <tr key={i} className="border-b border-gray-100 last:border-0">
-                  <td className="px-4 py-3 text-[#666666]">{row.name}</td>
-                  <td className="px-4 py-3 text-center text-[#666666]">
-                    {row.classProgress}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="font-semibold text-[#4CC0D8]">
-                      {row.quiz}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center text-[#666666]">
-                    {row.liveClasses}
+              {coursePerformance.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-4 py-8 text-center text-[#9CA3AF]"
+                  >
+                    No course performance data available.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                coursePerformance.map((row, i) => (
+                  <tr
+                    key={i}
+                    className="border-b border-gray-100 last:border-0"
+                  >
+                    <td className="px-4 py-3 text-[#666666]">
+                      {row.course_name}
+                    </td>
+                    <td className="px-4 py-3 text-center text-[#666666]">
+                      {row.class_progress}%
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="font-semibold text-[#4CC0D8]">
+                        {row.quiz}%
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center text-[#666666]">
+                      {row.live_classes}%
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </Card>
     </div>
   )
+}
+
+function formatDate(dateString: string | null) {
+  if (!dateString) {
+    return "-"
+  }
+
+  const parsedDate = new Date(dateString)
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "-"
+  }
+
+  return parsedDate.toLocaleDateString("en-US")
 }
