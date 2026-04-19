@@ -1,11 +1,9 @@
 "use client"
 
-import React from "react"
-import Image from "next/image"
+import React, { useState } from "react"
 import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
 import {
   Search,
   Star,
@@ -21,122 +19,93 @@ import {
   FileText
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useCoursesQuery } from "@/hooks/api/use-courses"
+import { useDebounce } from "@/hooks/use-debounce"
+import CourseCard from "@/components/common/course-card"
 
 const CATEGORIES = [
-  { name: "Foundations of Faith", count: 0 },
-  { name: "Bible Study", count: 0 },
-  { name: "Spiritual Growth", count: 0 },
-  { name: "Discipleship", count: 0 },
-  { name: "Christian Living", count: 0, checked: true },
-  { name: "Kids Ministry (5-10)", count: 0 },
-  { name: "Teen Faith (11-17)", count: 0 },
-  { name: "Young Adults (18-25)", count: 0 },
+  { id: "1", name: "Spiritual" },
+  { id: "2", name: "Foundations of Faith" },
+  { id: "3", name: "Bible Study" },
+  { id: "4", name: "Spiritual Growth" },
+  { id: "5", name: "Discipleship" },
+  { id: "6", name: "Christian Living" },
+  { id: "7", name: "Kids" },
 ]
 
-const COURSES = [
-  {
-    id: 1,
-    title: "Christian Faith 101",
-    instructor: "David Benitez",
-    insImage: "/assets/pngs/Profile.png",
-    category: "Foundations of Faith",
-    rating: 4.8,
-    reviews: 110,
-    price: 120,
-    image: "/assets/pngs/web course image.png"
-  },
-  {
-    id: 2,
-    title: "Who Is Jesus Christ?",
-    instructor: "Ana Reyes",
-    insImage: "/assets/pngs/Profile.png",
-    category: "Foundations of Faith",
-    rating: 4.8,
-    reviews: 110,
-    price: 140,
-    image: "/assets/pngs/web course image.png"
-  },
-  {
-    id: 3,
-    title: "Christian Values & Ethics",
-    instructor: "Andrew Pittle",
-    insImage: "/assets/pngs/Profile.png",
-    category: "Christian Living",
-    rating: 4.8,
-    reviews: 110,
-    price: 160,
-    image: "/assets/pngs/web course image.png"
-  },
-  {
-    id: 4,
-    title: "Serving in Ministry",
-    instructor: "Christy Garner",
-    insImage: "/assets/pngs/Profile.png",
-    category: "Bible Study",
-    rating: 4.8,
-    reviews: 110,
-    price: 200,
-    image: "/assets/pngs/web course image.png"
-  },
-  {
-    id: 5,
-    title: "Bible Stories for Kids",
-    instructor: "Justin",
-    insImage: "/assets/pngs/Profile.png",
-    category: "Kids Ministry",
-    rating: 4.8,
-    reviews: 110,
-    price: 130,
-    image: "/assets/pngs/web course image.png"
-  },
-  {
-    id: 6,
-    title: "Introduction to bible.3",
-    instructor: "Carolyn Hines",
-    insImage: "/assets/pngs/Profile.png",
-    category: "Bible Study",
-    rating: 4.8,
-    reviews: 110,
-    price: 150,
-    image: "/assets/pngs/web course image.png"
-  },
-  {
-    id: 7,
-    title: "Faith Challenges (7-Day / 30-Day)",
-    instructor: "Rafael Miller",
-    insImage: "/assets/pngs/Profile.png",
-    category: "Special Programs",
-    rating: 4.8,
-    reviews: 110,
-    price: 170,
-    image: "/assets/pngs/web course image.png"
-  },
-  {
-    id: 8,
-    title: "Teen Faith Journey",
-    instructor: "Nancy Duarte",
-    insImage: "/assets/pngs/Profile.png",
-    category: "Teen Faith Journey",
-    rating: 4.8,
-    reviews: 110,
-    price: 110,
-    image: "/assets/pngs/web course image.png"
-  },
-  {
-    id: 9,
-    title: "Christian Leadership Basics",
-    instructor: "James Kagan",
-    insImage: "/assets/pngs/Profile.png",
-    category: "Character & Values",
-    rating: 4.8,
-    reviews: 110,
-    price: 180,
-    image: "/assets/pngs/web course image.png"
-  }
+const TEACHERS = [
+  { id: "1", name: "Teacher One", count: 10 },
+  { id: "2", name: "Hinata Hyuga", count: 5 },
+  { id: "3", name: "John Doe", count: 3 },
+  { id: "4", name: "Nicole Brown", count: 0 },
+]
+
+const PRICE_TYPES = [
+  { value: "all", label: "All" },
+  { value: "free", label: "Free" },
+  { value: "paid", label: "Paid" },
 ]
 
 export default function CoursesPage() {
-  const [viewType, setViewType] = React.useState<"grid" | "list">("grid")
+  const [viewType, setViewType] = useState<"grid" | "list">("grid")
+
+  // Filters State
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState("")
+  const debouncedSearch = useDebounce(search, 500)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedTeachers, setSelectedTeachers] = useState<string[]>([])
+  const [priceType, setPriceType] = useState<"all" | "free" | "paid">("all")
+  const [minRating, setMinRating] = useState<number | null>(null)
+  const [ordering, setOrdering] = useState<"newest" | "oldest" | "top">("newest")
+
+  const { data, isLoading, isError } = useCoursesQuery({
+    page,
+    page_size: 1,
+    search: debouncedSearch || undefined,
+    category: selectedCategories.length > 0 ? selectedCategories.join(",") : undefined,
+    teacher: selectedTeachers.length > 0 ? selectedTeachers.join(",") : undefined,
+    price_type: priceType,
+    min_rating: minRating || undefined,
+    ordering,
+  })
+
+  const courses = data?.results || []
+  const totalCount = data?.count || 0
+  const totalPages = Math.ceil(totalCount / 9)
+
+  const toggleCategory = (id: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+    setPage(1)
+  }
+
+  const toggleTeacher = (id: string) => {
+    setSelectedTeachers(prev =>
+      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
+    )
+    setPage(1)
+  }
+
+  const handlePriceTypeChange = (val: "all" | "free" | "paid") => {
+    setPriceType(val)
+    setPage(1)
+  }
+
+  const handleRatingChange = (val: number) => {
+    setMinRating(prev => prev === val ? null : val)
+    setPage(1)
+  }
+
+  const clearFilters = () => {
+    setSelectedCategories([])
+    setSelectedTeachers([])
+    setPriceType("all")
+    setMinRating(null)
+    setSearch("")
+    setPage(1)
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -165,7 +134,7 @@ export default function CoursesPage() {
                   <h2 className="text-lg font-bold text-[#1D1D1D] flex items-center gap-2">
                     <Filter className="h-5 w-5" /> Filters
                   </h2>
-                  <button className="text-sm font-bold text-[#FF9D00]">Clear</button>
+                  <button onClick={clearFilters} className="text-sm font-bold text-[#FF9D00]">Clear</button>
                 </div>
 
                 {/* Categories */}
@@ -175,23 +144,31 @@ export default function CoursesPage() {
                     <ChevronDown className="h-4 w-4" />
                   </div>
                   <div className="space-y-3">
-                    {CATEGORIES.map((cat) => (
-                      <label key={cat.name} className="flex items-center gap-3 cursor-pointer group">
-                        <div className={cn(
-                          "h-5 w-5 rounded border flex items-center justify-center transition-all",
-                          cat.checked ? "bg-[#4CC0D8] border-[#4CC0D8]" : "border-gray-200 group-hover:border-[#4CC0D8]"
-                        )}>
-                          {cat.checked && <Check className="h-3 w-3 text-white" />}
-                        </div>
-                        <span className={cn(
-                          "text-sm font-medium transition-colors",
-                          cat.checked ? "text-[#1D1D1D]" : "text-[#666666] group-hover:text-[#4CC0D8]"
-                        )}>
-                          {cat.name}
-                        </span>
-                      </label>
-                    ))}
-                    <button className="text-xs font-bold text-[#4CC0D8] pt-2">See More</button>
+                    {CATEGORIES.map((cat) => {
+                      const isChecked = selectedCategories.includes(cat.id)
+                      return (
+                        <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            className="hidden"
+                            checked={isChecked}
+                            onChange={() => toggleCategory(cat.id)}
+                          />
+                          <div className={cn(
+                            "h-5 w-5 rounded border flex items-center justify-center transition-all",
+                            isChecked ? "bg-[#4CC0D8] border-[#4CC0D8]" : "border-gray-200 group-hover:border-[#4CC0D8]"
+                          )}>
+                            {isChecked && <Check className="h-3 w-3 text-white" />}
+                          </div>
+                          <span className={cn(
+                            "text-sm font-medium transition-colors",
+                            isChecked ? "text-[#1D1D1D]" : "text-[#666666] group-hover:text-[#4CC0D8]"
+                          )}>
+                            {cat.name}
+                          </span>
+                        </label>
+                      )
+                    })}
                   </div>
                 </div>
 
@@ -202,23 +179,26 @@ export default function CoursesPage() {
                       <ChevronDown className="h-4 w-4" />
                    </div>
                    <div className="space-y-3">
-                      {[
-                        { name: "Keny White", count: 10 },
-                        { name: "Hinata Hyuga", count: 5 },
-                        { name: "John Doe", count: 3 },
-                        { name: "Nicole Brown", count: 0, checked: true }
-                      ].map((inst) => (
-                        <label key={inst.name} className="flex items-center gap-3 cursor-pointer group">
-                           <div className={cn(
-                             "h-5 w-5 rounded border flex items-center justify-center transition-all",
-                             inst.checked ? "bg-[#4CC0D8] border-[#4CC0D8]" : "border-gray-200 group-hover:border-[#4CC0D8]"
-                           )}>
-                             {inst.checked && <Check className="h-3 w-3 text-white" />}
-                           </div>
-                           <span className="text-sm font-medium text-[#666666]">{inst.name} ({inst.count})</span>
-                        </label>
-                      ))}
-                      <button className="text-xs font-bold text-[#4CC0D8] pt-2">See More</button>
+                      {TEACHERS.map((inst) => {
+                        const isChecked = selectedTeachers.includes(inst.id)
+                        return (
+                          <label key={inst.id} className="flex items-center gap-3 cursor-pointer group">
+                             <input
+                               type="checkbox"
+                               className="hidden"
+                               checked={isChecked}
+                               onChange={() => toggleTeacher(inst.id)}
+                             />
+                             <div className={cn(
+                               "h-5 w-5 rounded border flex items-center justify-center transition-all",
+                               isChecked ? "bg-[#4CC0D8] border-[#4CC0D8]" : "border-gray-200 group-hover:border-[#4CC0D8]"
+                             )}>
+                               {isChecked && <Check className="h-3 w-3 text-white" />}
+                             </div>
+                             <span className="text-sm font-medium text-[#666666]">{inst.name} ({inst.count})</span>
+                          </label>
+                        )
+                      })}
                    </div>
                 </div>
 
@@ -229,12 +209,27 @@ export default function CoursesPage() {
                       <ChevronDown className="h-4 w-4" />
                    </div>
                    <div className="space-y-3">
-                      {["All (10)", "Free (5)", "Paid (3)"].map((p) => (
-                        <label key={p} className="flex items-center gap-3 cursor-pointer group">
-                           <div className="h-5 w-5 rounded border border-gray-200 flex items-center justify-center" />
-                           <span className="text-sm font-medium text-[#666666]">{p}</span>
-                        </label>
-                      ))}
+                      {PRICE_TYPES.map((p) => {
+                        const isChecked = priceType === p.value
+                        return (
+                          <label key={p.value} className="flex items-center gap-3 cursor-pointer group">
+                             <input
+                               type="radio"
+                               name="price"
+                               className="hidden"
+                               checked={isChecked}
+                               onChange={() => handlePriceTypeChange(p.value as "all" | "free" | "paid")}
+                             />
+                             <div className={cn(
+                               "h-5 w-5 rounded-full border flex items-center justify-center transition-all",
+                               isChecked ? "border-[#4CC0D8]" : "border-gray-200 group-hover:border-[#4CC0D8]"
+                             )}>
+                               {isChecked && <div className="h-2.5 w-2.5 rounded-full bg-[#4CC0D8]" />}
+                             </div>
+                             <span className="text-sm font-medium text-[#666666]">{p.label}</span>
+                          </label>
+                        )
+                      })}
                    </div>
                 </div>
 
@@ -245,16 +240,30 @@ export default function CoursesPage() {
                       <ChevronDown className="h-4 w-4" />
                    </div>
                    <div className="space-y-3">
-                      {[5, 4, 3, 2, 1].map((star) => (
-                        <label key={star} className="flex items-center gap-3 cursor-pointer group">
-                           <div className="h-5 w-5 rounded border border-gray-200" />
-                           <div className="flex gap-0.5">
-                              {[...Array(5)].map((_, i) => (
-                                <Star key={i} className={cn("h-3 w-3", i < star ? "text-[#FF9D00] fill-current" : "text-gray-200")} />
-                              ))}
-                           </div>
-                        </label>
-                      ))}
+                      {[5, 4, 3, 2, 1].map((star) => {
+                        const isChecked = minRating === star
+                        return (
+                          <label key={star} className="flex items-center gap-3 cursor-pointer group">
+                             <input
+                               type="checkbox"
+                               className="hidden"
+                               checked={isChecked}
+                               onChange={() => handleRatingChange(star)}
+                             />
+                             <div className={cn(
+                               "h-5 w-5 rounded border flex items-center justify-center transition-all",
+                               isChecked ? "bg-[#4CC0D8] border-[#4CC0D8]" : "border-gray-200 group-hover:border-[#4CC0D8]"
+                             )}>
+                               {isChecked && <Check className="h-3 w-3 text-white" />}
+                             </div>
+                             <div className="flex gap-0.5">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star key={i} className={cn("h-3 w-3", i < star ? "text-[#FF9D00] fill-current" : "text-gray-200")} />
+                                ))}
+                             </div>
+                          </label>
+                        )
+                      })}
                    </div>
                 </div>
               </div>
@@ -263,7 +272,13 @@ export default function CoursesPage() {
               <div className="flex-1 space-y-8">
                  {/* Top Controls */}
                  <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-gray-50">
-                    <p className="text-sm font-medium text-[#666666]">Showing 1-9 of 50 results</p>
+                    <p className="text-sm font-medium text-[#666666]">
+                      {isLoading ? (
+                        "Loading..."
+                      ) : (
+                        `Showing ${courses.length > 0 ? (page - 1) * 9 + 1 : 0}-${Math.min(page * 9, totalCount)} of ${totalCount} results`
+                      )}
+                    </p>
                     <div className="flex items-center gap-4">
                        <div className="flex border border-gray-100 rounded-lg overflow-hidden">
                           <button
@@ -279,16 +294,28 @@ export default function CoursesPage() {
                              <List className="h-4 w-4" />
                           </button>
                        </div>
-                       <select className="h-10 px-4 rounded-lg border border-gray-200 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-[#4CC0D8] appearance-none cursor-pointer">
-                          <option>Newly Published</option>
-                          <option>Oldest</option>
-                          <option>Price: Low to High</option>
+                       <select
+                         className="h-10 px-4 rounded-lg border border-gray-200 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-[#4CC0D8] appearance-none cursor-pointer"
+                         value={ordering}
+                         onChange={(e) => {
+                           setOrdering(e.target.value as "newest" | "oldest" | "top")
+                           setPage(1)
+                         }}
+                       >
+                          <option value="newest">Newly Published</option>
+                          <option value="oldest">Oldest</option>
+                          <option value="top">Top Rated</option>
                        </select>
                        <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF]" />
                           <input
                             type="text"
-                            placeholder="Search"
+                            placeholder="Search courses..."
+                            value={search}
+                            onChange={(e) => {
+                              setSearch(e.target.value)
+                              setPage(1)
+                            }}
                             className="h-10 pl-10 pr-4 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#4CC0D8]"
                           />
                        </div>
@@ -296,66 +323,78 @@ export default function CoursesPage() {
                  </div>
 
                  {/* Course Grid */}
-                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {COURSES.map((course) => (
-                      <Link
-                        key={course.id}
-                        href={`/courses/slug`}
-                        className="bg-white rounded-2xl border border-gray-50 overflow-hidden group hover:shadow-2xl hover:shadow-[#4CC0D8]/5 transition-all"
-                      >
-                         <div className="relative aspect-[4/3] overflow-hidden">
-                            <Image
-                              src={course.image}
-                              alt={course.title}
-                              fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            <button className="absolute top-4 left-4 h-8 w-8 rounded-full bg-white/90 flex items-center justify-center text-[#9CA3AF] hover:text-[#FF9D00] transition-colors">
-                               <Heart className="h-4 w-4" />
-                            </button>
-                         </div>
-                         <div className="p-6 space-y-4">
-                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase">
-                               <Image src={course.insImage} alt="Inst" width={24} height={24} className="rounded-full" />
-                               <span className="text-[#1D1D1D]">{course.instructor}</span>
-                               <span className="ml-auto text-[#9CA3AF]">{course.category}</span>
-                            </div>
-                            <h3 className="font-extrabold text-[#1D1D1D] group-hover:text-[#4CC0D8] transition-colors line-clamp-2 leading-tight h-10">
-                               {course.title}
-                            </h3>
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-[#1D1D1D]">
-                               <Star className="h-3.5 w-3.5 text-[#FF9D00] fill-current" />
-                               <span>{course.rating} ({course.reviews} Reviews)</span>
-                               <button className="ml-auto h-5 w-5 rounded border border-gray-100 flex items-center justify-center text-[#9CA3AF]">
-                                  <Bookmark className="h-3 w-3" />
-                               </button>
-                            </div>
-                            <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                               <span className="text-xl font-extrabold text-[#4CC0D8]">${course.price}</span>
-                               <button className="text-[10px] font-bold text-white bg-[#1D1D1D] px-4 py-2 rounded-lg uppercase tracking-wider group-hover:bg-[#4CC0D8] transition-colors flex items-center gap-2">
-                                  View Course <ChevronRight className="h-3 w-3" />
-                               </button>
-                            </div>
-                         </div>
-                      </Link>
-                    ))}
-                 </div>
+                 {isLoading ? (
+                   <div className={cn("grid gap-6", viewType === "grid" ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1")}>
+                     {[1, 2, 3, 4, 5, 6].map(i => (
+                       <div key={i} className="bg-gray-100 animate-pulse rounded-2xl h-80"></div>
+                     ))}
+                   </div>
+                 ) : isError ? (
+                   <div className="py-20 text-center text-red-500">Failed to load courses. Please try again.</div>
+                 ) : courses.length === 0 ? (
+                   <div className="py-20 text-center text-gray-500">No courses found matching your criteria.</div>
+                 ) : (
+                   <div className={cn("grid gap-6", viewType === "grid" ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1")}>
+                      {courses.map((course) => (
+                           <CourseCard key={course.id} {...course} viewType={viewType} />
+                      ))}
+                   </div>
+                 )}
 
                  {/* Pagination */}
-                 <div className="pt-12 flex items-center justify-between border-t border-gray-100">
-                    <p className="text-sm font-medium text-[#666666]">Page 1 of 2</p>
-                    <div className="flex gap-2">
-                       <button className="h-10 w-10 flex items-center justify-center rounded-full border border-gray-100 text-[#666666] hover:border-[#4CC0D8]">
-                          <ChevronLeft className="h-4 w-4" />
-                       </button>
-                       <button className="h-10 w-10 flex items-center justify-center rounded-full bg-[#FF9D00] text-white font-bold text-sm">1</button>
-                       <button className="h-10 w-10 flex items-center justify-center rounded-full bg-[#f8f9fc] text-[#666666] font-bold text-sm hover:bg-gray-100">2</button>
-                       <button className="h-10 w-10 flex items-center justify-center rounded-full bg-[#f8f9fc] text-[#666666] font-bold text-sm hover:bg-gray-100">3</button>
-                       <button className="h-10 w-10 flex items-center justify-center rounded-full border border-gray-100 text-[#666666] hover:border-[#4CC0D8]">
-                          <ChevronRight className="h-4 w-4" />
-                       </button>
-                    </div>
-                 </div>
+                 {totalPages > 1 && (
+                   <div className="pt-12 flex items-center justify-between border-t border-gray-100">
+                      <p className="text-sm font-medium text-[#666666]">Page {page} of {totalPages}</p>
+                      <div className="flex gap-2">
+                         <button
+                           onClick={() => setPage(p => Math.max(1, p - 1))}
+                           disabled={page === 1}
+                           className="h-10 w-10 flex items-center justify-center rounded-full border border-gray-100 text-[#666666] hover:border-[#4CC0D8] disabled:opacity-50 disabled:hover:border-gray-100"
+                         >
+                            <ChevronLeft className="h-4 w-4" />
+                         </button>
+
+                         {[...Array(totalPages)].map((_, idx) => {
+                           const pageNum = idx + 1
+                           // Simple pagination display logic to prevent too many buttons
+                           if (
+                             pageNum === 1 ||
+                             pageNum === totalPages ||
+                             (pageNum >= page - 1 && pageNum <= page + 1)
+                           ) {
+                             return (
+                               <button
+                                 key={pageNum}
+                                 onClick={() => setPage(pageNum)}
+                                 className={cn(
+                                   "h-10 w-10 flex items-center justify-center rounded-full font-bold text-sm transition-colors",
+                                   page === pageNum
+                                     ? "bg-[#FF9D00] text-white"
+                                     : "bg-[#f8f9fc] text-[#666666] hover:bg-gray-100"
+                                 )}
+                               >
+                                 {pageNum}
+                               </button>
+                             )
+                           } else if (
+                             (pageNum === page - 2 && page > 3) ||
+                             (pageNum === page + 2 && page < totalPages - 2)
+                           ) {
+                             return <span key={pageNum} className="flex items-end justify-center w-4 text-gray-400">...</span>
+                           }
+                           return null
+                         })}
+
+                         <button
+                           onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                           disabled={page === totalPages}
+                           className="h-10 w-10 flex items-center justify-center rounded-full border border-gray-100 text-[#666666] hover:border-[#4CC0D8] disabled:opacity-50 disabled:hover:border-gray-100"
+                         >
+                            <ChevronRight className="h-4 w-4" />
+                         </button>
+                      </div>
+                   </div>
+                 )}
               </div>
 
             </div>

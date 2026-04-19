@@ -3,9 +3,9 @@
 import React from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useParams } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
 import {
   Star,
   Mail,
@@ -17,245 +17,316 @@ import {
   Linkedin,
   ChevronLeft,
   ChevronRight,
-  Plus
+  Plus,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useTeacherDetailsQuery } from "@/hooks/api/use-teachers"
+import { getApiErrorMessage } from "@/lib/api/client"
+import fallback from "@/assets/pngs/avatar-fallback.png"
+import CourseCard from "@/components/common/course-card"
 
 export default function InstructorDetailPage() {
+  const params = useParams<{ slug: string }>()
+  const slug = params?.slug
+  const teacherId = Number(slug)
+  const { data, isLoading, isError, error } = useTeacherDetailsQuery(
+    Number.isFinite(teacherId) ? teacherId : undefined
+  )
+
+  const teacher = data?.teacher
+  const educations = data?.educations || []
+  const experiences = data?.experiences || []
+  const certifications = data?.certifications || []
+  const contacts = data?.contact_details || []
+  const socialLinks = data?.social_links || []
+  const topCourses = data?.top_courses || []
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
 
       <main>
         {/* Page Header */}
-        <section className="py-16 bg-[#F1F7F9]">
-          <div className="max-w-7xl mx-auto px-4 text-center space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#1D1D1D]">Instructor Detail</h1>
+        <section className="bg-[#F1F7F9] py-16">
+          <div className="mx-auto max-w-7xl space-y-4 px-4 text-center">
+            <h1 className="text-4xl font-bold text-[#1D1D1D] md:text-5xl">
+              Instructor Detail
+            </h1>
             <div className="flex items-center justify-center gap-2 text-sm font-medium">
-               <Link href="/" className="text-[#666666]">Home</Link>
-               <span className="w-4 h-[2px] bg-[#FF9D00]" />
-               <span className="text-[#1D1D1D]">Instructor Detail</span>
+              <Link href="/" className="text-[#666666]">
+                Home
+              </Link>
+              <span className="h-[2px] w-4 bg-[#FF9D00]" />
+              <span className="text-[#1D1D1D]">Instructor Detail</span>
             </div>
           </div>
         </section>
 
         <section className="py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row gap-12">
-
-              {/* Left Column: Profile & Details */}
-              <div className="flex-1 space-y-12">
-
-                 {/* Top Profile Card */}
-                 <div className="bg-white rounded-3xl border border-gray-100 p-8 flex flex-col md:flex-row gap-8 items-start shadow-sm">
-                    <div className="relative h-40 w-40 rounded-2xl overflow-hidden shrink-0">
-                       <Image
-                         src="/assets/pngs/Profile.png"
-                         alt="Rolands Granger"
-                         fill
-                         className="object-cover"
-                       />
-                       <button className="absolute top-2 left-2 h-6 w-6 rounded-full bg-white/90 flex items-center justify-center shadow-sm">
-                          <Plus className="h-4 w-4 text-[#FF9D00]" />
-                       </button>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            {isLoading ? (
+              <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_320px]">
+                <div className="space-y-8">
+                  <div className="h-72 animate-pulse rounded-3xl bg-gray-100" />
+                  <div className="h-40 animate-pulse rounded-3xl bg-gray-100" />
+                  <div className="h-40 animate-pulse rounded-3xl bg-gray-100" />
+                </div>
+                <div className="space-y-8">
+                  <div className="h-40 animate-pulse rounded-3xl bg-gray-100" />
+                  <div className="h-56 animate-pulse rounded-3xl bg-gray-100" />
+                </div>
+              </div>
+            ) : isError ? (
+              <div className="py-24 text-center text-red-500">
+                {getApiErrorMessage(error, "Failed to load teacher details.")}
+              </div>
+            ) : !teacher ? (
+              <div className="py-24 text-center text-gray-500">
+                Teacher not found.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-12 lg:flex-row">
+                {/* Left Column: Profile & Details */}
+                <div className="flex-1 space-y-12">
+                  {/* Top Profile Card */}
+                  <div className="flex flex-col items-start gap-8 rounded-3xl border border-gray-100 bg-white p-8 shadow-sm md:flex-row">
+                    <div className="relative h-40 w-40 shrink-0 overflow-hidden rounded-2xl">
+                      <Image
+                        src={teacher.avatar || fallback}
+                        alt={teacher.name}
+                        fill
+                        className="object-cover"
+                      />
+                      <button className="absolute top-2 left-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow-sm">
+                        <Plus className="h-4 w-4 text-[#FF9D00]" />
+                      </button>
                     </div>
-                    <div className="space-y-6 flex-1">
-                       <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                             <h2 className="text-2xl font-bold text-[#1D1D1D]">Rolands Granger</h2>
-                             <div className="flex gap-4">
-                                <Facebook className="h-4 w-4 text-[#666666] hover:text-[#4CC0D8] cursor-pointer" />
-                                <Twitter className="h-4 w-4 text-[#666666] hover:text-[#4CC0D8] cursor-pointer" />
-                                <Youtube className="h-4 w-4 text-[#666666] hover:text-[#4CC0D8] cursor-pointer" />
-                                <Linkedin className="h-4 w-4 text-[#666666] hover:text-[#4CC0D8] cursor-pointer" />
-                             </div>
+                    <div className="flex-1 space-y-6">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h2 className="text-2xl font-bold text-[#1D1D1D]">
+                            {teacher.name}
+                          </h2>
+                          <div className="flex gap-4">
+                            {socialLinks.length === 0 ? (
+                              <Linkedin className="h-4 w-4 text-[#666666]" />
+                            ) : (
+                              socialLinks.slice(0, 4).map((link) => (
+                                <Link
+                                  key={`${link.platform}-${link.value}`}
+                                  href={link.value}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-[#666666] hover:text-[#4CC0D8]"
+                                  aria-label={link.label || link.platform}
+                                >
+                                  {renderSocialIcon(link.platform)}
+                                </Link>
+                              ))
+                            )}
                           </div>
-                          <div className="flex items-center gap-4">
-                             <p className="text-sm font-medium text-[#666666]">Developer</p>
-                             <div className="flex items-center gap-1.5">
-                                <Star className="h-3.5 w-3.5 text-[#FF9D00] fill-current" />
-                                <span className="text-xs font-bold text-[#1D1D1D]">4.9 (200 Reviews)</span>
-                             </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <p className="text-sm font-medium text-[#666666]">
+                            {teacher.profession || "Instructor"}
+                          </p>
+                          <div className="flex items-center gap-1.5">
+                            <Star className="h-3.5 w-3.5 fill-current text-[#FF9D00]" />
+                            <span className="text-xs font-bold text-[#1D1D1D]">
+                              {teacher.avg_rating} ({teacher.total_reviews}{" "}
+                              Reviews)
+                            </span>
                           </div>
-                       </div>
-                       <p className="text-sm text-[#666666] leading-relaxed">
-                         I am a web developer with a vast array of knowledge in many different front end and back end languages, responsive frameworks, databases, and best code practices. I am a web developer with a vast array of knowledge in many different front end and back end languages, responsive frameworks, databases, and best code practices.
-                       </p>
-                       <div className="flex gap-12">
-                          <div className="space-y-1">
-                             <p className="text-sm font-bold text-[#1D1D1D]">12+ Lesson</p>
-                             <p className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-widest">Lessons</p>
-                          </div>
-                          <div className="space-y-1">
-                             <p className="text-sm font-bold text-[#1D1D1D]">50 Students</p>
-                             <p className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-widest">Students</p>
-                          </div>
-                       </div>
+                        </div>
+                      </div>
+                      <p className="text-sm leading-relaxed text-[#666666]">
+                        {teacher.bio || "No bio added yet."}
+                      </p>
+                      <div className="flex gap-12">
+                        <div className="space-y-1">
+                          <p className="text-sm font-bold text-[#1D1D1D]">
+                            {teacher.total_lessons}+ Lesson
+                          </p>
+                          <p className="text-[10px] font-bold tracking-widest text-[#9CA3AF] uppercase">
+                            Lessons
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-bold text-[#1D1D1D]">
+                            {teacher.total_students} Students
+                          </p>
+                          <p className="text-[10px] font-bold tracking-widest text-[#9CA3AF] uppercase">
+                            Students
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                 </div>
+                  </div>
 
-                 {/* About Me */}
-                 <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-[#1D1D1D]">About Me</h3>
-                    <p className="text-sm text-[#666666] leading-relaxed">
-                       Very well thought out and articulate communication. Clear milestones, deadlines and fast work. Patience. Infinite patience. No shortcuts. Even if the client is being careless. Some quick example text to build on the card title and bulk the card's content Moltin gives you platform.
+                  {/* About Me */}
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-[#1D1D1D]">
+                      About Me
+                    </h3>
+                    <p className="text-sm leading-relaxed text-[#666666]">
+                      {teacher.bio || "No biography available yet."}
                     </p>
-                    <button className="text-sm font-bold text-[#FF9D00] hover:underline">Read More</button>
-                 </div>
+                  </div>
 
-                 {/* Education */}
-                 <div className="space-y-8">
-                    <h3 className="text-xl font-bold text-[#1D1D1D]">Education</h3>
-                    <div className="space-y-10 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100">
-                       {[
-                         { title: "BCA - Bachelor of Computer Applications", school: "International University", years: "2004 - 2010" },
-                         { title: "MCA - Master of Computer Application", school: "International University", years: "2010 - 2012" },
-                         { title: "Design Communication Visual", school: "International University", years: "2012-2015" }
-                       ].map((item, idx) => (
-                         <div key={idx} className="relative pl-10 space-y-2">
-                            <div className="absolute left-0 top-1 h-4 w-4 rounded-full bg-white border-2 border-[#4CC0D8] z-10" />
-                            <h4 className="font-bold text-[#1D1D1D]">{item.title}</h4>
+                  {/* Education */}
+                  <div className="space-y-8">
+                    <h3 className="text-xl font-bold text-[#1D1D1D]">
+                      Education
+                    </h3>
+                    {educations.length === 0 ? (
+                      <p className="text-sm text-[#666666]">
+                        No education records available.
+                      </p>
+                    ) : (
+                      <div className="relative space-y-10 before:absolute before:top-2 before:bottom-2 before:left-2 before:w-[2px] before:bg-gray-100">
+                        {educations.map((item, idx) => (
+                          <div key={idx} className="relative space-y-2 pl-10">
+                            <div className="absolute top-1 left-0 z-10 h-4 w-4 rounded-full border-2 border-[#4CC0D8] bg-white" />
+                            <h4 className="font-bold text-[#1D1D1D]">
+                              {item.degree}
+                            </h4>
                             <div className="flex items-center gap-3 text-xs text-[#666666]">
-                               <span>{item.school}</span>
-                               <span className="w-4 h-[1px] bg-gray-300" />
-                               <span>({item.years})</span>
+                              <span>{item.institution}</span>
+                              <span className="h-[1px] w-4 bg-gray-300" />
+                              <span>
+                                ({item.start_year} -{" "}
+                                {item.end_year ?? "Present"})
+                              </span>
                             </div>
-                         </div>
-                       ))}
-                    </div>
-                 </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                 {/* Experience */}
-                 <div className="space-y-8">
-                    <h3 className="text-xl font-bold text-[#1D1D1D]">Experience</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       {[
-                         { title: "Healthy Lifestyle & Habits", company: "Creative Agency", years: "2013 - 2016" },
-                         { title: "Project Manager", company: "Jobey Technology Pvt.Ltd", years: "Present" }
-                       ].map((item, idx) => (
-                         <div key={idx} className="flex gap-4 p-5 rounded-2xl border border-gray-100 items-start">
-                            <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
-                               <MapPin className="h-5 w-5 text-[#9CA3AF]" />
+                  {/* Experience */}
+                  <div className="space-y-8">
+                    <h3 className="text-xl font-bold text-[#1D1D1D]">
+                      Experience
+                    </h3>
+                    {experiences.length === 0 ? (
+                      <p className="text-sm text-[#666666]">
+                        No experience records available.
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        {experiences.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-start gap-4 rounded-2xl border border-gray-100 p-5"
+                          >
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50">
+                              <MapPin className="h-5 w-5 text-[#9CA3AF]" />
                             </div>
                             <div className="space-y-1">
-                               <h4 className="font-bold text-[#1D1D1D]">{item.title}</h4>
-                               <div className="flex items-center gap-2 text-xs text-[#9CA3AF]">
-                                  <span>{item.company}</span>
-                                  <span>({item.years})</span>
-                               </div>
+                              <h4 className="font-bold text-[#1D1D1D]">
+                                {item.job_title}
+                              </h4>
+                              <div className="flex items-center gap-2 text-xs text-[#9CA3AF]">
+                                <span>{item.organization}</span>
+                                <span>
+                                  ({item.start_year} -{" "}
+                                  {item.is_current
+                                    ? "Present"
+                                    : (item.end_year ?? "Present")}
+                                  )
+                                </span>
+                              </div>
                             </div>
-                         </div>
-                       ))}
-                    </div>
-                 </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                 {/* Courses */}
-                 <div className="space-y-8">
+                  {/* Courses */}
+                  <div className="space-y-8">
                     <div className="flex items-center justify-between">
-                       <h3 className="text-xl font-bold text-[#1D1D1D]">Courses</h3>
-                       <div className="flex gap-2">
-                          <button className="h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center text-[#666666] hover:bg-[#FF9D00] hover:text-white transition-all">
-                             <ChevronLeft className="h-4 w-4" />
-                          </button>
-                          <button className="h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center text-[#666666] hover:bg-[#FF9D00] hover:text-white transition-all">
-                             <ChevronRight className="h-4 w-4" />
-                          </button>
-                       </div>
+                      <h3 className="text-xl font-bold text-[#1D1D1D]">
+                        Courses
+                      </h3>
+                      <div className="flex gap-2">
+                        <button className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 text-[#666666] transition-all hover:bg-[#FF9D00] hover:text-white">
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 text-[#666666] transition-all hover:bg-[#FF9D00] hover:text-white">
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                       {[
-                         { title: "Healthy Lifestyle & Habits", rating: 4.1, reviews: 140, price: 170, category: "Finance & Life" },
-                         { title: "Faith & Career Direction", rating: 4.3, reviews: 90, price: 110, category: "Faith & Purpose" },
-                         { title: "Preparing for M...", rating: 4.8, reviews: 110, price: 180, category: "Kids & Young" }
-                       ].map((course, idx) => (
-                         <div key={idx} className="bg-white rounded-2xl border border-gray-50 overflow-hidden group hover:shadow-xl transition-all">
-                            <div className="relative aspect-video">
-                               <Image
-                                 src="/assets/pngs/web course image.png"
-                                 alt={course.title}
-                                 fill
-                                 className="object-cover"
-                               />
-                               <button className="absolute top-3 left-3 h-8 w-8 rounded-full bg-white/90 flex items-center justify-center">
-                                  <Star className="h-4 w-4 text-[#FF9D00]" />
-                               </button>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                      {topCourses.map((course, idx) => (
+                        <CourseCard key={idx} {...course} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Sidebar */}
+                <div className="w-full space-y-8 lg:w-80">
+                  {/* Certifications Card */}
+                  <div className="space-y-8 rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
+                    <h3 className="text-lg font-bold text-[#1D1D1D]">
+                      Certifications
+                    </h3>
+                    {certifications.length === 0 ? (
+                      <p className="text-sm text-[#666666]">
+                        No certifications added.
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-4">
+                        {certifications.slice(0, 8).map((certification) => (
+                          <div
+                            key={certification.id}
+                          >
+                              <h1>{certification.title}</h1>
+                              <h1>{certification.issued_by}</h1>
+                              <h1>{certification.issued_year}</h1>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contact Details Card */}
+                  <div className="space-y-8 rounded-3xl border border-gray-100 bg-[#fcfdfe] p-8 shadow-sm">
+                    <h3 className="text-lg font-bold text-[#1D1D1D]">
+                      Contact Details
+                    </h3>
+                    {contacts.length === 0 ? (
+                      <p className="text-sm text-[#666666]">
+                        No contact details added.
+                      </p>
+                    ) : (
+                      <div className="space-y-6">
+                        {contacts.map((contact) => (
+                          <div
+                            key={contact.id}
+                            className="group flex cursor-pointer gap-4"
+                          >
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-100 bg-white text-[#4CC0D8] transition-all group-hover:bg-[#4CC0D8] group-hover:text-white">
+                              {renderContactIcon(contact.contact_type)}
                             </div>
-                            <div className="p-4 space-y-4">
-                               <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-[#9CA3AF]">
-                                  <Image src="/assets/pngs/Profile.png" alt="Inst" width={20} height={20} className="rounded-full" />
-                                  <span>Rafael Miller</span>
-                                  <span className="ml-auto text-[#4CC0D8]">{course.category}</span>
-                               </div>
-                               <h4 className="text-sm font-bold text-[#1D1D1D] group-hover:text-[#4CC0D8] transition-colors truncate">{course.title}</h4>
-                               <div className="flex items-center gap-1.5 text-xs text-[#9CA3AF]">
-                                  <Star className="h-3 w-3 text-[#FF9D00] fill-current" />
-                                  <span>{course.rating} ({course.reviews} Reviews)</span>
-                               </div>
-                               <div className="flex items-center justify-between pt-2 border-t border-gray-50">
-                                  <span className="text-sm font-bold text-[#4CC0D8]">${course.price}</span>
-                                  <Link href={`/courses/slug`} className="text-[10px] font-bold text-white bg-[#1D1D1D] px-3 py-1.5 rounded-lg uppercase tracking-wider hover:bg-[#4CC0D8] transition-colors">
-                                     View Course
-                                  </Link>
-                               </div>
+                            <div className="space-y-1">
+                              <p className="text-xs font-bold text-[#1D1D1D]">
+                                {contact.label || contact.type_label}
+                              </p>
+                              <p className="text-xs break-all text-[#666666]">
+                                {contact.value}
+                              </p>
                             </div>
-                         </div>
-                       ))}
-                    </div>
-                 </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-
-              {/* Right Column: Sidebar */}
-              <div className="w-full lg:w-80 space-y-8">
-
-                 {/* Certifications Card */}
-                 <div className="bg-white rounded-3xl border border-gray-100 p-8 space-y-8 shadow-sm">
-                    <h3 className="text-lg font-bold text-[#1D1D1D]">Certifications</h3>
-                    <div className="grid grid-cols-4 gap-4">
-                       {[1, 2, 3, 4].map((i) => (
-                         <div key={i} className="aspect-square bg-[#F1F7F9] rounded-full border-2 border-white shadow-sm flex items-center justify-center p-2">
-                            <Image src="/assets/logo.png" alt="Cert" width={24} height={24} />
-                         </div>
-                       ))}
-                    </div>
-                 </div>
-
-                 {/* Contact Details Card */}
-                 <div className="bg-[#fcfdfe] rounded-3xl border border-gray-100 p-8 space-y-8 shadow-sm">
-                    <h3 className="text-lg font-bold text-[#1D1D1D]">Contact Details</h3>
-                    <div className="space-y-6">
-                       <div className="flex gap-4 group cursor-pointer">
-                          <div className="h-10 w-10 rounded-xl bg-white text-[#4CC0D8] border border-gray-100 flex items-center justify-center group-hover:bg-[#4CC0D8] group-hover:text-white transition-all">
-                             <Mail className="h-5 w-5" />
-                          </div>
-                          <div className="space-y-1">
-                             <p className="text-xs font-bold text-[#1D1D1D]">Email</p>
-                             <p className="text-xs text-[#666666]">jennywilson@example.com</p>
-                          </div>
-                       </div>
-                       <div className="flex gap-4 group cursor-pointer">
-                          <div className="h-10 w-10 rounded-xl bg-white text-[#4CC0D8] border border-gray-100 flex items-center justify-center group-hover:bg-[#4CC0D8] group-hover:text-white transition-all">
-                             <MapPin className="h-5 w-5" />
-                          </div>
-                          <div className="space-y-1">
-                             <p className="text-xs font-bold text-[#1D1D1D]">Address</p>
-                             <p className="text-xs text-[#666666]">877 Ferry Street, Huntsville, Alabama</p>
-                          </div>
-                       </div>
-                       <div className="flex gap-4 group cursor-pointer">
-                          <div className="h-10 w-10 rounded-xl bg-white text-[#4CC0D8] border border-gray-100 flex items-center justify-center group-hover:bg-[#4CC0D8] group-hover:text-white transition-all">
-                             <Phone className="h-5 w-5" />
-                          </div>
-                          <div className="space-y-1">
-                             <p className="text-xs font-bold text-[#1D1D1D]">Phone</p>
-                             <p className="text-xs text-[#666666]">+1 (452) 123-6789</p>
-                          </div>
-                       </div>
-                    </div>
-                 </div>
-
-              </div>
-
-            </div>
+            )}
           </div>
         </section>
       </main>
@@ -263,4 +334,39 @@ export default function InstructorDetailPage() {
       <Footer />
     </div>
   )
+}
+
+function renderContactIcon(type: string) {
+  const normalizedType = type.toLowerCase()
+
+  if (normalizedType.includes("email")) {
+    return <Mail className="h-5 w-5" />
+  }
+
+  if (normalizedType.includes("phone")) {
+    return <Phone className="h-5 w-5" />
+  }
+
+  return <MapPin className="h-5 w-5" />
+}
+
+function renderSocialIcon(platform: string) {
+  const normalizedPlatform = platform.toLowerCase()
+
+  if (normalizedPlatform.includes("facebook")) {
+    return <Facebook className="h-4 w-4" />
+  }
+
+  if (
+    normalizedPlatform.includes("twitter") ||
+    normalizedPlatform.includes("x")
+  ) {
+    return <Twitter className="h-4 w-4" />
+  }
+
+  if (normalizedPlatform.includes("youtube")) {
+    return <Youtube className="h-4 w-4" />
+  }
+
+  return <Linkedin className="h-4 w-4" />
 }

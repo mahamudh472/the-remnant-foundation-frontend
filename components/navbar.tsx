@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils"
 import { useAuthStore } from "@/lib/store/auth-store"
 import { useLogoutMutation } from "@/hooks/api/use-auth"
 
+import fallback from "@/assets/pngs/avatar-fallback.png"
+
 const PUBLIC_NAV_ITEMS = [
   { name: "Home", href: "/", icon: Compass, hasDropdown: false },
   { name: "Programs", href: "/programs", icon: BookOpen, hasDropdown: true },
@@ -99,6 +101,7 @@ export function Navbar() {
   const [expandedItem, setExpandedItem] = React.useState<string | null>(null)
   const [showProfileDropdown, setShowProfileDropdown] = React.useState(false)
   const { isLoggedIn, user } = useAuthStore()
+
   const logoutMutation = useLogoutMutation()
   const pathname = usePathname()
   const isTeacher = user?.role === "teacher"
@@ -178,7 +181,7 @@ export function Navbar() {
                   >
                     <div className="relative h-9 w-9">
                       <Image
-                        src="/assets/pngs/Profile.png"
+                        src={fallback}
                         alt="User"
                         width={36}
                         height={36}
