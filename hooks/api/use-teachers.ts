@@ -4,10 +4,12 @@ import {
   getTeacherCourses,
   getTeacherDashboard,
   getTeacherDetails,
+  getTeacherLiveClasses,
   getTeachers,
   getTeacherQuizzes,
   type GetTeacherAssignmentsParams,
   type GetTeacherCoursesParams,
+  type GetTeacherLiveClassesParams,
   type GetTeacherQuizzesParams,
   type GetTeachersParams,
   type TeacherCoursesFilter,
@@ -31,6 +33,10 @@ export const teachersKeys = {
   ) => ["teachers", "assignments", accessToken, params] as const,
   quizzes: (params: GetTeacherQuizzesParams, accessToken: string | null) =>
     ["teachers", "quizzes", accessToken, params] as const,
+  liveClasses: (
+    params: GetTeacherLiveClassesParams,
+    accessToken: string | null
+  ) => ["teachers", "live-classes", accessToken, params] as const,
 }
 
 export function useTeachersQuery(params: GetTeachersParams = {}) {
@@ -139,6 +145,25 @@ export function useTeacherQuizzesQuery(params: GetTeacherQuizzesParams = {}) {
       }
 
       return getTeacherQuizzes(accessToken, params)
+    },
+    enabled: Boolean(accessToken),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useTeacherLiveClassesQuery(
+  params: GetTeacherLiveClassesParams = {}
+) {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: teachersKeys.liveClasses(params, accessToken),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return getTeacherLiveClasses(accessToken, params)
     },
     enabled: Boolean(accessToken),
     placeholderData: keepPreviousData,

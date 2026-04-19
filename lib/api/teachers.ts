@@ -329,6 +329,47 @@ export interface GetTeacherQuizzesParams {
   ordering?: TeacherQuizOrdering
 }
 
+export type TeacherLiveClassStatus = "upcoming" | "live_now" | "completed"
+
+export interface TeacherLiveClassListItem {
+  id: number
+  title: string
+  short_description: string
+  date: string
+  start_time: string
+  duration_minutes: number
+  meeting_link: string | null
+  record_link: string | null
+  course_id: number
+  course_title: string
+  grade_level: string
+  program_name: string
+  category_name: string
+  enrolled_students_count: number
+  meeting_platform: string
+  start_datetime: string
+  end_datetime: string
+  status: TeacherLiveClassStatus
+  created_at: string
+}
+
+export interface TeacherLiveClassesResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: TeacherLiveClassListItem[]
+  upcoming_count: number
+  live_now_count: number
+  completed_count: number
+}
+
+export interface GetTeacherLiveClassesParams {
+  page?: number
+  page_size?: number
+  status?: TeacherLiveClassStatus | "upcomimg"
+  filter?: TeacherLiveClassStatus | "upcomimg"
+}
+
 export function getTeachers(params: GetTeachersParams = {}) {
   const normalizedParams: GetTeachersParams = {
     ...params,
@@ -465,6 +506,39 @@ export function getTeacherQuizzes(
   const endpoint = query ? `courses/quizzes/?${query}` : "courses/quizzes/"
 
   return apiRequest<TeacherQuizzesResponse>(endpoint, {
+    method: "GET",
+    token: accessToken,
+  })
+}
+
+export function getTeacherLiveClasses(
+  accessToken: string,
+  params: GetTeacherLiveClassesParams = {}
+) {
+  const normalizedParams: GetTeacherLiveClassesParams = {
+    page: params.page,
+    page_size:
+      params.page_size === undefined
+        ? undefined
+        : Math.max(1, Math.min(params.page_size, 100)),
+    status: params.status === "upcomimg" ? "upcoming" : params.status,
+    filter: params.filter === "upcomimg" ? "upcoming" : params.filter,
+  }
+
+  const urlParams = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(normalizedParams)) {
+    if (value !== undefined && value !== null && value !== "") {
+      urlParams.append(key, String(value))
+    }
+  }
+
+  const query = urlParams.toString()
+  const endpoint = query
+    ? `teacher/live-classes/?${query}`
+    : "teacher/live-classes/"
+
+  return apiRequest<TeacherLiveClassesResponse>(endpoint, {
     method: "GET",
     token: accessToken,
   })
