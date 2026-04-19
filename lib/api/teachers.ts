@@ -246,6 +246,89 @@ export interface GetTeacherAssignmentsParams {
   ordering?: TeacherAssignmentOrdering
 }
 
+export type TeacherQuizType =
+  | "all_grades"
+  | "beginner"
+  | "intermediate"
+  | "advanced"
+
+export type TeacherQuizStatus = "draft" | "pending" | "published" | "paused"
+
+export type TeacherQuizOrdering = "newest" | "oldest" | "title_az" | "title_za"
+
+export interface TeacherQuizGradeOption {
+  value: string
+  label: string
+}
+
+export interface TeacherQuizProgramOption {
+  id: number
+  name: string
+}
+
+export interface TeacherQuizCategoryOption {
+  id: number
+  name: string
+}
+
+export interface TeacherQuizTypeOption {
+  value: TeacherQuizType
+  label: string
+}
+
+export interface TeacherQuizStatusOption {
+  value: TeacherQuizStatus
+  label: string
+}
+
+export interface TeacherQuizListItem {
+  id: number
+  title: string
+  quiz_type: TeacherQuizType
+  status: TeacherQuizStatus
+  grade: TeacherQuizGradeOption
+  course_id: number
+  course_name: string
+  program_id: number
+  program: string
+  program_name: string
+  category_id: number
+  category: string
+  category_name: string
+  questions_count: number
+  passing_score: number
+  created_at: string
+  updated_at: string
+}
+
+export interface TeacherQuizzesFilters {
+  grades: TeacherQuizGradeOption[]
+  programs: TeacherQuizProgramOption[]
+  categories: TeacherQuizCategoryOption[]
+  quiz_types: TeacherQuizTypeOption[]
+  course_statuses: TeacherQuizStatusOption[]
+}
+
+export interface TeacherQuizzesResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: TeacherQuizListItem[]
+  filters: TeacherQuizzesFilters
+}
+
+export interface GetTeacherQuizzesParams {
+  page?: number
+  page_size?: number
+  search?: string
+  grade?: string
+  program?: string
+  category?: string
+  quiz_type?: string
+  status?: string
+  ordering?: TeacherQuizOrdering
+}
+
 export function getTeachers(params: GetTeachersParams = {}) {
   const normalizedParams: GetTeachersParams = {
     ...params,
@@ -346,6 +429,42 @@ export function getTeacherAssignments(
     : "courses/assignments/"
 
   return apiRequest<TeacherAssignmentsResponse>(endpoint, {
+    method: "GET",
+    token: accessToken,
+  })
+}
+
+export function getTeacherQuizzes(
+  accessToken: string,
+  params: GetTeacherQuizzesParams = {}
+) {
+  const normalizedParams: GetTeacherQuizzesParams = {
+    page: params.page,
+    search: params.search,
+    grade: params.grade,
+    program: params.program,
+    category: params.category,
+    quiz_type: params.quiz_type,
+    status: params.status,
+    ordering: params.ordering,
+    page_size:
+      params.page_size === undefined
+        ? undefined
+        : Math.max(1, Math.min(params.page_size, 50)),
+  }
+
+  const urlParams = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(normalizedParams)) {
+    if (value !== undefined && value !== null && value !== "") {
+      urlParams.append(key, String(value))
+    }
+  }
+
+  const query = urlParams.toString()
+  const endpoint = query ? `courses/quizzes/?${query}` : "courses/quizzes/"
+
+  return apiRequest<TeacherQuizzesResponse>(endpoint, {
     method: "GET",
     token: accessToken,
   })

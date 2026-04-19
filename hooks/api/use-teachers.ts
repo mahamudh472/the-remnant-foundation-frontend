@@ -5,8 +5,10 @@ import {
   getTeacherDashboard,
   getTeacherDetails,
   getTeachers,
+  getTeacherQuizzes,
   type GetTeacherAssignmentsParams,
   type GetTeacherCoursesParams,
+  type GetTeacherQuizzesParams,
   type GetTeachersParams,
   type TeacherCoursesFilter,
 } from "@/lib/api/teachers"
@@ -27,6 +29,8 @@ export const teachersKeys = {
     params: GetTeacherAssignmentsParams,
     accessToken: string | null
   ) => ["teachers", "assignments", accessToken, params] as const,
+  quizzes: (params: GetTeacherQuizzesParams, accessToken: string | null) =>
+    ["teachers", "quizzes", accessToken, params] as const,
 }
 
 export function useTeachersQuery(params: GetTeachersParams = {}) {
@@ -118,6 +122,23 @@ export function useTeacherAssignmentsQuery(
       }
 
       return getTeacherAssignments(accessToken, params)
+    },
+    enabled: Boolean(accessToken),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useTeacherQuizzesQuery(params: GetTeacherQuizzesParams = {}) {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: teachersKeys.quizzes(params, accessToken),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return getTeacherQuizzes(accessToken, params)
     },
     enabled: Boolean(accessToken),
     placeholderData: keepPreviousData,
