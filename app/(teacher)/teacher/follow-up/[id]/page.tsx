@@ -1,39 +1,101 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowLeft, Calendar, Users, Mail } from "lucide-react"
+import { useParams } from "next/navigation"
+import { ArrowLeft, Calendar, Mail, Paperclip, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { useTeacherFollowUpDetailsQuery } from "@/hooks/api/use-teachers"
+import { getApiErrorMessage } from "@/lib/api/client"
 
-const MESSAGE = {
-  id: "1",
-  subject: "Keep up the great work!",
-  status: "Sent" as const,
-  sentAt: "2026-01-28 at 10:30 AM",
-  recipients: 2,
-  course: "Old Testament Stories",
-  gradeProgram: "Children (6–12) · Bible School",
-  body: "Dear students, I noticed great progress in your recent lessons. Keep up the excellent work!",
-  disclaimer:
-    "This message was sent by your instructor. Replies are not monitored.",
-  students: [
-    {
-      name: "Emma Johnson",
-      email: "emma.j@email.com",
-      progress: 75,
-      progressColor: "#4CC0D8",
-      lastFollowUp: "2026-01-28",
-    },
-    {
-      name: "Liam Smith",
-      email: "liam.s@email.com",
-      progress: 45,
-      progressColor: "#F59E0B",
-      lastFollowUp: "2026-01-15",
-    },
-  ],
+function formatDateTime(dateValue: string | null) {
+  if (!dateValue) {
+    return "-"
+  }
+
+  const date = new Date(dateValue)
+
+  if (Number.isNaN(date.getTime())) {
+    return dateValue
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date)
+}
+
+function formatStatusLabel(status: string) {
+  return status
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
+}
+
+function getStatusBadgeClasses(status: string) {
+  switch (status) {
+    case "sent":
+      return "bg-[#EBF7F9] text-[#4CC0D8]"
+    case "queued":
+      return "bg-[#FFF8EC] text-[#F59E0B]"
+    case "failed":
+      return "bg-red-100 text-red-500"
+    case "draft":
+      return "bg-gray-100 text-gray-500"
+    default:
+      return "bg-gray-100 text-gray-500"
+  }
+}
+
+function getProgressColor(progress: number) {
+  if (progress >= 70) {
+    return "#4CC0D8"
+  }
+
+  if (progress >= 40) {
+    return "#F59E0B"
+  }
+
+  return "#EF4444"
 }
 
 export default function FollowUpDetailPage() {
+  const params = useParams<{ id: string }>()
+  const id = Number(params?.id)
+
+  const { data, isLoading, isError, error } = useTeacherFollowUpDetailsQuery(
+    Number.isFinite(id) ? id : undefined
+  )
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-6">
+        <div className="h-8 w-56 animate-pulse rounded bg-gray-100" />
+        <div className="h-32 animate-pulse rounded-xl bg-gray-100" />
+        <div className="h-40 animate-pulse rounded-xl bg-gray-100" />
+        <div className="h-56 animate-pulse rounded-xl bg-gray-100" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-500">
+        {getApiErrorMessage(error, "Failed to load follow-up details")}
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center text-sm text-[#666666]">
+        Follow-up message not found.
+      </div>
+    )
+  }
+
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6">
       {/* Back + title */}
@@ -46,14 +108,12 @@ export default function FollowUpDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <h2 className="text-lg font-bold text-[#1D1D1D]">
-              {MESSAGE.subject}
-            </h2>
+            <h2 className="text-lg font-bold text-[#1D1D1D]">{data.subject}</h2>
             <p className="text-xs text-[#9CA3AF]">Follow-up message details</p>
           </div>
         </div>
-        <Badge className="bg-[#EBF7F9] text-xs text-[#4CC0D8]">
-          {MESSAGE.status}
+        <Badge className={`text-xs ${getStatusBadgeClasses(data.status)}`}>
+          {formatStatusLabel(data.status)}
         </Badge>
       </div>
 
@@ -66,7 +126,7 @@ export default function FollowUpDetailPage() {
             <div>
               <p className="text-xs text-[#9CA3AF]">Sent Date & Time</p>
               <p className="text-sm font-medium text-[#1D1D1D]">
-                {MESSAGE.sentAt}
+                {formatDateTime(data.sent_at)}
               </p>
             </div>
           </div>
@@ -75,7 +135,7 @@ export default function FollowUpDetailPage() {
             <div>
               <p className="text-xs text-[#9CA3AF]">Recipients</p>
               <p className="text-sm font-medium text-[#1D1D1D]">
-                {MESSAGE.recipients} students
+                {data.recipients_count} students
               </p>
             </div>
           </div>
@@ -84,14 +144,14 @@ export default function FollowUpDetailPage() {
             <div>
               <p className="text-xs text-[#9CA3AF]">Course</p>
               <p className="text-sm font-medium text-[#1D1D1D]">
-                {MESSAGE.course}
+                {data.course_title}
               </p>
             </div>
           </div>
           <div>
             <p className="text-xs text-[#9CA3AF]">Grade / Program</p>
             <p className="text-sm font-medium text-[#1D1D1D]">
-              {MESSAGE.gradeProgram}
+              {data.course_age_group} · {data.program_name}
             </p>
           </div>
         </div>
@@ -102,16 +162,30 @@ export default function FollowUpDetailPage() {
         <h3 className="mb-4 font-bold text-[#1D1D1D]">Message Content</h3>
         <div className="rounded-xl bg-[#F8F9FC] p-5">
           <p className="mb-2 text-xs text-[#9CA3AF]">Subject</p>
-          <p className="mb-4 font-semibold text-[#1D1D1D]">{MESSAGE.subject}</p>
-          <p className="mb-4 text-sm text-[#666666]">{MESSAGE.body}</p>
-          <p className="text-xs text-[#9CA3AF] italic">{MESSAGE.disclaimer}</p>
+          <p className="mb-4 font-semibold text-[#1D1D1D]">{data.subject}</p>
+          <p className="mb-4 text-sm text-[#666666]">{data.message}</p>
+          <div className="flex items-center gap-2 text-xs text-[#9CA3AF]">
+            <Paperclip className="h-3.5 w-3.5" />
+            {data.has_attachment && data.attachment_url ? (
+              <Link
+                href={data.attachment_url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[#4CC0D8] hover:text-[#3AB0C8]"
+              >
+                View attachment
+              </Link>
+            ) : (
+              <span>No attachment</span>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Recipients */}
       <div className="rounded-xl border border-gray-100 p-5">
         <h3 className="mb-4 font-bold text-[#1D1D1D]">
-          Recipients ({MESSAGE.students.length})
+          Recipients ({data.recipients.length})
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -132,29 +206,45 @@ export default function FollowUpDetailPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {MESSAGE.students.map((s) => (
-                <tr key={s.name}>
-                  <td className="py-3 font-medium text-[#1D1D1D]">{s.name}</td>
-                  <td className="py-3 text-[#9CA3AF]">{s.email}</td>
-                  <td className="py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-24 overflow-hidden rounded-full bg-gray-200">
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            width: `${s.progress}%`,
-                            backgroundColor: s.progressColor,
-                          }}
-                        />
-                      </div>
-                      <span className="text-xs text-[#666666]">
-                        {s.progress}%
-                      </span>
-                    </div>
+              {data.recipients.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-[#9CA3AF]">
+                    No recipients found.
                   </td>
-                  <td className="py-3 text-[#9CA3AF]">{s.lastFollowUp}</td>
                 </tr>
-              ))}
+              ) : (
+                data.recipients.map((recipient) => (
+                  <tr key={recipient.student_id}>
+                    <td className="py-3 font-medium text-[#1D1D1D]">
+                      {recipient.name}
+                    </td>
+                    <td className="py-3 text-[#9CA3AF]">{recipient.email}</td>
+                    <td className="py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-24 overflow-hidden rounded-full bg-gray-200">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${recipient.progress}%`,
+                              backgroundColor: getProgressColor(
+                                recipient.progress
+                              ),
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs text-[#666666]">
+                          {recipient.progress}%
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3 text-[#9CA3AF]">
+                      {recipient.last_follow_up_at
+                        ? formatDateTime(recipient.last_follow_up_at)
+                        : "Never"}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

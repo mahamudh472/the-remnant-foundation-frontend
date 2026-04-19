@@ -370,6 +370,57 @@ export interface GetTeacherLiveClassesParams {
   filter?: TeacherLiveClassStatus | "upcomimg"
 }
 
+export type TeacherFollowUpStatus = "sent" | "queued" | "failed" | "draft"
+
+export interface TeacherFollowUpHistoryItem {
+  id: number
+  subject: string
+  status: TeacherFollowUpStatus
+  sent_at: string | null
+  course_title: string
+  course_age_group: string
+  program_name: string
+  sent_to: number
+  recipient_names: string[]
+  has_attachment: boolean
+}
+
+export interface TeacherFollowUpsResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: TeacherFollowUpHistoryItem[]
+}
+
+export interface GetTeacherFollowUpsParams {
+  page?: number
+  page_size?: number
+  search?: string
+}
+
+export interface TeacherFollowUpRecipient {
+  student_id: number
+  name: string
+  email: string
+  progress: number
+  last_follow_up_at: string | null
+}
+
+export interface TeacherFollowUpDetailResponse {
+  id: number
+  status: TeacherFollowUpStatus
+  sent_at: string | null
+  course_title: string
+  course_age_group: string
+  program_name: string
+  recipients_count: number
+  subject: string
+  message: string
+  has_attachment: boolean
+  attachment_url: string | null
+  recipients: TeacherFollowUpRecipient[]
+}
+
 export function getTeachers(params: GetTeachersParams = {}) {
   const normalizedParams: GetTeachersParams = {
     ...params,
@@ -542,4 +593,49 @@ export function getTeacherLiveClasses(
     method: "GET",
     token: accessToken,
   })
+}
+
+export function getTeacherFollowUps(
+  accessToken: string,
+  params: GetTeacherFollowUpsParams = {}
+) {
+  const normalizedParams: GetTeacherFollowUpsParams = {
+    page: params.page,
+    search: params.search,
+    page_size:
+      params.page_size === undefined
+        ? undefined
+        : Math.max(1, Math.min(params.page_size, 100)),
+  }
+
+  const urlParams = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(normalizedParams)) {
+    if (value !== undefined && value !== null && value !== "") {
+      urlParams.append(key, String(value))
+    }
+  }
+
+  const query = urlParams.toString()
+  const endpoint = query
+    ? `teacher/dashboard/follow-ups/?${query}`
+    : "teacher/dashboard/follow-ups/"
+
+  return apiRequest<TeacherFollowUpsResponse>(endpoint, {
+    method: "GET",
+    token: accessToken,
+  })
+}
+
+export function getTeacherFollowUpDetails(
+  accessToken: string,
+  followUpId: number | string
+) {
+  return apiRequest<TeacherFollowUpDetailResponse>(
+    `teacher/dashboard/follow-ups/${followUpId}/`,
+    {
+      method: "GET",
+      token: accessToken,
+    }
+  )
 }

@@ -4,11 +4,14 @@ import {
   getTeacherCourses,
   getTeacherDashboard,
   getTeacherDetails,
+  getTeacherFollowUpDetails,
+  getTeacherFollowUps,
   getTeacherLiveClasses,
   getTeachers,
   getTeacherQuizzes,
   type GetTeacherAssignmentsParams,
   type GetTeacherCoursesParams,
+  type GetTeacherFollowUpsParams,
   type GetTeacherLiveClassesParams,
   type GetTeacherQuizzesParams,
   type GetTeachersParams,
@@ -37,6 +40,10 @@ export const teachersKeys = {
     params: GetTeacherLiveClassesParams,
     accessToken: string | null
   ) => ["teachers", "live-classes", accessToken, params] as const,
+  followUps: (params: GetTeacherFollowUpsParams, accessToken: string | null) =>
+    ["teachers", "follow-ups", accessToken, params] as const,
+  followUpDetail: (followUpId: number | string, accessToken: string | null) =>
+    ["teachers", "follow-up", accessToken, followUpId] as const,
 }
 
 export function useTeachersQuery(params: GetTeachersParams = {}) {
@@ -167,5 +174,44 @@ export function useTeacherLiveClassesQuery(
     },
     enabled: Boolean(accessToken),
     placeholderData: keepPreviousData,
+  })
+}
+
+export function useTeacherFollowUpsQuery(
+  params: GetTeacherFollowUpsParams = {}
+) {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: teachersKeys.followUps(params, accessToken),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return getTeacherFollowUps(accessToken, params)
+    },
+    enabled: Boolean(accessToken),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useTeacherFollowUpDetailsQuery(followUpId?: number) {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: teachersKeys.followUpDetail(followUpId ?? "unknown", accessToken),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      if (!followUpId) {
+        throw new Error("Missing follow-up id")
+      }
+
+      return getTeacherFollowUpDetails(accessToken, followUpId)
+    },
+    enabled: Boolean(accessToken && followUpId),
   })
 }
