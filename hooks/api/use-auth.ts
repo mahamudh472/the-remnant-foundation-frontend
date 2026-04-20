@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   changePassword,
   checkOtp,
+  getMe,
   getProfile,
   login,
   logout as logoutRequest,
@@ -25,7 +26,7 @@ import {
 } from "@/lib/api/auth"
 import { useAuthStore, type User } from "@/lib/store/auth-store"
 
-const DEFAULT_AVATAR = "/assets/pngs/Profile.png"
+const DEFAULT_AVATAR = "/assets/pngs/avatar-fallback.png"
 
 function profileQueryKey(accessToken: string | null) {
   return ["auth", "profile", accessToken] as const
@@ -125,6 +126,22 @@ export function useRegisterMutation() {
     onSuccess: (_response, variables) => {
       setPendingEmail(variables.email)
     },
+  })
+}
+
+export function useGetMeQuery() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: ["auth", "me", accessToken] as const,
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return getMe(accessToken)
+    },
+    enabled: Boolean(accessToken),
   })
 }
 

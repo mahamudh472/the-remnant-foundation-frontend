@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuthStore } from "@/lib/store/auth-store"
-import { useLogoutMutation } from "@/hooks/api/use-auth"
+import { useGetMeQuery, useLogoutMutation } from "@/hooks/api/use-auth"
 
 import fallback from "@/assets/pngs/avatar-fallback.png"
 
@@ -101,9 +101,12 @@ export function Navbar() {
   const [expandedItem, setExpandedItem] = React.useState<string | null>(null)
   const [showProfileDropdown, setShowProfileDropdown] = React.useState(false)
   const { isLoggedIn, user } = useAuthStore()
-
+  const { data: me } = useGetMeQuery()
   const logoutMutation = useLogoutMutation()
   const pathname = usePathname()
+  const displayName = me?.full_name?.trim() || user?.name || "User"
+  const displayRole = user?.role || "student"
+  const avatarSrc = me?.avatar || fallback
   const isTeacher = user?.role === "teacher"
   const navItems = !isLoggedIn
     ? PUBLIC_NAV_ITEMS
@@ -181,7 +184,7 @@ export function Navbar() {
                   >
                     <div className="relative h-9 w-9">
                       <Image
-                        src={fallback}
+                        src={avatarSrc}
                         alt="User"
                         width={36}
                         height={36}
@@ -191,10 +194,10 @@ export function Navbar() {
                     </div>
                     <div className="hidden text-left md:block">
                       <p className="text-xs font-bold text-[#1D1D1D]">
-                        {user?.name ?? "User"}
+                        {displayName}
                       </p>
                       <p className="text-[10px] font-medium text-[#9CA3AF] capitalize">
-                        {user?.role ?? "Student"}
+                        {displayRole}
                       </p>
                     </div>
                     <ChevronDown

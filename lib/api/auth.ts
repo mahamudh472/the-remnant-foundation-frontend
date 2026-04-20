@@ -24,6 +24,7 @@ export interface RefreshTokenPayload {
 
 export interface RefreshTokenResponse {
   access: string
+  refresh?: string
 }
 
 export interface RegisterPayload {
@@ -81,6 +82,12 @@ export interface AccountProfile {
   user_permissions: Array<string | { name?: string }>
 }
 
+export interface AccountMe {
+  full_name: string
+  avatar: string | null
+  email: string
+}
+
 export interface UpdateProfilePayload {
   full_name?: string
   phone_number?: string
@@ -98,6 +105,14 @@ export function logout(payload: LogoutPayload, accessToken: string) {
     method: "POST",
     body: payload,
     token: accessToken,
+  })
+}
+
+export function getMe(accessToken: string) {
+  return apiRequest<AccountMe>("accounts/me/", {
+    method: "GET",
+    token: accessToken,
+    cache: "no-store",
   })
 }
 

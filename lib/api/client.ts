@@ -1,4 +1,23 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "")
+const AUTH_STORAGE_KEY = "remnant-auth-store"
+const TOKEN_REFRESH_PATH = "accounts/token/refresh"
+
+interface PersistedAuthEnvelope {
+  state?: Record<string, unknown>
+  version?: number
+}
+
+interface RefreshedTokens {
+  access: string
+  refresh?: string
+}
+
+interface RequestExecutionResult {
+  response: Response
+  data: unknown
+}
+
+let refreshTokensPromise: Promise<RefreshedTokens | null> | null = null
 
 export class ApiError extends Error {
   status: number
@@ -26,6 +45,18 @@ function buildUrl(path: string) {
   return `${API_BASE_URL}/${normalizedPath}`
 }
 
+function normalizeApiPath(path: string) {
+  return path.replace(/^\/+/, "").replace(/\/+$/, "")
+}
+
+function isTokenRefreshPath(path: string) {
+  return normalizeApiPath(path) === TOKEN_REFRESH_PATH
+}
+
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value)
+}
+
 async function parseResponseBody(response: Response) {
   const contentType = response.headers.get("content-type") ?? ""
 
@@ -47,6 +78,7 @@ function getMessageFromPayload(data: unknown, fallback: string) {
       detail?: string
       error?: string
       non_field_errors?: string[]
+      [key: string]: unknown
     }
 
     if (maybeError.message) return maybeError.message
@@ -58,32 +90,234 @@ function getMessageFromPayload(data: unknown, fallback: string) {
     ) {
       return maybeError.non_field_errors[0]
     }
+
+    for (const value of Object.values(maybeError)) {
+      if (typeof value === "string" && value.trim().length > 0) {
+        return value
+      }
+
+      if (
+        Array.isArray(value) &&
+        value.length > 0 &&
+        typeof value[0] === "string"
+      ) {
+        return value[0]
+      }
+    }
   }
 
   return fallback
 }
 
-export function getApiErrorMessage(
-  error: unknown,
-  fallback = "Something went wrong"
+function buildApiError(
+  response: Response,
+  data: unknown,
+  fallback = "Request failed"
 ) {
-  if (error instanceof ApiError) return error.message
-  if (error instanceof Error) return error.message
-  return fallback
+  return new ApiError(
+    getMessageFromPayload(data, fallback),
+    response.status,
+    data
+  )
 }
 
-export async function apiRequest<T>(
+function readPersistedAuthEnvelope() {
+  if (typeof window === "undefined") return null
+
+  try {
+    const serialized = window.localStorage.getItem(AUTH_STORAGE_KEY)
+    if (!serialized) return null
+
+    const parsed = JSON.parse(serialized)
+    if (!isObjectRecord(parsed)) return null
+
+    return parsed as PersistedAuthEnvelope
+  } catch {
+    return null
+  }
+}
+
+function getPersistedAuthToken(key: "accessToken" | "refreshToken") {
+  const persisted = readPersistedAuthEnvelope()
+  const value = persisted?.state?.[key]
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value
+  }
+
+  return null
+}
+
+function getPreferredAccessToken(token: string | null | undefined) {
+  if (typeof token === "string" && token.trim().length > 0) {
+    return token
+  }
+
+  const persistedAccessToken = getPersistedAuthToken("accessToken")
+  return persistedAccessToken ?? null
+}
+
+function persistRefreshedTokens(tokens: RefreshedTokens) {
+  if (typeof window === "undefined") return
+
+  try {
+    const persisted = readPersistedAuthEnvelope()
+    const previousState =
+      persisted && isObjectRecord(persisted.state) ? persisted.state : {}
+    const existingRefreshToken =
+      typeof previousState.refreshToken === "string"
+        ? previousState.refreshToken
+        : null
+
+    const nextState = {
+      ...previousState,
+      accessToken: tokens.access,
+      refreshToken: tokens.refresh ?? existingRefreshToken,
+      isLoggedIn: true,
+    }
+
+    const nextPersisted: PersistedAuthEnvelope = {
+      ...(persisted ?? {}),
+      version:
+        persisted && typeof persisted.version === "number"
+          ? persisted.version
+          : 0,
+      state: nextState,
+    }
+
+    window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextPersisted))
+  } catch {
+    // Ignore localStorage persistence errors.
+  }
+}
+
+function clearPersistedAuthState() {
+  if (typeof window === "undefined") return
+
+  try {
+    window.localStorage.removeItem(AUTH_STORAGE_KEY)
+  } catch {
+    // Ignore localStorage cleanup errors.
+  }
+}
+
+async function syncInMemoryAuthState(tokens: RefreshedTokens) {
+  if (typeof window === "undefined") return
+
+  try {
+    const { useAuthStore } = await import("@/lib/store/auth-store")
+    useAuthStore.setState((state) => ({
+      accessToken: tokens.access,
+      refreshToken: tokens.refresh ?? state.refreshToken,
+      isLoggedIn: true,
+    }))
+  } catch {
+    // Ignore in-memory auth sync errors.
+  }
+}
+
+async function clearInMemoryAuthState() {
+  if (typeof window === "undefined") return
+
+  try {
+    const { useAuthStore } = await import("@/lib/store/auth-store")
+    useAuthStore.getState().logout()
+  } catch {
+    // Ignore in-memory auth cleanup errors.
+  }
+}
+
+async function getRefreshTokenForRefresh() {
+  const persistedRefreshToken = getPersistedAuthToken("refreshToken")
+  if (persistedRefreshToken) return persistedRefreshToken
+
+  if (typeof window === "undefined") return null
+
+  try {
+    const { useAuthStore } = await import("@/lib/store/auth-store")
+    return useAuthStore.getState().refreshToken
+  } catch {
+    return null
+  }
+}
+
+async function refreshAccessToken() {
+  if (typeof window === "undefined") return null
+
+  if (refreshTokensPromise) {
+    return refreshTokensPromise
+  }
+
+  refreshTokensPromise = (async () => {
+    const refreshToken = await getRefreshTokenForRefresh()
+    if (!refreshToken) return null
+
+    const response = await fetch(buildUrl(`${TOKEN_REFRESH_PATH}/`), {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refresh: refreshToken }),
+    })
+
+    const data = await parseResponseBody(response)
+
+    if (!response.ok) {
+      if (response.status === 400 || response.status === 401) {
+        clearPersistedAuthState()
+        await clearInMemoryAuthState()
+      }
+
+      throw buildApiError(response, data, "Session refresh failed")
+    }
+
+    if (!isObjectRecord(data) || typeof data.access !== "string") {
+      throw new ApiError(
+        "Invalid token refresh response",
+        response.status,
+        data
+      )
+    }
+
+    const refreshedTokens: RefreshedTokens = {
+      access: data.access,
+      refresh: typeof data.refresh === "string" ? data.refresh : undefined,
+    }
+
+    persistRefreshedTokens(refreshedTokens)
+    await syncInMemoryAuthState(refreshedTokens)
+
+    return refreshedTokens
+  })().finally(() => {
+    refreshTokensPromise = null
+  })
+
+  return refreshTokensPromise
+}
+
+async function executeRequest(
   path: string,
-  { body, token, headers, ...init }: ApiRequestOptions = {}
-) {
+  { body, headers, ...init }: ApiRequestOptions,
+  token: string | null
+): Promise<RequestExecutionResult> {
   const requestHeaders = new Headers(headers)
+
+  const isFormDataBody =
+    typeof FormData !== "undefined" && body instanceof FormData
+  const isUrlSearchParamsBody =
+    typeof URLSearchParams !== "undefined" && body instanceof URLSearchParams
 
   if (!requestHeaders.has("Accept")) {
     requestHeaders.set("Accept", "application/json")
   }
 
   const shouldSerializeJson =
-    body !== undefined && body !== null && typeof body !== "string"
+    body !== undefined &&
+    body !== null &&
+    typeof body !== "string" &&
+    !isFormDataBody &&
+    !isUrlSearchParamsBody
 
   if (shouldSerializeJson && !requestHeaders.has("Content-Type")) {
     requestHeaders.set("Content-Type", "application/json")
@@ -99,20 +333,61 @@ export async function apiRequest<T>(
     body:
       body === undefined || body === null
         ? undefined
-        : typeof body === "string"
-          ? body
-          : JSON.stringify(body),
+        : shouldSerializeJson
+          ? JSON.stringify(body)
+          : (body as BodyInit),
   })
 
   const data = await parseResponseBody(response)
+  return { response, data }
+}
 
-  if (!response.ok) {
-    throw new ApiError(
-      getMessageFromPayload(data, "Request failed"),
-      response.status,
-      data
-    )
+export function getApiErrorMessage(
+  error: unknown,
+  fallback = "Something went wrong"
+) {
+  if (error instanceof ApiError) return error.message
+  if (error instanceof Error) return error.message
+  return fallback
+}
+
+export async function apiRequest<T>(
+  path: string,
+  options: ApiRequestOptions = {}
+) {
+  const tokenProvided = Object.prototype.hasOwnProperty.call(options, "token")
+  const effectiveToken = tokenProvided
+    ? getPreferredAccessToken(options.token)
+    : null
+
+  const initialResult = await executeRequest(path, options, effectiveToken)
+
+  if (initialResult.response.ok) {
+    return initialResult.data as T
   }
 
-  return data as T
+  if (
+    initialResult.response.status === 401 &&
+    tokenProvided &&
+    effectiveToken &&
+    !isTokenRefreshPath(path)
+  ) {
+    const refreshedTokens = await refreshAccessToken()
+
+    if (refreshedTokens?.access) {
+      const retryResult = await executeRequest(
+        path,
+        options,
+        refreshedTokens.access
+      )
+
+      if (retryResult.response.ok) {
+        return retryResult.data as T
+      }
+
+      throw buildApiError(retryResult.response, retryResult.data)
+    }
+  }
+
+  throw buildApiError(initialResult.response, initialResult.data)
 }
