@@ -1,229 +1,351 @@
 "use client"
 
-import { useState } from "react"
+import { use } from "react"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { ArrowLeft, ArrowRight, RotateCcw } from "lucide-react"
+import {
+  ArrowLeft,
+  CheckCircle2,
+  XCircle,
+  MinusCircle,
+  Trophy,
+  AlertTriangle,
+} from "lucide-react"
+import { useStudentQuizAttemptDetailQuery } from "@/hooks/api/use-students"
+import { getApiErrorMessage } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
+import type { StudentQuizAttemptQuestion } from "@/lib/api/students"
 
-type QuestionType = "fill-blank" | "multiple-choice"
-
-interface FillBlankQuestion {
-  type: "fill-blank"
-  question: string
-  blanks: string[]
+function formatDateTime(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date)
 }
 
-interface MultipleChoiceQuestion {
-  type: "multiple-choice"
-  question: string
-  options: {
-    text: string
-    explanation: string
-    isCorrect: boolean
-    isWrong: boolean
-  }[]
+function OptionLabel({ letter, text, status }: {
+  letter: string
+  text: string
+  status: "correct" | "wrong" | "neutral"
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-start gap-3 rounded-xl border p-3.5",
+        status === "correct" && "border-emerald-200 bg-emerald-50",
+        status === "wrong" && "border-red-200 bg-red-50",
+        status === "neutral" && "border-gray-200 bg-white"
+      )}
+    >
+      <span
+        className={cn(
+          "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
+          status === "correct" && "bg-emerald-500 text-white",
+          status === "wrong" && "bg-red-400 text-white",
+          status === "neutral" && "bg-gray-200 text-[#666666]"
+        )}
+      >
+        {letter}
+      </span>
+      <p
+        className={cn(
+          "text-sm leading-relaxed",
+          status === "correct" && "font-medium text-emerald-800",
+          status === "wrong" && "text-red-700",
+          status === "neutral" && "text-[#444444]"
+        )}
+      >
+        {text}
+      </p>
+    </div>
+  )
 }
 
-type Question = FillBlankQuestion | MultipleChoiceQuestion
+function QuestionCard({
+  question,
+  index,
+}: {
+  question: StudentQuizAttemptQuestion
+  index: number
+}) {
+  const optionLetters = ["A", "B", "C", "D"] as const
+  const optionTexts: Record<string, string> = {
+    A: question.option_a,
+    B: question.option_b,
+    C: question.option_c,
+    D: question.option_d,
+  }
 
-const QUESTIONS: Question[] = [
-  {
-    type: "fill-blank",
-    question: "Which word is the noun in: The tall boy smiled.",
-    blanks: ["smiled", "boy", "the", "tall"],
-  },
-  {
-    type: "multiple-choice",
-    question: "Why do communities plant more mangroves?",
-    options: [
-      {
-        text: "To protect the coast and the environment.",
-        explanation: "Why not: the text doesn't mention furniture.",
-        isCorrect: false,
-        isWrong: false,
-      },
-      {
-        text: "Communities will be safer.",
-        explanation: "Why not: They provide homes and help animals survive.",
-        isCorrect: false,
-        isWrong: false,
-      },
-      {
-        text: "More storms will stop.",
-        explanation: "Why not: They grow along coastlines, not deserts.",
-        isCorrect: false,
-        isWrong: true,
-      },
-      {
-        text: "Communities will be safer.",
-        explanation: "Why not: They provide homes and help animals survive.",
-        isCorrect: false,
-        isWrong: false,
-      },
-      {
-        text: "To protect the coast and the environment.",
-        explanation: "Why not: the text doesn't mention furniture.",
-        isCorrect: false,
-        isWrong: true,
-      },
-      {
-        text: "Communities will be safer.",
-        explanation: "Why not: They provide homes and help animals survive.",
-        isCorrect: false,
-        isWrong: false,
-      },
-      {
-        text: "More storms will stop.",
-        explanation: "Why not: They grow along coastlines, not deserts.",
-        isCorrect: false,
-        isWrong: true,
-      },
-      {
-        text: "Communities will be safer.",
-        explanation: "This: provide homes and help animals survive.",
-        isCorrect: false,
-        isWrong: false,
-      },
-      {
-        text: "Communities will be safer.",
-        explanation: "Why not: They provide homes and help animals survive.",
-        isCorrect: false,
-        isWrong: false,
-      },
-      {
-        text: "Communities will be safer.",
-        explanation: "Why not: They provide homes and help animals survive.",
-        isCorrect: false,
-        isWrong: false,
-      },
-    ],
-  },
-]
+  const isShortAnswer = question.question_type === "short_answer"
 
-export default function QuizDetailPage() {
-  const [currentQuestion, setCurrentQuestion] = useState(0)
-  const totalQuestions = 10
+  const getOptionStatus = (
+    letter: string
+  ): "correct" | "wrong" | "neutral" => {
+    const isCorrect = question.correct_options.includes(letter)
+    const wasSelected = question.submitted_selected_options.includes(letter)
 
-  const question = QUESTIONS[currentQuestion] ?? QUESTIONS[0]
+    if (isCorrect) return "correct"
+    if (wasSelected && !isCorrect) return "wrong"
+    return "neutral"
+  }
+
+  return (
+    <Card className="border-gray-100 shadow-none">
+      <CardContent className="space-y-4 p-5">
+        {/* Header row */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#9CA3AF]">
+              Q{String(index + 1).padStart(2, "0")}
+            </span>
+            <Badge
+              className={cn(
+                "border-0 text-[10px] font-semibold uppercase tracking-wide",
+                question.is_correct
+                  ? "bg-emerald-100 text-emerald-700"
+                  : question.is_answered
+                    ? "bg-red-100 text-red-600"
+                    : "bg-gray-100 text-gray-500"
+              )}
+            >
+              {question.is_correct
+                ? "Correct"
+                : question.is_answered
+                  ? "Incorrect"
+                  : "Unanswered"}
+            </Badge>
+          </div>
+          {question.is_correct ? (
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-500" />
+          ) : question.is_answered ? (
+            <XCircle className="h-5 w-5 shrink-0 text-red-400" />
+          ) : (
+            <MinusCircle className="h-5 w-5 shrink-0 text-gray-400" />
+          )}
+        </div>
+
+        {/* Question text */}
+        <p className="text-sm font-semibold leading-relaxed text-[#1D1D1D]">
+          {question.question_text}
+        </p>
+
+        {/* Options for MCQ / multiple_select */}
+        {!isShortAnswer && (
+          <div className="space-y-2">
+            {optionLetters.map((letter) => {
+              const text = optionTexts[letter]
+              if (!text) return null
+              return (
+                <OptionLabel
+                  key={letter}
+                  letter={letter}
+                  text={text}
+                  status={getOptionStatus(letter)}
+                />
+              )
+            })}
+          </div>
+        )}
+
+        {/* Short answer */}
+        {isShortAnswer && (
+          <div className="space-y-2">
+            {question.submitted_answer_text && (
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs font-semibold text-[#9CA3AF]">
+                  Your answer
+                </p>
+                <p className="mt-1 text-sm text-[#1D1D1D]">
+                  {question.submitted_answer_text}
+                </p>
+              </div>
+            )}
+            {question.correct_short_answer && (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                <p className="text-xs font-semibold text-emerald-600">
+                  Correct answer
+                </p>
+                <p className="mt-1 text-sm text-emerald-800">
+                  {question.correct_short_answer}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Explanation */}
+        {question.explanation && (
+          <div className="rounded-xl border border-[#4CC0D8]/20 bg-[#EBF7F9] p-3">
+            <p className="text-xs font-semibold text-[#4CC0D8]">Explanation</p>
+            <p className="mt-1 text-xs leading-relaxed text-[#555555]">
+              {question.explanation}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+export default function QuizAttemptDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = use(params)
+  const attemptId = Number(slug)
+
+  const { data, isLoading, isError, error } =
+    useStudentQuizAttemptDetailQuery(
+      Number.isNaN(attemptId) ? undefined : attemptId
+    )
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-8 w-48 animate-pulse rounded-lg bg-gray-100" />
+        <div className="h-32 animate-pulse rounded-xl bg-gray-100" />
+        {[1, 2, 3].map((s) => (
+          <div key={s} className="h-48 animate-pulse rounded-xl bg-gray-100" />
+        ))}
+      </div>
+    )
+  }
+
+  if (isError) {
+    const message = getApiErrorMessage(error, "Failed to load quiz attempt")
+    return (
+      <div className="space-y-4">
+        <Link
+          href="/dashboard/quiz-attempts"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[#666666] hover:text-[#4CC0D8]"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Quiz Attempts
+        </Link>
+        <div className="rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-500">
+          {message}
+        </div>
+      </div>
+    )
+  }
+
+  if (!data) return null
+
+  const scoreColor =
+    data.passed ? "text-emerald-600" : "text-red-500"
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-bold text-[#1D1D1D]">My Quiz Attempts</h2>
+      {/* Back link */}
+      <Link
+        href="/dashboard/quiz-attempts"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-[#666666] transition-colors hover:text-[#4CC0D8]"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Quiz Attempts
+      </Link>
 
+      {/* Header */}
+      <div>
+        <h2 className="text-lg font-bold text-[#1D1D1D]">{data.quiz_name}</h2>
+        <p className="mt-0.5 text-sm text-[#9CA3AF]">
+          Attempt #{data.attempt_number} &middot;{" "}
+          {formatDateTime(data.submitted_at)}
+        </p>
+      </div>
+
+      {/* Score summary card */}
       <Card className="border-gray-100 shadow-none">
-        <CardContent className="space-y-6 p-6">
-          {/* Quiz progress badge */}
-          <Badge className="rounded-lg border-0 bg-[#4CC0D8] px-4 py-1.5 text-xs font-semibold text-white">
-            Quiz: {String(currentQuestion + 1).padStart(2, "0")} /{" "}
-            {totalQuestions}
-          </Badge>
-
-          {/* Question */}
-          {question.type === "fill-blank" ? (
-            <FillBlankView question={question} />
-          ) : (
-            <MultipleChoiceView question={question} />
-          )}
-
-          {/* Navigation */}
-          <div className="flex items-center justify-between pt-4">
-            <div className="flex items-center gap-2">
-              <Link
-                href="/dashboard/quiz-attempts"
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-[#666666] transition-colors hover:border-[#4CC0D8] hover:text-[#4CC0D8]"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Switch new Quiz
-              </Link>
-              {currentQuestion > 0 && (
-                <button
-                  onClick={() => setCurrentQuestion(0)}
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-[#666666] transition-colors hover:border-[#4CC0D8] hover:text-[#4CC0D8]"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  Restart
-                </button>
-              )}
+        <CardContent className="p-5">
+          <div className="flex flex-wrap items-center gap-6">
+            {/* Score circle */}
+            <div className="flex flex-col items-center">
+              <span className={cn("text-4xl font-bold", scoreColor)}>
+                {data.score_percentage}%
+              </span>
+              <span className="mt-0.5 text-xs text-[#9CA3AF]">Score</span>
             </div>
-            <button
-              onClick={() =>
-                setCurrentQuestion((prev) =>
-                  prev < QUESTIONS.length - 1 ? prev + 1 : prev
-                )
-              }
-              className="inline-flex items-center gap-2 rounded-lg bg-[#4CC0D8] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#3AB0C8]"
-            >
-              Next
-              <ArrowRight className="h-4 w-4" />
-            </button>
+
+            <div className="h-12 w-px bg-gray-100" />
+
+            {/* Pass/fail badge */}
+            <div className="flex items-center gap-2">
+              {data.passed ? (
+                <Trophy className="h-5 w-5 text-emerald-500" />
+              ) : (
+                <AlertTriangle className="h-5 w-5 text-red-400" />
+              )}
+              <div>
+                <p
+                  className={cn(
+                    "text-sm font-bold",
+                    data.passed ? "text-emerald-600" : "text-red-500"
+                  )}
+                >
+                  {data.passed ? "Passed" : "Not Passed"}
+                </p>
+                <p className="text-xs text-[#9CA3AF]">
+                  Passing score: {data.passing_score}%
+                </p>
+              </div>
+            </div>
+
+            <div className="h-12 w-px bg-gray-100" />
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-2 gap-x-8 gap-y-1 sm:grid-cols-4">
+              <Stat label="Total" value={data.total_questions} />
+              <Stat
+                label="Correct"
+                value={data.correct_answers}
+                color="text-emerald-600"
+              />
+              <Stat
+                label="Incorrect"
+                value={data.incorrect_answers}
+                color="text-red-500"
+              />
+              <Stat
+                label="Unanswered"
+                value={data.unanswered_questions}
+                color="text-gray-400"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
-    </div>
-  )
-}
 
-function FillBlankView({ question }: { question: FillBlankQuestion }) {
-  return (
-    <div className="space-y-5">
-      <div>
-        <h3 className="text-base font-bold text-[#1D1D1D]">
-          Question {String(1).padStart(2, "0")}
-        </h3>
-        <p className="mt-1 text-sm text-[#666666]">{question.question}</p>
-      </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {question.blanks.map((blank, i) => (
-          <Input
-            key={i}
-            defaultValue={blank}
-            readOnly
-            className="h-12 rounded-xl border-gray-200 bg-white px-4 text-sm text-[#1D1D1D]"
-          />
+      {/* Questions */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-bold text-[#1D1D1D]">Question Review</h3>
+        {data.questions.map((q, i) => (
+          <QuestionCard key={q.question_id} question={q} index={i} />
         ))}
       </div>
     </div>
   )
 }
 
-function MultipleChoiceView({
-  question,
+function Stat({
+  label,
+  value,
+  color = "text-[#1D1D1D]",
 }: {
-  question: MultipleChoiceQuestion
+  label: string
+  value: number
+  color?: string
 }) {
   return (
-    <div className="space-y-4">
-      <h3 className="text-base font-bold text-[#1D1D1D]">
-        {question.question}
-      </h3>
-      <div className="space-y-3">
-        {question.options.map((option, i) => (
-          <div
-            key={i}
-            className={cn(
-              "rounded-xl border p-4 transition-colors",
-              option.isWrong
-                ? "border-red-200 bg-red-50"
-                : "border-gray-200 bg-white hover:border-[#4CC0D8]/30"
-            )}
-          >
-            <p className="text-sm font-semibold text-[#1D1D1D]">
-              {option.text}
-            </p>
-            <p
-              className={cn(
-                "mt-1 text-xs",
-                option.isWrong ? "text-red-500" : "text-[#9CA3AF]"
-              )}
-            >
-              {option.explanation}
-            </p>
-          </div>
-        ))}
-      </div>
+    <div>
+      <p className={cn("text-base font-bold", color)}>{value}</p>
+      <p className="text-xs text-[#9CA3AF]">{label}</p>
     </div>
   )
 }

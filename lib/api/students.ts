@@ -154,6 +154,11 @@ export interface StudentEnrolledCoursesResponse {
   completed_count: number
 }
 
+export interface StudentEnrollCourseResponse {
+  message: string
+  enrollment: StudentEnrolledCourseItem
+}
+
 export interface StudentWishlistItem {
   course_id: number
   course_title: string
@@ -222,6 +227,7 @@ export interface StudentModuleLessonItem {
   lesson_id: number
   title: string
   description: string
+  video_url: string | null
   complete: boolean
 }
 
@@ -241,6 +247,56 @@ export interface StudentModuleContentResponse {
   lessons: StudentModuleLessonItem[]
   quizzes: StudentModuleQuizItem[]
   assignments: StudentModuleAssignmentItem[]
+}
+
+export type StudentQuizQuestionType = "mcq" | "multiple_select" | "short_answer"
+
+export interface StudentQuizQuestionItem {
+  question_id: number
+  question_type: StudentQuizQuestionType
+  question_text: string
+  option_a: string
+  option_b: string
+  option_c: string
+  option_d: string
+  order: number
+}
+
+export interface StudentQuizQuestionsResponse {
+  quiz_id: number
+  title: string
+  short_instruction: string
+  passing_score: number
+  attempts_allowed: number
+  time_limit_minutes: number
+  questions: StudentQuizQuestionItem[]
+}
+
+export interface StudentQuizSubmitAnswer {
+  question_id: number
+  selected_options?: string[]
+  answer_text?: string
+}
+
+export interface StudentQuizSubmitPayload {
+  answers: StudentQuizSubmitAnswer[]
+}
+
+export interface StudentQuizSubmitResponse {
+  message: string
+  attempt_id: number
+  attempt_number: number
+  quiz_id: number
+  score_percentage: number
+  passing_score: number
+  passed: boolean
+  total_questions: number
+  answered_questions: number
+  correct_answers: number
+  incorrect_answers: number
+  unanswered_questions: number
+  submitted_at: string
+  first_completed_at: string | null
 }
 
 export interface StudentCompleteLessonResponse {
@@ -346,6 +402,16 @@ export function getStudentWishlist(accessToken: string) {
   })
 }
 
+export function enrollStudentCourse(accessToken: string, courseId: number) {
+  return apiRequest<StudentEnrollCourseResponse>(
+    `student/enrolled-courses/${courseId}/enroll/`,
+    {
+      method: "POST",
+      token: accessToken,
+    }
+  )
+}
+
 export function getStudentUpcomingLiveClasses(
   accessToken: string,
   params: GetStudentLiveClassesParams = {}
@@ -428,11 +494,100 @@ export function getStudentModuleContent(accessToken: string, moduleId: number) {
   )
 }
 
+export function getStudentQuizQuestions(accessToken: string, quizId: number) {
+  return apiRequest<StudentQuizQuestionsResponse>(
+    `student/quizzes/${quizId}/questions/`,
+    {
+      method: "GET",
+      token: accessToken,
+    }
+  )
+}
+
+export function submitStudentQuiz(
+  accessToken: string,
+  quizId: number,
+  payload: StudentQuizSubmitPayload
+) {
+  return apiRequest<StudentQuizSubmitResponse>(
+    `student/quizzes/${quizId}/submit/`,
+    {
+      method: "POST",
+      token: accessToken,
+      body: payload,
+    }
+  )
+}
+
 export function completeStudentLesson(accessToken: string, lessonId: number) {
   return apiRequest<StudentCompleteLessonResponse>(
     `student/lessons/${lessonId}/complete/`,
     {
       method: "POST",
+      token: accessToken,
+    }
+  )
+}
+
+export interface StudentQuizAttemptListItem {
+  attempt_id: number
+  quiz_id: number
+  quiz_name: string
+  questions_count: number
+  attempts_count: number
+  latest_attempt_at: string
+}
+
+export interface StudentQuizAttemptQuestion {
+  question_id: number
+  question_type: StudentQuizQuestionType
+  question_text: string
+  option_a: string
+  option_b: string
+  option_c: string
+  option_d: string
+  submitted_selected_options: string[]
+  submitted_answer_text: string
+  is_answered: boolean
+  is_correct: boolean
+  correct_options: string[]
+  correct_short_answer: string
+  explanation: string
+  order: number
+}
+
+export interface StudentQuizAttemptDetail {
+  attempt_id: number
+  attempt_number: number
+  quiz_id: number
+  quiz_name: string
+  score_percentage: number
+  passing_score: number
+  passed: boolean
+  total_questions: number
+  answered_questions: number
+  correct_answers: number
+  incorrect_answers: number
+  unanswered_questions: number
+  submitted_at: string
+  questions: StudentQuizAttemptQuestion[]
+}
+
+export function getStudentQuizAttempts(accessToken: string) {
+  return apiRequest<StudentQuizAttemptListItem[]>("student/quiz-attempts/", {
+    method: "GET",
+    token: accessToken,
+  })
+}
+
+export function getStudentQuizAttemptDetail(
+  accessToken: string,
+  attemptId: number
+) {
+  return apiRequest<StudentQuizAttemptDetail>(
+    `student/quiz-attempts/${attemptId}/`,
+    {
+      method: "GET",
       token: accessToken,
     }
   )
