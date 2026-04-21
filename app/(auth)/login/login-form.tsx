@@ -16,13 +16,33 @@ export function LoginForm() {
   const router = useRouter()
   const loginMutation = useLoginMutation()
 
+  const getPostLoginRedirectPath = () => {
+    if (typeof window === "undefined") {
+      return "/dashboard"
+    }
+
+    const redirectToParam = new URLSearchParams(window.location.search).get(
+      "redirectTo"
+    )
+
+    if (
+      redirectToParam &&
+      redirectToParam.startsWith("/") &&
+      !redirectToParam.startsWith("//")
+    ) {
+      return redirectToParam
+    }
+
+    return "/dashboard"
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     try {
       await loginMutation.mutateAsync({ email, password })
       toast.success("Logged in successfully")
-      router.push("/dashboard")
+      router.push(getPostLoginRedirectPath())
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Unable to log in"))
     }

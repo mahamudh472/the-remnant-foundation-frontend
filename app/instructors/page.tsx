@@ -77,21 +77,6 @@ export default function InstructorsPage() {
       <Navbar />
 
       <main>
-        {/* Page Header */}
-        <section className="bg-[#F1F7F9] py-16">
-          <div className="mx-auto max-w-7xl space-y-4 px-4 text-center">
-            <h1 className="text-4xl font-bold text-[#1D1D1D] md:text-5xl">
-              All Instructor
-            </h1>
-            <div className="flex items-center justify-center gap-2 text-sm font-medium">
-              <Link href="/" className="text-[#666666]">
-                Home
-              </Link>
-              <span className="h-[2px] w-4 bg-[#FF9D00]" />
-              <span className="text-[#1D1D1D]">Instructor Grid</span>
-            </div>
-          </div>
-        </section>
 
         <section className="py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -293,7 +278,7 @@ export default function InstructorsPage() {
                 ) : (
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                     {instructors.map((inst) => (
-                        <TeacherCard key={inst.id} {...inst} />
+                        <TeacherCard key={inst.id} {...inst} viewType={viewType} />
                     ))}
                   </div>
                 )}
@@ -368,25 +353,5 @@ export default function InstructorsPage() {
 
       <Footer />
     </div>
-  )
-}
-
-function BookOpenIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-    </svg>
   )
 }

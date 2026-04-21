@@ -74,21 +74,6 @@ export default function CourseDetailsPage() {
       <Navbar />
 
       <main className="pb-24">
-        {/* Page Header */}
-        <section className="bg-[#F1F7F9] py-16">
-          <div className="mx-auto max-w-7xl space-y-4 px-4 text-center">
-            <h1 className="text-4xl font-bold text-[#1D1D1D] md:text-5xl">
-              Course Detail
-            </h1>
-            <div className="flex items-center justify-center gap-2 text-sm font-medium">
-              <Link href="/" className="text-[#666666]">
-                Home
-              </Link>
-              <span className="h-[2px] w-4 bg-[#FF9D00]" />
-              <span className="text-[#1D1D1D]">Course Detail 2</span>
-            </div>
-          </div>
-        </section>
 
         {/* Hero Info Bar */}
         <section className="border-b border-gray-100 bg-white py-10">

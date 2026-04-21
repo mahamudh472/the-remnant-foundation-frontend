@@ -56,7 +56,7 @@ export function DashboardSidebar() {
   const logoutMutation = useLogoutMutation()
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6">
+    <div className="rounded-lg border border-gray-200 bg-white p-6">
       <h3 className="mb-4 text-sm font-bold text-[#1D1D1D]">Main Menu</h3>
       <nav className="space-y-1">
         {MENU_ITEMS.map((item) => {

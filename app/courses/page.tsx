@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils"
 import { useCoursesQuery } from "@/hooks/api/use-courses"
 import { useDebounce } from "@/hooks/use-debounce"
 import CourseCard from "@/components/common/course-card"
+import { Separator } from "@/components/ui/separator"
 
 const CATEGORIES = [
   { id: "1", name: "Spiritual" },
@@ -112,17 +113,6 @@ export default function CoursesPage() {
       <Navbar />
 
       <main>
-        {/* Page Header */}
-        <section className="py-16 bg-[#F1F7F9]">
-          <div className="max-w-7xl mx-auto px-4 text-center space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#1D1D1D]">All Courses</h1>
-            <div className="flex items-center justify-center gap-2 text-sm font-medium">
-               <Link href="/" className="text-[#666666]">Home</Link>
-               <span className="w-4 h-[2px] bg-[#FF9D00]" />
-               <span className="text-[#1D1D1D]">Course Grid</span>
-            </div>
-          </div>
-        </section>
 
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -268,6 +258,8 @@ export default function CoursesPage() {
                 </div>
               </div>
 
+              {/* <Separator orientation="vertical" className="hidden lg:block" /> */}
+
               {/* Course Grid Area */}
               <div className="flex-1 space-y-8">
                  {/* Top Controls */}
@@ -404,43 +396,5 @@ export default function CoursesPage() {
 
       <Footer />
     </div>
-  )
-}
-
-function Heart(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-    </svg>
-  )
-}
-
-function Bookmark(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
-    </svg>
   )
 }

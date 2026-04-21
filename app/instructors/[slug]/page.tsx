@@ -45,21 +45,6 @@ export default function InstructorDetailPage() {
       <Navbar />
 
       <main>
-        {/* Page Header */}
-        <section className="bg-[#F1F7F9] py-16">
-          <div className="mx-auto max-w-7xl space-y-4 px-4 text-center">
-            <h1 className="text-4xl font-bold text-[#1D1D1D] md:text-5xl">
-              Instructor Detail
-            </h1>
-            <div className="flex items-center justify-center gap-2 text-sm font-medium">
-              <Link href="/" className="text-[#666666]">
-                Home
-              </Link>
-              <span className="h-[2px] w-4 bg-[#FF9D00]" />
-              <span className="text-[#1D1D1D]">Instructor Detail</span>
-            </div>
-          </div>
-        </section>
 
         <section className="py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
