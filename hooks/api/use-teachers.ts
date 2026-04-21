@@ -1,5 +1,11 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
+import {
+  deleteTeacherCourse,
   getTeacherAssignments,
   getTeacherCourses,
   getTeacherDashboard,
@@ -119,6 +125,29 @@ export function useTeacherCoursesCountByFilterQuery(
       return getTeacherCourses(accessToken, { page: 1, page_size: 1, filter })
     },
     enabled: Boolean(accessToken),
+  })
+}
+
+export function useDeleteTeacherCourseMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (courseId: number) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return deleteTeacherCourse(accessToken, courseId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["teachers", "courses", accessToken],
+      })
+      queryClient.invalidateQueries({
+        queryKey: teachersKeys.dashboard(accessToken),
+      })
+    },
   })
 }
 

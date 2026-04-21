@@ -21,17 +21,49 @@ import {
 } from "@/hooks/api/use-students"
 import { getApiErrorMessage } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
+import QuizAttemptModal from "@/components/student/quiz-attempt-modal"
+import AssignmentSubmitModal from "@/components/student/assignment-submit-modal"
 
-const LESSON_VIDEO_IDS = [
-  "M7lc1UVf-VE",
-  "ScMzIvxBSi4",
-  "aqz-KE-bpKQ",
-  "jNQXAC9IVRw",
-  "e-ORhEE9VVg",
-]
+function extractYoutubeVideoId(rawUrl: string) {
+  try {
+    const parsedUrl = new URL(rawUrl)
+    const hostname = parsedUrl.hostname.toLowerCase()
 
-function getLessonVideoId(lessonId: number) {
-  return LESSON_VIDEO_IDS[Math.abs(lessonId) % LESSON_VIDEO_IDS.length]
+    if (hostname === "youtu.be") {
+      const idFromShortUrl = parsedUrl.pathname.replace(/^\//, "").split("/")[0]
+      return idFromShortUrl || null
+    }
+
+    if (hostname.endsWith("youtube.com")) {
+      if (parsedUrl.pathname === "/watch") {
+        return parsedUrl.searchParams.get("v")
+      }
+
+      const pathParts = parsedUrl.pathname.split("/").filter(Boolean)
+
+      if (pathParts[0] === "embed" || pathParts[0] === "shorts") {
+        return pathParts[1] || null
+      }
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
+function buildLessonVideoSrc(videoUrl: string | null | undefined) {
+  if (!videoUrl) {
+    return null
+  }
+
+  const youtubeVideoId = extractYoutubeVideoId(videoUrl)
+
+  if (youtubeVideoId) {
+    return `https://www.youtube.com/embed/${youtubeVideoId}`
+  }
+
+  return videoUrl
 }
 
 export default function CoursePlayerPage() {
@@ -41,6 +73,20 @@ export default function CoursePlayerPage() {
   )
   const [expandedModuleId, setExpandedModuleId] = useState<number | null>(null)
   const [activeLessonId, setActiveLessonId] = useState<number | null>(null)
+  const [quizAttemptModalOpen, setQuizAttemptModalOpen] = useState(false)
+  const [activeQuizId, setActiveQuizId] = useState<number | null>(null)
+  const [activeQuizTitle, setActiveQuizTitle] = useState<string | null>(null)
+  const [activeQuizModuleId, setActiveQuizModuleId] = useState<number | null>(
+    null
+  )
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false)
+  const [activeAssignmentId, setActiveAssignmentId] = useState<number | null>(
+    null
+  )
+  const [activeAssignmentTitle, setActiveAssignmentTitle] =
+    useState<string | null>(null)
+  const [activeAssignmentModuleId, setActiveAssignmentModuleId] =
+    useState<number | null>(null)
 
   const slugValue = Array.isArray(params?.slug) ? params.slug[0] : params?.slug
   const courseId = Number(slugValue)
@@ -81,6 +127,7 @@ export default function CoursePlayerPage() {
     lessons.find((lessonItem) => lessonItem.lesson_id === selectedLessonId) ??
     lessons[0] ??
     null
+  const activeLessonVideoSrc = buildLessonVideoSrc(activeLesson?.video_url)
 
   const courseProgress = Math.max(
     0,
@@ -125,6 +172,48 @@ export default function CoursePlayerPage() {
       moduleId: selectedModuleId,
       courseId,
     })
+  }
+
+  const handleOpenQuizAttempt = (
+    quizId: number,
+    quizTitle: string,
+    moduleId: number
+  ) => {
+    setActiveQuizId(quizId)
+    setActiveQuizTitle(quizTitle)
+    setActiveQuizModuleId(moduleId)
+    setQuizAttemptModalOpen(true)
+  }
+
+  const handleQuizModalOpenChange = (nextOpen: boolean) => {
+    setQuizAttemptModalOpen(nextOpen)
+
+    if (!nextOpen) {
+      setActiveQuizId(null)
+      setActiveQuizTitle(null)
+      setActiveQuizModuleId(null)
+    }
+  }
+
+  const handleOpenAssignment = (
+    assignmentId: number,
+    assignmentTitle: string,
+    moduleId: number
+  ) => {
+    setActiveAssignmentId(assignmentId)
+    setActiveAssignmentTitle(assignmentTitle)
+    setActiveAssignmentModuleId(moduleId)
+    setAssignmentModalOpen(true)
+  }
+
+  const handleAssignmentModalOpenChange = (nextOpen: boolean) => {
+    setAssignmentModalOpen(nextOpen)
+
+    if (!nextOpen) {
+      setActiveAssignmentId(null)
+      setActiveAssignmentTitle(null)
+      setActiveAssignmentModuleId(null)
+    }
   }
 
   return (
@@ -187,14 +276,20 @@ export default function CoursePlayerPage() {
           {/* Video Player */}
           <div className="overflow-hidden rounded-2xl border border-gray-100 bg-black">
             <div className="aspect-video">
-              <iframe
-                title={activeLesson?.title ?? "Course lesson"}
-                src={`https://www.youtube.com/embed/${getLessonVideoId(activeLesson?.lesson_id ?? 0)}?rel=0&modestbranding=1&iv_load_policy=3`}
-                className="h-full w-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
+              {activeLessonVideoSrc ? (
+                <iframe
+                  title={activeLesson?.title ?? "Course lesson"}
+                  src={activeLessonVideoSrc}
+                  className="h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center px-4 text-center text-sm text-white/80">
+                  Video URL not available for this lesson.
+                </div>
+              )}
             </div>
           </div>
 
@@ -263,8 +358,8 @@ export default function CoursePlayerPage() {
 
         {/* Course Playlists Sidebar */}
         <div className="w-full shrink-0 xl:w-80">
-          <Card className="sticky top-24 border-gray-100 shadow-none">
-            <CardContent className="p-5">
+          <Card className="sticky top-24 shadow-none">
+            <CardContent>
               <h3 className="text-base font-bold text-[#1D1D1D]">
                 Course Playlists
               </h3>
@@ -394,18 +489,72 @@ export default function CoursePlayerPage() {
                           {!moduleContentQuery.isLoading &&
                             ((moduleContent?.quizzes.length ?? 0) > 0 ||
                               (moduleContent?.assignments.length ?? 0) > 0) && (
-                              <div className="flex flex-wrap gap-2 px-1 pt-2">
+                              <div className="space-y-2 border-t border-[#E6EEF2] px-1 pt-2">
                                 {(moduleContent?.quizzes.length ?? 0) > 0 && (
-                                  <Badge className="border-0 bg-[#F8F9FC] text-[10px] text-[#666666]">
-                                    {moduleContent?.quizzes.length ?? 0} quizzes
-                                  </Badge>
+                                  <div className="space-y-1">
+                                    <p className="text-[10px] font-semibold tracking-[0.05em] text-[#9CA3AF] uppercase">
+                                      Quizzes
+                                    </p>
+
+                                    {moduleContent?.quizzes.map((quizItem) => (
+                                      <Button
+                                        key={quizItem.quiz_id}
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={() =>
+                                          handleOpenQuizAttempt(
+                                            quizItem.quiz_id,
+                                            quizItem.title,
+                                            moduleItem.module_id
+                                          )
+                                        }
+                                        className="h-auto w-full justify-between rounded-lg px-2 py-2 text-left text-[#1D1D1D] hover:bg-[#EEF8FB]"
+                                      >
+                                        <span className="truncate text-xs font-semibold">
+                                          {quizItem.title}
+                                        </span>
+                                        <Badge className="ml-2 border-0 bg-[#F8F9FC] text-[10px] text-[#666666]">
+                                          {quizItem.complete ? "Done" : "Start"}
+                                        </Badge>
+                                      </Button>
+                                    ))}
+                                  </div>
                                 )}
+
                                 {(moduleContent?.assignments.length ?? 0) >
                                   0 && (
-                                  <Badge className="border-0 bg-[#F8F9FC] text-[10px] text-[#666666]">
-                                    {moduleContent?.assignments.length ?? 0}{" "}
-                                    assignments
-                                  </Badge>
+                                  <div className="space-y-1">
+                                    <p className="text-[10px] font-semibold tracking-[0.05em] text-[#9CA3AF] uppercase">
+                                      Assignments
+                                    </p>
+
+                                    {moduleContent?.assignments.map(
+                                      (assignmentItem) => (
+                                        <Button
+                                          key={assignmentItem.assignment_id}
+                                          type="button"
+                                          variant="ghost"
+                                          onClick={() =>
+                                            handleOpenAssignment(
+                                              assignmentItem.assignment_id,
+                                              assignmentItem.title,
+                                              moduleItem.module_id
+                                            )
+                                          }
+                                          className="h-auto w-full justify-between rounded-lg px-2 py-2 text-left text-[#1D1D1D] hover:bg-[#EEF8FB]"
+                                        >
+                                          <span className="truncate text-xs font-semibold">
+                                            {assignmentItem.title}
+                                          </span>
+                                          <Badge className="ml-2 border-0 bg-[#F8F9FC] text-[10px] text-[#666666]">
+                                            {assignmentItem.complete
+                                              ? "Done"
+                                              : "Start"}
+                                          </Badge>
+                                        </Button>
+                                      )
+                                    )}
+                                  </div>
                                 )}
                               </div>
                             )}
@@ -419,6 +568,24 @@ export default function CoursePlayerPage() {
           </Card>
         </div>
       </div>
+
+      <QuizAttemptModal
+        open={quizAttemptModalOpen}
+        onOpenChange={handleQuizModalOpenChange}
+        quizId={activeQuizId}
+        quizTitle={activeQuizTitle}
+        courseId={isValidCourseId ? courseId : undefined}
+        moduleId={activeQuizModuleId ?? undefined}
+      />
+
+      <AssignmentSubmitModal
+        open={assignmentModalOpen}
+        onOpenChange={handleAssignmentModalOpenChange}
+        assignmentId={activeAssignmentId}
+        assignmentTitle={activeAssignmentTitle}
+        courseId={isValidCourseId ? courseId : undefined}
+        moduleId={activeAssignmentModuleId ?? undefined}
+      />
     </div>
   )
 }

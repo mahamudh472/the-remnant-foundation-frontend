@@ -789,3 +789,69 @@ export function getStudentQuizAttemptDetail(
     }
   )
 }
+
+export interface StudentAssignmentDetail {
+  assignment_id: number
+  title: string
+  short_description: string
+  assignment_type: string
+  assignment_type_label: string
+  due_date: string
+  content_description: string
+  attachment: string | null
+  allow_file_submission: boolean
+  allow_text_answer: boolean
+  total_marks: number
+  complete: boolean
+  submission_text: string
+  submission_file: string | null
+  completed_at: string | null
+}
+
+export interface StudentAssignmentSubmitResponse {
+  message: string
+  assignment_id: number
+  complete: boolean
+  submission_text: string
+  submission_file: string | null
+  completed_at: string | null
+}
+
+export function getStudentAssignmentDetails(
+  accessToken: string,
+  assignmentId: number
+) {
+  return apiRequest<StudentAssignmentDetail>(
+    `student/assignments/${assignmentId}/details/`,
+    {
+      method: "GET",
+      token: accessToken,
+    }
+  )
+}
+
+export function submitStudentAssignment(
+  accessToken: string,
+  assignmentId: number,
+  submissionFile?: File | null,
+  submissionText?: string
+) {
+  const formData = new FormData()
+
+  if (submissionFile) {
+    formData.append("submission_file", submissionFile)
+  }
+
+  if (submissionText?.trim()) {
+    formData.append("submission_text", submissionText.trim())
+  }
+
+  return apiRequest<StudentAssignmentSubmitResponse>(
+    `student/assignments/${assignmentId}/submit/`,
+    {
+      method: "POST",
+      token: accessToken,
+      body: formData,
+    }
+  )
+}

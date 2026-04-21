@@ -70,9 +70,9 @@ export default function EnrolledCard({
   return (
     <Card
       key={course.course_id}
-      className="group overflow-hidden border-gray-100 shadow-none transition-shadow hover:shadow-md"
+      className="group overflow-hidden border-gray-100 py-0 pb-4 shadow-none transition-shadow hover:shadow-md"
     >
-      <div className="relative h-44 overflow-hidden">
+      <div className="relative h-56 overflow-hidden">
         <Image
           src={course.course_thumbnail || thumbnailFallback}
           alt={course.course_title}
@@ -106,7 +106,7 @@ export default function EnrolledCard({
         </button>
       </div>
       <CardContent className="px-4">
-        <div className="mb-2 flex items-center gap-2">
+        <div className="mb-2 flex items-center gap-2 justify-between">
           <div className="flex items-center gap-1.5">
             <div className="h-5 w-5 overflow-hidden rounded-full bg-gray-200">
               <Image
@@ -131,6 +131,8 @@ export default function EnrolledCard({
         <h3 className="mb-2 text-sm font-bold text-[#1D1D1D]">
           {course.course_title}
         </h3>
+
+        
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-1">
             <Star className="h-3.5 w-3.5 fill-[#F59E0B] text-[#F59E0B]" />
@@ -138,7 +140,7 @@ export default function EnrolledCard({
               {course.stars}
             </span>
             <span className="text-xs text-[#9CA3AF]">
-              ({course.review_count} Reviews)
+              ({course.review_count ?? 0} Reviews)
             </span>
           </div>
         </div>

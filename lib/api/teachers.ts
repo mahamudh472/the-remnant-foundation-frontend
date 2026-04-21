@@ -166,6 +166,10 @@ export interface TeacherCoursesResponse {
   results: TeacherCourseListItem[]
 }
 
+export interface DeleteTeacherCourseResponse {
+  message: string
+}
+
 export type TeacherAssignmentStatus =
   | "draft"
   | "pending"
@@ -487,6 +491,16 @@ export function getTeacherCourses(
     method: "GET",
     token: accessToken,
   })
+}
+
+export function deleteTeacherCourse(accessToken: string, courseId: number) {
+  return apiRequest<DeleteTeacherCourseResponse>(
+    `courses/${courseId}/delete/`,
+    {
+      method: "DELETE",
+      token: accessToken,
+    }
+  )
 }
 
 export function getTeacherAssignments(

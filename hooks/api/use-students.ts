@@ -24,6 +24,8 @@ import {
   submitStudentQuiz,
   getStudentQuizAttempts,
   getStudentQuizAttemptDetail,
+  getStudentAssignmentDetails,
+  submitStudentAssignment,
   type GetStudentEnrolledCoursesParams,
   type GetStudentLiveClassesParams,
   type SubmitStudentTeacherApplicationPayload,
@@ -76,6 +78,8 @@ export const studentsKeys = {
     ["students", "quiz-attempts", accessToken] as const,
   quizAttemptDetail: (attemptId: number | string, accessToken: string | null) =>
     ["students", "quiz-attempt-detail", accessToken, attemptId] as const,
+  assignmentDetail: (assignmentId: number | string, accessToken: string | null) =>
+    ["students", "assignment-detail", accessToken, assignmentId] as const,
 }
 
 export function useTeacherStudentsQuery(params: GetTeacherStudentsParams = {}) {
@@ -528,6 +532,84 @@ export function useStudentQuizAttemptDetailQuery(attemptId?: number) {
     retry: (failureCount, error) => {
       if ((error as { status?: number })?.status === 404) return false
       return failureCount < 3
+    },
+  })
+}
+
+export function useStudentAssignmentDetailQuery(
+  assignmentId?: number,
+  enabled = true
+) {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: studentsKeys.assignmentDetail(
+      assignmentId ?? "unknown",
+      accessToken
+    ),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      if (!assignmentId) {
+        throw new Error("Missing assignment id")
+      }
+
+      return getStudentAssignmentDetails(accessToken, assignmentId)
+    },
+    enabled: Boolean(accessToken && assignmentId) && enabled,
+  })
+}
+
+export interface SubmitStudentAssignmentMutationPayload {
+  assignmentId: number
+  submissionFile?: File | null
+  submissionText?: string
+  courseId?: number
+  moduleId?: number
+}
+
+export function useSubmitStudentAssignmentMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      assignmentId,
+      submissionFile,
+      submissionText,
+    }: SubmitStudentAssignmentMutationPayload) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return submitStudentAssignment(
+        accessToken,
+        assignmentId,
+        submissionFile,
+        submissionText
+      )
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: studentsKeys.assignmentDetail(
+          variables.assignmentId,
+          accessToken
+        ),
+      })
+
+      if (variables.moduleId) {
+        queryClient.invalidateQueries({
+          queryKey: studentsKeys.moduleContent(variables.moduleId, accessToken),
+        })
+      }
+
+      if (variables.courseId) {
+        queryClient.invalidateQueries({
+          queryKey: studentsKeys.courseModules(variables.courseId, accessToken),
+        })
+      }
     },
   })
 }
