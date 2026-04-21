@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -10,75 +12,61 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Pencil, LogOut, ChevronRight } from "lucide-react"
-
-const BASIC_INFO = [
-  { label: "First Name", value: "Emma" },
-  { label: "Last Name", value: "Johnson" },
-  { label: "Student ID", value: "223455" },
-  { label: "Email", value: "emma.johnson@email.com" },
-  { label: "Phone Number", value: "+1 (555) 123-4567" },
-  { label: "Gender", value: "Female" },
-  { label: "Date of Birth", value: "2/3/2026" },
-  { label: "Age", value: "0 years" },
-]
-
-const COURSE_PROGRESS = [
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "90%",
-    quiz: "88%",
-    liveClasses: "90%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "56%",
-    quiz: "88%",
-    liveClasses: "56%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "80%",
-    quiz: "88%",
-    liveClasses: "80%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "45%",
-    quiz: "88%",
-    liveClasses: "45%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "50%",
-    quiz: "88%",
-    liveClasses: "56%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "80%",
-    quiz: "88%",
-    liveClasses: "80%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "90%",
-    quiz: "88%",
-    liveClasses: "90%",
-  },
-  {
-    name: "Healthy Lifestyle & Habits",
-    classProgress: "45%",
-    quiz: "88%",
-    liveClasses: "45%",
-  },
-]
+import { useStudentProfileQuery } from "@/hooks/api/use-students"
+import { getApiErrorMessage } from "@/lib/api/client"
+import fallback from "@/assets/pngs/avatar-fallback.png"
 
 export default function ProfilePage() {
+  const { data, isLoading, isError, error } = useStudentProfileQuery()
+
+  const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL || ""
+  const avatarUrl = !data?.avatar?.startsWith("http")
+    ? mediaUrl + data?.avatar
+    : data.avatar
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <div className="h-56 animate-pulse rounded-2xl bg-gray-100" />
+        <div className="h-40 animate-pulse rounded-2xl bg-gray-100" />
+        <div className="h-56 animate-pulse rounded-2xl bg-gray-100" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="py-16 text-center text-red-500">
+        {getApiErrorMessage(error, "Failed to load profile.")}
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className="py-16 text-center text-gray-500">
+        No profile data found.
+      </div>
+    )
+  }
+
+  const basicInfo = [
+    { label: "First Name", value: data.first_name || "-" },
+    { label: "Last Name", value: data.last_name || "-" },
+    { label: "Student ID", value: data.student_id || "-" },
+    { label: "Grade Level", value: data.grade_level || "-" },
+    { label: "Email", value: data.email || "-" },
+    { label: "Phone Number", value: data.phone_number || "-" },
+    { label: "Gender", value: data.gender || "-" },
+    { label: "Date of Birth", value: formatDate(data.date_of_birth) },
+    { label: "Age", value: data.age === null ? "-" : `${data.age} years` },
+  ]
+
   return (
     <div className="space-y-8">
       {/* My Profile Header */}
       <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
+        <CardContent>
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-bold text-[#1D1D1D]">My Profile</h2>
             <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F8F9FC] text-[#9CA3AF] transition-colors hover:text-[#4CC0D8]">
@@ -89,7 +77,7 @@ export default function ProfilePage() {
           {/* Avatar */}
           <div className="relative mb-6 h-20 w-20">
             <Image
-              src="/assets/pngs/Profile.png"
+              src={avatarUrl || fallback}
               alt="Profile"
               width={80}
               height={80}
@@ -105,7 +93,7 @@ export default function ProfilePage() {
             Basic Information
           </h3>
           <div className="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-            {BASIC_INFO.map((field) => (
+            {basicInfo.map((field) => (
               <div key={field.label}>
                 <p className="mb-1 text-xs text-[#9CA3AF]">{field.label}</p>
                 <p className="text-sm font-medium text-[#1D1D1D]">
@@ -119,7 +107,7 @@ export default function ProfilePage() {
 
       {/* About Student */}
       <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
+        <CardContent>
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-base font-bold text-[#1D1D1D]">
               About Student
@@ -129,16 +117,15 @@ export default function ProfilePage() {
             </button>
           </div>
           <p className="text-sm leading-relaxed text-[#666666]">
-            Passionate about science and mathematics. Love exploring new
-            concepts and working on group projects. Aspiring to pursue
+            {data.bio || "No bio provided yet."}
           </p>
         </CardContent>
       </Card>
 
       {/* Course Progress Table */}
-      <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
-          <div className="overflow-hidden rounded-xl border border-gray-100">
+      <Card className="border-gray-100 p-0 shadow-none">
+        <CardContent className="p-0">
+          <div className="overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-[#F8F9FC] hover:bg-[#F8F9FC]">
@@ -157,22 +144,33 @@ export default function ProfilePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {COURSE_PROGRESS.map((course, i) => (
-                  <TableRow key={i} className="border-gray-50">
-                    <TableCell className="py-3 text-sm text-[#666666]">
-                      {course.name}
-                    </TableCell>
-                    <TableCell className="py-3 text-center text-sm text-[#666666]">
-                      {course.classProgress}
-                    </TableCell>
-                    <TableCell className="py-3 text-center text-sm text-[#666666]">
-                      {course.quiz}
-                    </TableCell>
-                    <TableCell className="py-3 text-center text-sm text-[#666666]">
-                      {course.liveClasses}
+                {data.performances.length === 0 ? (
+                  <TableRow className="border-gray-50">
+                    <TableCell
+                      colSpan={4}
+                      className="py-10 text-center text-sm text-[#9CA3AF]"
+                    >
+                      No performance records available.
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  data.performances.map((course) => (
+                    <TableRow key={course.course} className="border-gray-50">
+                      <TableCell className="py-3 text-sm text-[#666666]">
+                        {course.course_name}
+                      </TableCell>
+                      <TableCell className="py-3 text-center text-sm text-[#666666]">
+                        {course.class_progress}%
+                      </TableCell>
+                      <TableCell className="py-3 text-center text-sm text-[#666666]">
+                        {course.quiz_average}%
+                      </TableCell>
+                      <TableCell className="py-3 text-center text-sm text-[#666666]">
+                        {course.live_class_attendance}%
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
@@ -181,7 +179,7 @@ export default function ProfilePage() {
 
       {/* Account & Security */}
       <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
+        <CardContent>
           <h3 className="mb-4 text-base font-bold text-[#1D1D1D]">
             Account & Security
           </h3>
@@ -197,4 +195,18 @@ export default function ProfilePage() {
       </Card>
     </div>
   )
+}
+
+function formatDate(dateString: string | null) {
+  if (!dateString) {
+    return "-"
+  }
+
+  const parsedDate = new Date(dateString)
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "-"
+  }
+
+  return parsedDate.toLocaleDateString("en-US")
 }

@@ -37,7 +37,10 @@ export default function QuizAttemptsPage() {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4].map((s) => (
-            <div key={s} className="h-20 animate-pulse rounded-xl bg-gray-100" />
+            <div
+              key={s}
+              className="h-20 animate-pulse rounded-xl bg-gray-100"
+            />
           ))}
         </div>
       ) : (
@@ -55,9 +58,9 @@ export default function QuizAttemptsPage() {
             {(data ?? []).map((attempt) => (
               <Card
                 key={attempt.attempt_id}
-                className="border-gray-100 shadow-none transition-shadow hover:shadow-md"
+                className="border-gray-200 shadow-none transition-shadow hover:shadow-md"
               >
-                <CardContent className="flex items-center justify-between p-5">
+                <CardContent className="flex items-center justify-between">
                   <div className="min-w-0 flex-1">
                     <h3 className="text-sm font-bold text-[#1D1D1D]">
                       {attempt.quiz_name}

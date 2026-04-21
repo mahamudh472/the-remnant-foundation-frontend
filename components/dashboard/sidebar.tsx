@@ -34,11 +34,11 @@ const MENU_ITEMS = [
     href: "/dashboard/quiz-attempts",
     icon: ClipboardList,
   },
-  {
-    name: "Order History",
-    href: "/dashboard/order-history",
-    icon: ShoppingBag,
-  },
+//   {
+//     name: "Order History",
+//     href: "/dashboard/order-history",
+//     icon: ShoppingBag,
+//   },
   {
     name: "Teacher Apply",
     href: "/dashboard/teacher-apply",

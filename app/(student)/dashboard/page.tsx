@@ -58,7 +58,7 @@ export default function DashboardPage() {
               </p>
             </div>
             <Link
-              href={`/courses/${data.featured_quiz.course_id}`}
+              href={`dashboard/enrolled-courses/${data.featured_quiz.course_id}`}
               className="rounded-lg bg-[#4CC0D8] px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#3AB0C8]"
             >
               {data.featured_quiz.action_label}

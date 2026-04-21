@@ -15,6 +15,7 @@ import {
   getTeacherLiveClasses,
   getTeachers,
   getTeacherQuizzes,
+  getTeacherProfile,
   type GetTeacherAssignmentsParams,
   type GetTeacherCoursesParams,
   type GetTeacherFollowUpsParams,
@@ -34,6 +35,8 @@ export const teachersKeys = {
     ["teachers", "detail", teacherId] as const,
   dashboard: (accessToken: string | null) =>
     ["teachers", "dashboard", accessToken] as const,
+  profile: (accessToken: string | null) =>
+    ["teachers", "profile", accessToken] as const,
   courses: (params: GetTeacherCoursesParams, accessToken: string | null) =>
     ["teachers", "courses", accessToken, params] as const,
   assignments: (
@@ -242,5 +245,21 @@ export function useTeacherFollowUpDetailsQuery(followUpId?: number) {
       return getTeacherFollowUpDetails(accessToken, followUpId)
     },
     enabled: Boolean(accessToken && followUpId),
+  })
+}
+
+export function useTeacherProfileQuery() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: teachersKeys.profile(accessToken),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return getTeacherProfile(accessToken)
+    },
+    enabled: Boolean(accessToken),
   })
 }

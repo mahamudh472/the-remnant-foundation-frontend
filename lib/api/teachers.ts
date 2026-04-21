@@ -653,3 +653,55 @@ export function getTeacherFollowUpDetails(
     }
   )
 }
+
+export interface TeacherProfileData {
+  id: number
+  display_name: string
+  first_name: string
+  last_name: string
+  bio: string | null
+  address: string | null
+  profile_photo: string | null
+  email: string
+  username: string | null
+  phone_number: string | null
+  date_of_birth: string | null
+  age: number | null
+  registration_date: string
+  approval_status: string
+  is_teacher_active: boolean
+  approved_at: string | null
+}
+
+export interface TeacherTeachingOverview {
+  courses_teaching: number
+  active_students: number
+  assignments_created: number
+  live_classes_conducted: number
+}
+
+export interface TeacherProfileCertification {
+  id: number
+  title: string
+  file: string
+  issued_by: string
+  issued_year: number
+  uploaded_at: string
+}
+
+export interface TeacherProfileResponse {
+  profile: TeacherProfileData
+  educations: TeacherEducation[]
+  experiences: TeacherExperience[]
+  teaching_overview: TeacherTeachingOverview
+  certifications: TeacherProfileCertification[]
+  contact_details: TeacherContactDetail[]
+  social_links: TeacherSocialLink[]
+}
+
+export function getTeacherProfile(accessToken: string) {
+  return apiRequest<TeacherProfileResponse>("teacher/profile/", {
+    method: "GET",
+    token: accessToken,
+  })
+}
