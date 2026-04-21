@@ -5,24 +5,31 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 import {
+  addStudentWishlistCourse,
   completeStudentLesson,
   enrollStudentCourse,
+  getStudentCertificates,
   getStudentQuizQuestions,
   getStudentCourseModules,
   getStudentEnrolledCourses,
   getStudentDashboard,
+  getStudentTeacherApplicationEligibility,
   getStudentModuleContent,
   getStudentPastLiveClasses,
   getStudentProfile,
   getStudentUpcomingLiveClasses,
   getStudentWishlist,
+  removeStudentWishlistCourse,
+  submitStudentTeacherApplication,
   submitStudentQuiz,
   getStudentQuizAttempts,
   getStudentQuizAttemptDetail,
   type GetStudentEnrolledCoursesParams,
   type GetStudentLiveClassesParams,
+  type SubmitStudentTeacherApplicationPayload,
   type StudentQuizSubmitPayload,
   type StudentEnrolledStatus,
+  type StudentWishlistItem,
   getTeacherStudentDetails,
   getTeacherStudents,
   type GetTeacherStudentsParams,
@@ -41,6 +48,10 @@ export const studentsKeys = {
     ["students", "profile", accessToken] as const,
   dashboard: (accessToken: string | null) =>
     ["students", "dashboard", accessToken] as const,
+  teacherApplicationEligibility: (accessToken: string | null) =>
+    ["students", "teacher-application", "eligibility", accessToken] as const,
+  certificates: (accessToken: string | null) =>
+    ["students", "certificates", accessToken] as const,
   wishlist: (accessToken: string | null) =>
     ["students", "wishlist", accessToken] as const,
   enrolledCourses: (
@@ -136,6 +147,38 @@ export function useStudentDashboardQuery() {
   })
 }
 
+export function useStudentTeacherApplicationEligibilityQuery(enabled = true) {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: studentsKeys.teacherApplicationEligibility(accessToken),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return getStudentTeacherApplicationEligibility(accessToken)
+    },
+    enabled: Boolean(accessToken) && enabled,
+  })
+}
+
+export function useStudentCertificatesQuery() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+
+  return useQuery({
+    queryKey: studentsKeys.certificates(accessToken),
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return getStudentCertificates(accessToken)
+    },
+    enabled: Boolean(accessToken),
+  })
+}
+
 export function useStudentEnrolledCoursesQuery(
   params: GetStudentEnrolledCoursesParams = {}
 ) {
@@ -168,6 +211,62 @@ export function useStudentWishlistQuery() {
       return getStudentWishlist(accessToken)
     },
     enabled: Boolean(accessToken),
+  })
+}
+
+export function useAddStudentWishlistMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (courseId: number) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return addStudentWishlistCourse(accessToken, courseId)
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData<StudentWishlistItem[]>(
+        studentsKeys.wishlist(accessToken),
+        (current = []) => {
+          if (
+            current.some((item) => item.course_id === data.wishlist.course_id)
+          ) {
+            return current
+          }
+
+          return [data.wishlist, ...current]
+        }
+      )
+      queryClient.invalidateQueries({
+        queryKey: studentsKeys.wishlist(accessToken),
+      })
+    },
+  })
+}
+
+export function useRemoveStudentWishlistMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (courseId: number) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return removeStudentWishlistCourse(accessToken, courseId)
+    },
+    onSuccess: (_data, courseId) => {
+      queryClient.setQueryData<StudentWishlistItem[]>(
+        studentsKeys.wishlist(accessToken),
+        (current = []) => current.filter((item) => item.course_id !== courseId)
+      )
+      queryClient.invalidateQueries({
+        queryKey: studentsKeys.wishlist(accessToken),
+      })
+    },
   })
 }
 
@@ -338,6 +437,26 @@ export function useEnrollStudentCourseMutation() {
   })
 }
 
+export function useSubmitStudentTeacherApplicationMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: SubmitStudentTeacherApplicationPayload) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+
+      return submitStudentTeacherApplication(accessToken, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: studentsKeys.teacherApplicationEligibility(accessToken),
+      })
+    },
+  })
+}
+
 export function useSubmitStudentQuizMutation() {
   const accessToken = useAuthStore((state) => state.accessToken)
   const queryClient = useQueryClient()
@@ -390,7 +509,10 @@ export function useStudentQuizAttemptDetailQuery(attemptId?: number) {
   const accessToken = useAuthStore((state) => state.accessToken)
 
   return useQuery({
-    queryKey: studentsKeys.quizAttemptDetail(attemptId ?? "unknown", accessToken),
+    queryKey: studentsKeys.quizAttemptDetail(
+      attemptId ?? "unknown",
+      accessToken
+    ),
     queryFn: () => {
       if (!accessToken) {
         throw new Error("Missing access token")

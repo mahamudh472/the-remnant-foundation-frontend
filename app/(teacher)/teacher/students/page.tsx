@@ -1,14 +1,8 @@
 "use client"
 
-import React, { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState } from "react"
 import {
   Search,
-  MapPin,
-  Calendar,
-  BookOpen,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
@@ -16,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { useDebounce } from "@/hooks/use-debounce"
 import { useTeacherStudentsQuery } from "@/hooks/api/use-students"
 import { getApiErrorMessage } from "@/lib/api/client"
+import StudentCard from "@/components/common/student-card"
 
 export default function TeacherStudentsPage() {
   const [search, setSearch] = useState("")
@@ -73,45 +68,7 @@ export default function TeacherStudentsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {students.map((student) => (
-            <Link key={student.id} href={`/teacher/students/${student.id}`}>
-              <Card className="overflow-hidden border-gray-100 p-0 shadow-none transition-shadow hover:shadow-md">
-                <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-                  <Image
-                    src={student.avatar || "/assets/pngs/student.png"}
-                    alt={student.name}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover"
-                  />
-                </div>
-                <CardContent className="p-4">
-                  <h3 className="text-sm font-bold text-[#1D1D1D]">
-                    {student.name}
-                  </h3>
-                  <div className="mt-1 flex items-center gap-1">
-                    <MapPin className="h-3 w-3 text-[#4CC0D8]" />
-                    <span className="text-xs text-[#4CC0D8]">
-                      {student.location || "N/A"}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex items-center gap-4 text-xs text-[#666666]">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3 text-[#F59E0B]" />
-                      <span>
-                        {formatDisplayDate(student.first_enrolled_at)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <BookOpen className="h-3 w-3 text-[#F59E0B]" />
-                      <span>
-                        {student.total_courses.toString().padStart(2, "0")}{" "}
-                        Courses
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+               <StudentCard key={student.id} {...student} />
           ))}
         </div>
       )}
@@ -182,18 +139,4 @@ export default function TeacherStudentsPage() {
       )}
     </div>
   )
-}
-
-function formatDisplayDate(date: string) {
-  const parsedDate = new Date(date)
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "-"
-  }
-
-  return parsedDate.toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  })
 }

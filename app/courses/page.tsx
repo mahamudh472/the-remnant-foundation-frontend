@@ -62,7 +62,6 @@ export default function CoursesPage() {
 
   const { data, isLoading, isError } = useCoursesQuery({
     page,
-    page_size: 1,
     search: debouncedSearch || undefined,
     category: selectedCategories.length > 0 ? selectedCategories.join(",") : undefined,
     teacher: selectedTeachers.length > 0 ? selectedTeachers.join(",") : undefined,

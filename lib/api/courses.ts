@@ -32,7 +32,6 @@ export interface CoursesResponse {
 
 export interface GetCoursesParams {
   page?: number
-  page_size?: number
   search?: string
   category?: string | number[] | string[]
   teacher?: string | number[] | string[]
@@ -42,6 +41,205 @@ export interface GetCoursesParams {
   min_rating?: number
   max_rating?: number
   ordering?: "newest" | "oldest" | "top"
+}
+
+export interface CourseChoiceOption<T extends string | number> {
+  key: T
+  value: string
+}
+
+export interface CourseChoiceOptionsResponse<T extends string | number> {
+  items: CourseChoiceOption<T>[]
+}
+
+export interface CreateCoursePayload {
+  title: string
+  description: string
+  category_id: number
+  program_id: number
+  age_group: string
+  visibility: string
+  price: string
+  thumbnail?: File
+}
+
+export type CourseQuizType =
+  | "all_grades"
+  | "beginner"
+  | "intermediate"
+  | "advanced"
+
+export type CourseQuizQuestionType = "mcq" | "multiple_select" | "short_answer"
+
+export interface CreateCourseQuizQuestionPayload {
+  question_type: CourseQuizQuestionType
+  question_text: string
+  option_a?: string
+  option_b?: string
+  option_c?: string
+  option_d?: string
+  correct_options: string[]
+  short_answer?: string
+  explanation?: string
+  order: number
+}
+
+export interface CreateCourseQuizPayload {
+  lesson_id: number | null
+  title: string
+  quiz_type: CourseQuizType
+  short_instruction: string
+  passing_score: number
+  attempts_allowed: number
+  time_limit_minutes: number
+  randomize_questions: boolean
+  questions: CreateCourseQuizQuestionPayload[]
+}
+
+export interface CourseQuizQuestion {
+  id: number
+  question_type: CourseQuizQuestionType
+  question_text: string
+  option_a: string
+  option_b: string
+  option_c: string
+  option_d: string
+  correct_options: string[]
+  short_answer: string
+  explanation: string
+  order: number
+}
+
+export interface CourseQuizEntity {
+  id: number
+  lesson_id: number | null
+  title: string
+  quiz_type: CourseQuizType
+  short_instruction: string
+  passing_score: number
+  attempts_allowed: number
+  time_limit_minutes: number
+  randomize_questions: boolean
+  questions: CourseQuizQuestion[]
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateCourseQuizResponse {
+  message: string
+  quiz: CourseQuizEntity
+}
+
+export type CourseAssignmentType =
+  | "homework"
+  | "project"
+  | "essay"
+  | "presentation"
+  | "worksheet"
+  | "other"
+
+export interface CreateCourseAssignmentPayload {
+  lesson_id: number | null
+  title: string
+  short_description: string
+  assignment_type: CourseAssignmentType
+  due_date: string
+  content_description: string
+  attachment?: File
+  allow_file_submission: boolean
+  allow_text_answer: boolean
+  total_marks: number
+}
+
+export interface CourseAssignmentEntity {
+  id: number
+  lesson_id: number | null
+  title: string
+  short_description: string
+  assignment_type: CourseAssignmentType
+  due_date: string
+  content_description: string
+  attachment: string | null
+  allow_file_submission: boolean
+  allow_text_answer: boolean
+  total_marks: number
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateCourseAssignmentResponse {
+  message: string
+  assignment: CourseAssignmentEntity
+}
+
+export type CourseUpdateStep =
+  | "course_info"
+  | "age_access"
+  | "content"
+  | "quiz"
+  | "review"
+
+export interface UpdateCourseStepPayload {
+  step: CourseUpdateStep
+  payload: Record<string, unknown>
+  save_as_draft?: boolean
+  publish?: boolean
+}
+
+export interface CourseDraftData {
+  steps: Record<string, unknown>
+  last_step: string
+  updated_at: string
+}
+
+export interface CourseWorkflowLesson {
+  title: string
+  content: string
+  video_url: string
+  offline_download_enabled: boolean
+  quiz_ids: number[]
+  assignment_ids: number[]
+  order: number
+}
+export interface CourseWorkflowModule {
+  title: string
+  description: string
+  order: number
+  lessons: CourseWorkflowLesson[]
+}
+
+export interface CourseWorkflowEntity {
+  id: number
+  status: string
+  title: string
+  description?: string
+  category?: number
+  program?: number
+  age_group?: string
+  visibility?: string
+  level?: string
+  language?: string
+  price?: string
+  quizzes_enabled?: boolean
+  quiz_time_limit_minutes?: number
+  quiz_passing_score?: number
+  quiz_max_attempts?: number
+  quiz_question_type?: string
+  require_quiz_for_certificate?: boolean
+  draft_data?: CourseDraftData
+  modules_count?: number
+  lessons_count?: number
+  modules?: CourseWorkflowModule[]
+}
+
+export interface CreateCourseResponse {
+  message: string
+  course: CourseWorkflowEntity
+}
+
+export interface UpdateCourseStepResponse {
+  message: string
+  course: CourseWorkflowEntity
 }
 
 function serializeCommaList(value: string | number[] | string[]) {
@@ -55,10 +253,10 @@ function serializeCommaList(value: string | number[] | string[]) {
 export function getCourses(params: GetCoursesParams = {}) {
   const normalizedParams: GetCoursesParams = {
     ...params,
-    page_size:
-      params.page_size === undefined
-        ? undefined
-        : Math.max(1, Math.min(params.page_size, 50)),
+    // page_size:
+    //   params.page_size === undefined
+    //     ? undefined
+    //     : Math.max(1, Math.min(params.page_size, 50)),
     category:
       params.category === undefined
         ? undefined
@@ -82,5 +280,116 @@ export function getCourses(params: GetCoursesParams = {}) {
 
   return apiRequest<CoursesResponse>(endpoint, {
     method: "GET",
+  })
+}
+
+export function createCourse(
+  accessToken: string,
+  payload: CreateCoursePayload
+) {
+  const formData = new FormData()
+
+  formData.append("title", payload.title)
+  formData.append("description", payload.description)
+  formData.append("category_id", String(payload.category_id))
+  formData.append("program_id", String(payload.program_id))
+  formData.append("age_group", payload.age_group)
+  formData.append("visibility", payload.visibility)
+  formData.append("price", payload.price)
+
+  if (payload.thumbnail) {
+    formData.append("thumbnail", payload.thumbnail)
+  }
+
+  return apiRequest<CreateCourseResponse>("courses/create/", {
+    method: "POST",
+    body: formData,
+    token: accessToken,
+  })
+}
+
+export function getCourseCategoryOptions() {
+  return apiRequest<CourseChoiceOptionsResponse<number>>(
+    "courses/category-options/",
+    {
+      method: "GET",
+    }
+  )
+}
+
+export function getCourseProgramOptions() {
+  return apiRequest<CourseChoiceOptionsResponse<number>>(
+    "courses/program-options/",
+    {
+      method: "GET",
+    }
+  )
+}
+
+export function getCourseAgeGroupChoiceOptions() {
+  return apiRequest<CourseChoiceOptionsResponse<string>>(
+    "courses/age-group-choice-option/",
+    {
+      method: "GET",
+    }
+  )
+}
+
+export function createCourseQuiz(
+  accessToken: string,
+  payload: CreateCourseQuizPayload
+) {
+  return apiRequest<CreateCourseQuizResponse>("courses/quizzes/create/", {
+    method: "POST",
+    body: payload,
+    token: accessToken,
+  })
+}
+
+export function createCourseAssignment(
+  accessToken: string,
+  payload: CreateCourseAssignmentPayload
+) {
+  const formData = new FormData()
+
+  formData.append(
+    "lesson_id",
+    payload.lesson_id === null ? "" : String(payload.lesson_id)
+  )
+  formData.append("title", payload.title)
+  formData.append("short_description", payload.short_description)
+  formData.append("assignment_type", payload.assignment_type)
+  formData.append("due_date", payload.due_date)
+  formData.append("content_description", payload.content_description)
+  formData.append(
+    "allow_file_submission",
+    String(payload.allow_file_submission)
+  )
+  formData.append("allow_text_answer", String(payload.allow_text_answer))
+  formData.append("total_marks", String(payload.total_marks))
+
+  if (payload.attachment) {
+    formData.append("attachment", payload.attachment)
+  }
+
+  return apiRequest<CreateCourseAssignmentResponse>(
+    "courses/assignments/create/",
+    {
+      method: "POST",
+      body: formData,
+      token: accessToken,
+    }
+  )
+}
+
+export function updateCourseStep(
+  accessToken: string,
+  courseId: number | string,
+  payload: UpdateCourseStepPayload
+) {
+  return apiRequest<UpdateCourseStepResponse>(`courses/${courseId}/update/`, {
+    method: "PATCH",
+    body: payload,
+    token: accessToken,
   })
 }

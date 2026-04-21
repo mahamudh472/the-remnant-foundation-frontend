@@ -170,6 +170,24 @@ export interface StudentWishlistItem {
   added_at: string
 }
 
+export interface StudentWishlistAddResponse {
+  message: string
+  wishlist: StudentWishlistItem
+}
+
+export interface StudentWishlistRemoveResponse {
+  message: string
+}
+
+export interface StudentCertificateItem {
+  certificate_id: number
+  course_id: number
+  course_name: string
+  date: string
+  marks: number
+  out_of: number
+}
+
 export interface GetStudentLiveClassesParams {
   page?: number
   page_size?: number
@@ -307,6 +325,125 @@ export interface StudentCompleteLessonResponse {
   completed_at: string | null
 }
 
+export interface StudentTeacherApplicationEligibility {
+  age?: number | null
+  minimum_age?: number | null
+  is_age_eligible: boolean
+  completed_courses?: number
+  minimum_completed_courses?: number
+  has_completed_course: boolean
+  is_teacher_active: boolean
+  can_apply: boolean
+}
+
+export interface StudentTeacherApplicationFieldOption {
+  value: string
+  label: string
+}
+
+export interface StudentTeacherApplicationEligibilityResponse {
+  eligibility: StudentTeacherApplicationEligibility
+  field_options: {
+    preferred_age_groups: StudentTeacherApplicationFieldOption[]
+    preferred_teaching_modes: StudentTeacherApplicationFieldOption[]
+    document_types: StudentTeacherApplicationFieldOption[]
+    expertise: StudentTeacherApplicationExpertise[]
+  }
+  latest_application: StudentTeacherApplication | null
+}
+
+export interface StudentTeacherApplicationExpertise {
+  id: number
+  name: string
+}
+
+export interface StudentTeacherApplicationDocument {
+  id: number
+  document_type: string
+  file: string
+  uploaded_at: string
+}
+
+export interface StudentTeacherApplication {
+  id: number
+  full_name: string
+  email: string
+  phone_number: string
+  profile_photo: string | null
+  educational_background: string
+  teaching_experience: string
+  motivation: string
+  preferred_age_group: string
+  preferred_teaching_mode: string
+  agreement_accepted: boolean
+  status: string
+  rejection_reason: string
+  submitted_at: string
+  reviewed_at: string | null
+  expertise: StudentTeacherApplicationExpertise[]
+  documents: StudentTeacherApplicationDocument[]
+}
+
+export interface SubmitStudentTeacherApplicationPayload {
+  full_name: string
+  email: string
+  phone_number?: string
+  profile_photo?: File | null
+  educational_background: string
+  teaching_experience: string
+  motivation: string
+  preferred_age_group: string
+  preferred_teaching_mode: string
+  agreement_accepted: boolean
+  expertise_ids: number[]
+  certificate_documents?: File[]
+  recommendation_letter?: File | null
+  other_documents?: File[]
+}
+
+export interface SubmitStudentTeacherApplicationResponse {
+  message: string
+  application: StudentTeacherApplication
+}
+
+function appendStudentTeacherApplicationFormData(
+  formData: FormData,
+  payload: SubmitStudentTeacherApplicationPayload
+) {
+  formData.append("full_name", payload.full_name.trim())
+  formData.append("email", payload.email.trim())
+  formData.append("phone_number", payload.phone_number?.trim() ?? "")
+  formData.append(
+    "educational_background",
+    payload.educational_background.trim()
+  )
+  formData.append("teaching_experience", payload.teaching_experience.trim())
+  formData.append("motivation", payload.motivation.trim())
+  formData.append("preferred_age_group", payload.preferred_age_group)
+  formData.append("preferred_teaching_mode", payload.preferred_teaching_mode)
+  formData.append("agreement_accepted", String(payload.agreement_accepted))
+
+  payload.expertise_ids.forEach((expertiseId) => {
+    formData.append("expertise_ids", String(expertiseId))
+  })
+
+  if (payload.profile_photo) {
+    formData.append("profile_photo", payload.profile_photo)
+  }
+
+  payload.certificate_documents?.forEach((file) => {
+    formData.append("certificate_documents", file)
+  })
+
+  if (payload.recommendation_letter) {
+    formData.append("recommendation_letter", payload.recommendation_letter)
+  }
+
+  payload.other_documents?.forEach((file) => {
+    formData.append("other_documents", file)
+  })
+}
+
 export function getTeacherStudents(
   accessToken: string,
   params: GetTeacherStudentsParams = {}
@@ -363,6 +500,33 @@ export function getStudentDashboard(accessToken: string) {
   })
 }
 
+export function getStudentTeacherApplicationEligibility(accessToken: string) {
+  return apiRequest<StudentTeacherApplicationEligibilityResponse>(
+    "student/teacher-application/",
+    {
+      method: "GET",
+      token: accessToken,
+    }
+  )
+}
+
+export function submitStudentTeacherApplication(
+  accessToken: string,
+  payload: SubmitStudentTeacherApplicationPayload
+) {
+  const formData = new FormData()
+  appendStudentTeacherApplicationFormData(formData, payload)
+
+  return apiRequest<SubmitStudentTeacherApplicationResponse>(
+    "student/teacher-application/",
+    {
+      method: "POST",
+      token: accessToken,
+      body: formData,
+    }
+  )
+}
+
 export function getStudentEnrolledCourses(
   accessToken: string,
   params: GetStudentEnrolledCoursesParams = {}
@@ -400,6 +564,39 @@ export function getStudentWishlist(accessToken: string) {
     method: "GET",
     token: accessToken,
   })
+}
+
+export function getStudentCertificates(accessToken: string) {
+  return apiRequest<StudentCertificateItem[]>("student/certificates/", {
+    method: "GET",
+    token: accessToken,
+  })
+}
+
+export function addStudentWishlistCourse(
+  accessToken: string,
+  courseId: number
+) {
+  return apiRequest<StudentWishlistAddResponse>(
+    `student/wishlist/${courseId}/add/`,
+    {
+      method: "POST",
+      token: accessToken,
+    }
+  )
+}
+
+export function removeStudentWishlistCourse(
+  accessToken: string,
+  courseId: number
+) {
+  return apiRequest<StudentWishlistRemoveResponse>(
+    `student/wishlist/${courseId}/remove/`,
+    {
+      method: "DELETE",
+      token: accessToken,
+    }
+  )
 }
 
 export function enrollStudentCourse(accessToken: string, courseId: number) {

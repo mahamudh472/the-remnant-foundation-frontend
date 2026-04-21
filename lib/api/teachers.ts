@@ -466,10 +466,10 @@ export function getTeacherCourses(
   const normalizedParams: GetTeacherCoursesParams = {
     page: params.page,
     filter: params.filter,
-    page_size:
-      params.page_size === undefined
-        ? undefined
-        : Math.max(1, Math.min(params.page_size, 100)),
+    // page_size:
+    //   params.page_size === undefined
+    //     ? undefined
+    //     : Math.max(1, Math.min(params.page_size, 100)),
   }
 
   const urlParams = new URLSearchParams()
