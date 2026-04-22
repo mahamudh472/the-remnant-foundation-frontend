@@ -654,6 +654,45 @@ export function getTeacherFollowUpDetails(
   )
 }
 
+export interface SendFollowUpPayload {
+  course_id: number
+  student_ids: number[]
+  subject: string
+  message: string
+  attachment?: File | null
+}
+
+export interface SendFollowUpResponse {
+  message: string
+  follow_up_id: number
+  course_id: number
+  student_ids: number[]
+  sent_count: number
+  has_attachment: boolean
+}
+
+export function sendFollowUp(
+  accessToken: string,
+  payload: SendFollowUpPayload
+) {
+  const formData = new FormData()
+  formData.append("course_id", String(payload.course_id))
+  payload.student_ids.forEach((id) => {
+    formData.append("student_ids", String(id))
+  })
+  formData.append("subject", payload.subject)
+  formData.append("message", payload.message)
+  if (payload.attachment) {
+    formData.append("attachment", payload.attachment)
+  }
+
+  return apiRequest<SendFollowUpResponse>("teacher/dashboard/send-follow-up/", {
+    method: "POST",
+    body: formData,
+    token: accessToken,
+  })
+}
+
 export interface TeacherProfileData {
   id: number
   display_name: string

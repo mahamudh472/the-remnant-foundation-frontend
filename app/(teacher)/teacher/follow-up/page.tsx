@@ -76,13 +76,13 @@ export default function FollowUpPage() {
   const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE))
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6">
+    <div>
       {/* Header row inside panel */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
             href="/teacher"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-[#9CA3AF] transition-colors hover:border-[#4CC0D8] hover:text-[#4CC0D8]"
+            className="flex h-8 w-8 items-center justify-center"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>

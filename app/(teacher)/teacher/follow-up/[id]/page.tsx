@@ -97,13 +97,14 @@ export default function FollowUpDetailPage() {
   }
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6">
+    <div>
       {/* Back + title */}
+
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
             href="/teacher/follow-up"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-[#9CA3AF] transition-colors hover:border-[#4CC0D8] hover:text-[#4CC0D8]"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-[#9CA3AF] transition-colors hover:border-[#4CC0D8] hover:text-[#4CC0D8]"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>

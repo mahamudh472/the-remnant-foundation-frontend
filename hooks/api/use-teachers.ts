@@ -12,6 +12,8 @@ import {
   getTeacherDetails,
   getTeacherFollowUpDetails,
   getTeacherFollowUps,
+  sendFollowUp,
+  type SendFollowUpPayload,
   getTeacherLiveClasses,
   getTeachers,
   getTeacherQuizzes,
@@ -476,6 +478,25 @@ export function useAddTeacherContactDetailMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: teachersKeys.profile(accessToken),
+      })
+    },
+  })
+}
+
+export function useSendFollowUpMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: SendFollowUpPayload) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return sendFollowUp(accessToken, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["teachers", "follow-ups", accessToken],
       })
     },
   })
