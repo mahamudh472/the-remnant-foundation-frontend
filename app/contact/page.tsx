@@ -23,7 +23,7 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     try {
       await contactMutation.mutateAsync({
         first_name: form.firstName,
@@ -32,7 +32,7 @@ export default function ContactPage() {
         subject: form.subject,
         message: form.message,
       })
-      
+
       setIsSuccess(true)
       setForm({
         firstName: "",
@@ -86,9 +86,9 @@ export default function ContactPage() {
                       <h3 className="text-xl font-bold text-[#1D1D1D]">Thank You!</h3>
                       <p className="text-[#666666]">Your message has been received. Our team will get back to you shortly.</p>
                     </div>
-                    <Button 
+                    <Button
                       onClick={() => setIsSuccess(false)}
-                      variant="outline" 
+                      variant="outline"
                       className="rounded-xl"
                     >
                       Send Another Message
@@ -157,8 +157,8 @@ export default function ContactPage() {
                         required
                       ></textarea>
                     </div>
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       className="w-full h-12 bg-[#4CC0D8] hover:bg-[#3AB0C8] text-white rounded-xl font-bold gap-2"
                       disabled={contactMutation.isPending}
                     >
@@ -223,28 +223,15 @@ export default function ContactPage() {
 
                 {/* FAQ Teaser */}
                 <div className="bg-[#F3FBFC] rounded-3xl p-8 space-y-4 border border-[#4CC0D8]/10">
-                  <div className="h-12 w-12 rounded-xl bg-white text-[#4CC0D8] flex items-center justify-center shadow-sm">
                     <HelpCircle className="h-6 w-6" />
-                  </div>
                   <h3 className="text-xl font-bold text-[#1D1D1D]">Frequently Asked Questions</h3>
                   <p className="text-sm text-[#666666]">Find quick answers to common questions about our programs and platform.</p>
-                  <a href="#" className="inline-flex items-center gap-2 text-sm font-bold text-[#4CC0D8] hover:gap-3 transition-all">
+                  <a href="support/faq" className="inline-flex items-center gap-2 text-sm font-bold text-[#4CC0D8] hover:gap-3 transition-all">
                     View FAQs <ChevronRight className="h-4 w-4" />
                   </a>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Bottom CTA */}
-        <section className="py-24 bg-white">
-          <div className="mx-auto max-w-4xl px-4 text-center space-y-10">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-[#1D1D1D]">Ready to Start Learning?</h2>
-            <p className="text-[#666666]">Join thousands of students on their spiritual and academic journey.</p>
-            <Button className="h-14 px-12 bg-[#C776EA]/40 text-[#C776EA] hover:bg-[#C776EA]/50 rounded-xl font-bold text-lg">
-              Sign up now
-            </Button>
           </div>
         </section>
       </main>

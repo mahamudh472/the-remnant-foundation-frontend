@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils"
 import { BookOpen, ChevronRight, FileText, Star } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import fallback from "@/assets/pngs/avatar-fallback.png"
+import fallback from "@/assets/pngs/thumbnail-fallback.png"
 
 interface CourseCardProps {
   id: number | string
