@@ -230,14 +230,15 @@ export default function QuizAttemptModal({
       <DialogContent className="top-0 right-0 left-auto h-svh w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-none p-0 data-[state=closed]:zoom-out-100 data-[state=closed]:slide-out-to-right-full data-[state=open]:zoom-in-100 data-[state=open]:slide-in-from-right-full [&>button]:hidden">
         <div className="flex h-full flex-col w-1/2 mx-auto bg-white">
           <div className="border-b border-gray-100 px-5 py-4 sm:px-7">
-            <button
+            <Button
+              variant={"outline"}
               type="button"
               onClick={() => onOpenChange(false)}
-              className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-[#4CC0D8]"
+              className="border-none shadow-none text-primary absolute left-5 top-4"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
-            </button>
+            </Button>
 
             <DialogTitle className="text-2xl font-bold text-[#1D1D1D]">
               {quizData?.title || quizTitle || "Assess Your Knowledge"}
@@ -442,7 +443,8 @@ export default function QuizAttemptModal({
             </div>
           </div>
 
-          <div className="border-t border-gray-100 bg-white px-5 py-4 sm:px-7">
+        </div>
+          <div className="border-t border-gray-100 bg-white px-5 py-4 sm:px-7 absolute bottom-0 w-full">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-[#666666]">
                 {answeredQuestionCount} / {questions.length} answered
@@ -476,7 +478,6 @@ export default function QuizAttemptModal({
               </div>
             </div>
           </div>
-        </div>
       </DialogContent>
     </Dialog>
   )

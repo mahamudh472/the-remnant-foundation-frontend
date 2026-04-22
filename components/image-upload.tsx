@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import Image from "next/image"
 import { AlertCircleIcon, ImageUpIcon, XIcon } from "lucide-react"
 
@@ -9,14 +10,37 @@ interface ImageUploaderProps {
   onFileChange?: (file: File | null) => void
   maxSizeMB?: number
   ariaLabel?: string
+  initialFile?: File | null
 }
 
 export default function ImageUploader({
   onFileChange,
   maxSizeMB = 5,
   ariaLabel,
+  initialFile,
 }: ImageUploaderProps) {
   const maxSize = maxSizeMB * 1024 * 1024
+
+  const initialFiles = React.useMemo(() => {
+    if (!initialFile) return []
+    const url = URL.createObjectURL(initialFile)
+    return [
+      {
+        file: initialFile,
+        id: "initial",
+        url,
+      },
+    ]
+  }, [initialFile])
+
+  // Clean up object URLs when re-memoizing or unmounting
+  React.useEffect(() => {
+    return () => {
+      for (const f of initialFiles) {
+        URL.revokeObjectURL(f.url)
+      }
+    }
+  }, [initialFiles])
 
   const [
     { files, isDragging, errors },
@@ -32,6 +56,7 @@ export default function ImageUploader({
   ] = useFileUpload({
     accept: "image/*",
     maxSize,
+    initialFiles,
     onFilesChange: (nextFiles) => {
       const firstFile = nextFiles[0]?.file
       onFileChange?.(firstFile instanceof File ? firstFile : null)
