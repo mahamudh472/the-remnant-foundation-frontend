@@ -15,14 +15,19 @@ import { Pencil, LogOut, ChevronRight } from "lucide-react"
 import { useStudentProfileQuery } from "@/hooks/api/use-students"
 import { getApiErrorMessage } from "@/lib/api/client"
 import fallback from "@/assets/pngs/avatar-fallback.png"
+import { EditStudentProfileModal } from "@/components/student/profile-edit-modals"
+import React from "react"
 
 export default function ProfilePage() {
   const { data, isLoading, isError, error } = useStudentProfileQuery()
+  const [isEditOpen, setIsEditOpen] = React.useState(false)
 
   const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL || ""
-  const avatarUrl = !data?.avatar?.startsWith("http")
-    ? mediaUrl + data?.avatar
-    : data.avatar
+  const avatarUrl = data?.avatar
+    ? data.avatar.startsWith("http")
+      ? data.avatar
+      : mediaUrl + data.avatar
+    : null
 
   if (isLoading) {
     return (
@@ -69,7 +74,10 @@ export default function ProfilePage() {
         <CardContent>
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-bold text-[#1D1D1D]">My Profile</h2>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F8F9FC] text-[#9CA3AF] transition-colors hover:text-[#4CC0D8]">
+            <button
+              onClick={() => setIsEditOpen(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F8F9FC] text-[#9CA3AF] transition-colors hover:text-[#4CC0D8]"
+            >
               <Pencil className="h-4 w-4" />
             </button>
           </div>
@@ -112,7 +120,10 @@ export default function ProfilePage() {
             <h3 className="text-base font-bold text-[#1D1D1D]">
               About Student
             </h3>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F8F9FC] text-[#9CA3AF] transition-colors hover:text-[#4CC0D8]">
+            <button
+              onClick={() => setIsEditOpen(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F8F9FC] text-[#9CA3AF] transition-colors hover:text-[#4CC0D8]"
+            >
               <Pencil className="h-4 w-4" />
             </button>
           </div>
@@ -193,6 +204,14 @@ export default function ProfilePage() {
           </button>
         </CardContent>
       </Card>
+      {/* Modals */}
+      {data && (
+        <EditStudentProfileModal
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          profile={data}
+        />
+      )}
     </div>
   )
 }

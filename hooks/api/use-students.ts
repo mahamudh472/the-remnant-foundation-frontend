@@ -26,6 +26,8 @@ import {
   getStudentQuizAttemptDetail,
   getStudentAssignmentDetails,
   submitStudentAssignment,
+  updateStudentProfile,
+  type UpdateStudentProfilePayload,
   type GetStudentEnrolledCoursesParams,
   type GetStudentLiveClassesParams,
   type SubmitStudentTeacherApplicationPayload,
@@ -610,6 +612,25 @@ export function useSubmitStudentAssignmentMutation() {
           queryKey: studentsKeys.courseModules(variables.courseId, accessToken),
         })
       }
+    },
+  })
+}
+
+export function useUpdateStudentProfileMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: UpdateStudentProfilePayload) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return updateStudentProfile(accessToken, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: studentsKeys.profile(accessToken),
+      })
     },
   })
 }

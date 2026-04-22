@@ -21,6 +21,7 @@ export interface GetTeacherStudentsParams {
   page?: number
   page_size?: number
   search?: string
+  course_id?: number
 }
 
 export interface TeacherStudentProfile {
@@ -489,6 +490,28 @@ export function getTeacherStudentDetails(
 export function getStudentProfile(accessToken: string) {
   return apiRequest<StudentProfileResponse>("student/profile/", {
     method: "GET",
+    token: accessToken,
+  })
+}
+
+export interface UpdateStudentProfilePayload {
+  first_name?: string
+  last_name?: string
+  bio?: string
+  grade_level?: string
+  age_group?: string
+  phone_number?: string
+  age?: number
+  gender?: string
+}
+
+export function updateStudentProfile(
+  accessToken: string,
+  payload: UpdateStudentProfilePayload
+) {
+  return apiRequest<StudentProfileResponse>("student/profile/", {
+    method: "PATCH",
+    body: payload,
     token: accessToken,
   })
 }
