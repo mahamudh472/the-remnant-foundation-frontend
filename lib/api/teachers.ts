@@ -705,3 +705,154 @@ export function getTeacherProfile(accessToken: string) {
     token: accessToken,
   })
 }
+
+export interface UpdateTeacherProfilePayload {
+  first_name?: string
+  last_name?: string
+  bio?: string
+  address?: string
+  display_name?: string
+  username?: string
+  phone_number?: string
+  date_of_birth?: string
+  age?: number
+}
+
+export interface TeacherEducationPayload {
+  degree: string
+  institution: string
+  start_year: number
+  end_year?: number | null
+  description?: string
+}
+
+export interface TeacherExperiencePayload {
+  job_title: string
+  organization: string
+  start_year: number
+  end_year?: number | null
+  description?: string
+  is_current?: boolean
+}
+
+export interface TeacherCertificationPayload {
+  title: string
+  issued_by: string
+  issued_year: number
+  file: File
+}
+
+export interface TeacherContactDetailPayload {
+  contact_type: string
+  label: string
+  value: string
+}
+
+export function updateTeacherProfile(
+  accessToken: string,
+  payload: UpdateTeacherProfilePayload
+) {
+  return apiRequest<TeacherProfileData>("teacher/profile/update/", {
+    method: "PATCH",
+    body: payload,
+    token: accessToken,
+  })
+}
+
+export function addTeacherEducation(
+  accessToken: string,
+  payload: TeacherEducationPayload
+) {
+  return apiRequest<TeacherEducation>("teacher/profile/education/", {
+    method: "POST",
+    body: payload,
+    token: accessToken,
+  })
+}
+
+export function updateTeacherEducation(
+  accessToken: string,
+  id: number,
+  payload: Partial<TeacherEducationPayload>
+) {
+  return apiRequest<TeacherEducation>(`teacher/profile/education/${id}/`, {
+    method: "PATCH",
+    body: payload,
+    token: accessToken,
+  })
+}
+
+export function deleteTeacherEducation(accessToken: string, id: number) {
+  return apiRequest<void>(`teacher/profile/education/${id}/`, {
+    method: "DELETE",
+    token: accessToken,
+  })
+}
+
+export function addTeacherExperience(
+  accessToken: string,
+  payload: TeacherExperiencePayload
+) {
+  return apiRequest<TeacherExperience>("teacher/profile/experience/", {
+    method: "POST",
+    body: payload,
+    token: accessToken,
+  })
+}
+
+export function updateTeacherExperience(
+  accessToken: string,
+  id: number,
+  payload: Partial<TeacherExperiencePayload>
+) {
+  return apiRequest<TeacherExperience>(`teacher/profile/experience/${id}/`, {
+    method: "PATCH",
+    body: payload,
+    token: accessToken,
+  })
+}
+
+export function deleteTeacherExperience(accessToken: string, id: number) {
+  return apiRequest<void>(`teacher/profile/experience/${id}/`, {
+    method: "DELETE",
+    token: accessToken,
+  })
+}
+
+export function addTeacherCertification(
+  accessToken: string,
+  payload: TeacherCertificationPayload
+) {
+  const formData = new FormData()
+  formData.append("title", payload.title)
+  formData.append("issued_by", payload.issued_by)
+  formData.append("issued_year", String(payload.issued_year))
+  formData.append("file", payload.file)
+
+  return apiRequest<TeacherProfileCertification>(
+    "teacher/profile/certifications/",
+    {
+      method: "POST",
+      body: formData,
+      token: accessToken,
+    }
+  )
+}
+
+export function deleteTeacherCertification(accessToken: string, id: number) {
+  return apiRequest<void>(`teacher/profile/certifications/${id}/`, {
+    method: "DELETE",
+    token: accessToken,
+  })
+}
+
+export function addTeacherContactDetail(
+  accessToken: string,
+  payload: TeacherContactDetailPayload
+) {
+  return apiRequest<TeacherContactDetail>("teacher/profile/contact-details/", {
+    method: "POST",
+    body: payload,
+    token: accessToken,
+  })
+}

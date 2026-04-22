@@ -16,6 +16,21 @@ import {
   getTeachers,
   getTeacherQuizzes,
   getTeacherProfile,
+  addTeacherCertification,
+  addTeacherContactDetail,
+  addTeacherEducation,
+  addTeacherExperience,
+  deleteTeacherCertification,
+  deleteTeacherEducation,
+  deleteTeacherExperience,
+  updateTeacherEducation,
+  updateTeacherExperience,
+  updateTeacherProfile,
+  type TeacherCertificationPayload,
+  type TeacherContactDetailPayload,
+  type TeacherEducationPayload,
+  type TeacherExperiencePayload,
+  type UpdateTeacherProfilePayload,
   type GetTeacherAssignmentsParams,
   type GetTeacherCoursesParams,
   type GetTeacherFollowUpsParams,
@@ -261,5 +276,207 @@ export function useTeacherProfileQuery() {
       return getTeacherProfile(accessToken)
     },
     enabled: Boolean(accessToken),
+  })
+}
+
+export function useUpdateTeacherProfileMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: UpdateTeacherProfilePayload) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return updateTeacherProfile(accessToken, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teachersKeys.profile(accessToken),
+      })
+    },
+  })
+}
+
+export function useAddTeacherEducationMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: TeacherEducationPayload) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return addTeacherEducation(accessToken, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teachersKeys.profile(accessToken),
+      })
+    },
+  })
+}
+
+export function useUpdateTeacherEducationMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: number
+      payload: Partial<TeacherEducationPayload>
+    }) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return updateTeacherEducation(accessToken, id, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teachersKeys.profile(accessToken),
+      })
+    },
+  })
+}
+
+export function useDeleteTeacherEducationMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return deleteTeacherEducation(accessToken, id)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teachersKeys.profile(accessToken),
+      })
+    },
+  })
+}
+
+export function useAddTeacherExperienceMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: TeacherExperiencePayload) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return addTeacherExperience(accessToken, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teachersKeys.profile(accessToken),
+      })
+    },
+  })
+}
+
+export function useUpdateTeacherExperienceMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: number
+      payload: Partial<TeacherExperiencePayload>
+    }) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return updateTeacherExperience(accessToken, id, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teachersKeys.profile(accessToken),
+      })
+    },
+  })
+}
+
+export function useDeleteTeacherExperienceMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return deleteTeacherExperience(accessToken, id)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teachersKeys.profile(accessToken),
+      })
+    },
+  })
+}
+
+export function useAddTeacherCertificationMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: TeacherCertificationPayload) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return addTeacherCertification(accessToken, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teachersKeys.profile(accessToken),
+      })
+    },
+  })
+}
+
+export function useDeleteTeacherCertificationMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return deleteTeacherCertification(accessToken, id)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teachersKeys.profile(accessToken),
+      })
+    },
+  })
+}
+
+export function useAddTeacherContactDetailMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: TeacherContactDetailPayload) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return addTeacherContactDetail(accessToken, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teachersKeys.profile(accessToken),
+      })
+    },
   })
 }

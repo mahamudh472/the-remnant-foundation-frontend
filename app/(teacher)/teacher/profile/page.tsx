@@ -22,12 +22,25 @@ import {
   Award,
   Paperclip,
   Plus,
-  Save,
-  X,
+  Trash2,
   ExternalLink,
 } from "lucide-react"
-import { useTeacherProfileQuery } from "@/hooks/api/use-teachers"
+import {
+  useTeacherProfileQuery,
+  useDeleteTeacherEducationMutation,
+  useDeleteTeacherExperienceMutation,
+  useDeleteTeacherCertificationMutation,
+} from "@/hooks/api/use-teachers"
 import { getApiErrorMessage } from "@/lib/api/client"
+import {
+  EditBasicInfoModal,
+  EducationModal,
+  ExperienceModal,
+  CertificationModal,
+  ContactDetailModal,
+} from "@/components/teacher/profile-edit-modals"
+import { TeacherEducation, TeacherExperience } from "@/lib/api/teachers"
+import { toast } from "sonner"
 
 import fallback from "@/assets/pngs/avatar-fallback.png"
 
@@ -75,12 +88,22 @@ function SkeletonCard() {
 // ─── main page ────────────────────────────────────────────────────────────────
 
 export default function TeacherProfilePage() {
-  const [isEditing, setIsEditing] = React.useState(false)
   const profileQuery = useTeacherProfileQuery()
+  const deleteEducation = useDeleteTeacherEducationMutation()
+  const deleteExperience = useDeleteTeacherExperienceMutation()
+  const deleteCertification = useDeleteTeacherCertificationMutation()
 
-  if (isEditing) {
-    return <EditMode onCancel={() => setIsEditing(false)} />
-  }
+  const [basicInfoOpen, setBasicInfoOpen] = React.useState(false)
+  const [eduModal, setEduModal] = React.useState<{
+    open: boolean
+    data?: TeacherEducation
+  }>({ open: false })
+  const [expModal, setExpModal] = React.useState<{
+    open: boolean
+    data?: TeacherExperience
+  }>({ open: false })
+  const [certModalOpen, setCertModalOpen] = React.useState(false)
+  const [contactModalOpen, setContactModalOpen] = React.useState(false)
 
   const data = profileQuery.data
   const profile = data?.profile
@@ -122,18 +145,41 @@ export default function TeacherProfilePage() {
       ]
     : []
 
+  const handleDeleteEducation = async (id: number) => {
+   //  if (!confirm("Are you sure you want to delete this education record?")) return
+    try {
+      await deleteEducation.mutateAsync(id)
+      toast.success("Education record deleted")
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to delete education"))
+    }
+  }
+
+  const handleDeleteExperience = async (id: number) => {
+   //  if (!confirm("Are you sure you want to delete this experience record?")) return
+    try {
+      await deleteExperience.mutateAsync(id)
+      toast.success("Experience record deleted")
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to delete experience"))
+    }
+  }
+
+  const handleDeleteCertification = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this certification?")) return
+    try {
+      await deleteCertification.mutateAsync(id)
+      toast.success("Certification deleted")
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to delete certification"))
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-[#1D1D1D]">My Profile</h2>
-        <button
-          onClick={() => setIsEditing(true)}
-          className="flex items-center gap-2 rounded-lg bg-[#4CC0D8] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#3AB0C8]"
-        >
-          <Pencil className="h-4 w-4" />
-          Edit Profile
-        </button>
       </div>
 
       {/* Error */}
@@ -156,9 +202,15 @@ export default function TeacherProfilePage() {
       {!profileQuery.isLoading && profile && (
         <Card className="border-gray-100 shadow-none">
           <CardContent>
-            <h3 className="mb-4 font-bold text-[#1D1D1D]">
-              Basic Information
-            </h3>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-bold text-[#1D1D1D]">Basic Information</h3>
+              <button
+                onClick={() => setBasicInfoOpen(true)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-100 text-[#666666] transition-colors hover:bg-gray-50 hover:text-[#4CC0D8]"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            </div>
             <div className="flex flex-col items-start gap-6 sm:flex-row">
               {/* Avatar */}
               <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-gray-200">
@@ -247,27 +299,54 @@ export default function TeacherProfilePage() {
       {!profileQuery.isLoading && data && (
         <Card className="border-gray-100 shadow-none">
           <CardContent>
-            <h3 className="mb-4 font-bold text-[#1D1D1D]">Education</h3>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-bold text-[#1D1D1D]">Education</h3>
+              <button
+                onClick={() => setEduModal({ open: true })}
+                className="flex items-center gap-1 text-xs font-semibold text-[#4CC0D8] hover:underline"
+              >
+                <Plus className="h-4 w-4" />
+                Add Education
+              </button>
+            </div>
             {data.educations.length === 0 ? (
               <p className="text-sm text-[#9CA3AF]">No education records.</p>
             ) : (
               <div className="relative space-y-6 pl-6">
                 <div className="absolute top-2 bottom-2 left-[7px] w-0.5 bg-[#4CC0D8]/20" />
                 {data.educations.map((item) => (
-                  <div key={item.id} className="relative">
+                  <div key={item.id} className="group relative">
                     <div className="absolute top-1 -left-6 h-3.5 w-3.5 rounded-full border-2 border-[#4CC0D8] bg-white" />
-                    <p className="text-sm font-semibold text-[#1D1D1D]">
-                      {item.degree}
-                    </p>
-                    <p className="text-xs text-[#666666]">{item.institution}</p>
-                    <p className="text-xs text-[#9CA3AF]">
-                      {formatYear(item.start_year, item.end_year)}
-                    </p>
-                    {item.description && (
-                      <p className="mt-1 text-xs text-[#9CA3AF]">
-                        {item.description}
-                      </p>
-                    )}
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-[#1D1D1D]">
+                          {item.degree}
+                        </p>
+                        <p className="text-xs text-[#666666]">{item.institution}</p>
+                        <p className="text-xs text-[#9CA3AF]">
+                          {formatYear(item.start_year, item.end_year)}
+                        </p>
+                        {item.description && (
+                          <p className="mt-1 text-xs text-[#9CA3AF]">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                        <button
+                          onClick={() => setEduModal({ open: true, data: item })}
+                          className="rounded p-1 text-[#666666] hover:bg-gray-100 hover:text-[#4CC0D8]"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEducation(item.id)}
+                          className="rounded p-1 text-[#666666] hover:bg-red-50 hover:text-red-500"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -280,27 +359,54 @@ export default function TeacherProfilePage() {
       {!profileQuery.isLoading && data && (
         <Card className="border-gray-100 shadow-none">
           <CardContent>
-            <h3 className="mb-4 font-bold text-[#1D1D1D]">Experience</h3>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-bold text-[#1D1D1D]">Experience</h3>
+              <button
+                onClick={() => setExpModal({ open: true })}
+                className="flex items-center gap-1 text-xs font-semibold text-[#4CC0D8] hover:underline"
+              >
+                <Plus className="h-4 w-4" />
+                Add Experience
+              </button>
+            </div>
             {data.experiences.length === 0 ? (
               <p className="text-sm text-[#9CA3AF]">No experience records.</p>
             ) : (
               <div className="relative space-y-6 pl-6">
                 <div className="absolute top-2 bottom-2 left-[7px] w-0.5 bg-[#F59E0B]/20" />
                 {data.experiences.map((item) => (
-                  <div key={item.id} className="relative">
+                  <div key={item.id} className="group relative">
                     <div className="absolute top-1 -left-6 h-3.5 w-3.5 rounded-full border-2 border-[#F59E0B] bg-white" />
-                    <p className="text-sm font-semibold text-[#1D1D1D]">
-                      {item.job_title}
-                    </p>
-                    <p className="text-xs text-[#666666]">{item.organization}</p>
-                    <p className="text-xs text-[#9CA3AF]">
-                      {formatYear(item.start_year, item.end_year, item.is_current)}
-                    </p>
-                    {item.description && (
-                      <p className="mt-1 text-xs text-[#9CA3AF]">
-                        {item.description}
-                      </p>
-                    )}
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-[#1D1D1D]">
+                          {item.job_title}
+                        </p>
+                        <p className="text-xs text-[#666666]">{item.organization}</p>
+                        <p className="text-xs text-[#9CA3AF]">
+                          {formatYear(item.start_year, item.end_year, item.is_current)}
+                        </p>
+                        {item.description && (
+                          <p className="mt-1 text-xs text-[#9CA3AF]">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                        <button
+                          onClick={() => setExpModal({ open: true, data: item })}
+                          className="rounded p-1 text-[#666666] hover:bg-gray-100 hover:text-[#4CC0D8]"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteExperience(item.id)}
+                          className="rounded p-1 text-[#666666] hover:bg-red-50 hover:text-red-500"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -348,24 +454,40 @@ export default function TeacherProfilePage() {
       {!profileQuery.isLoading && data && (
         <Card className="border-gray-100 shadow-none">
           <CardContent>
-            <h3 className="mb-4 font-bold text-[#1D1D1D]">Certifications</h3>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-bold text-[#1D1D1D]">Certifications</h3>
+              <button
+                onClick={() => setCertModalOpen(true)}
+                className="flex items-center gap-1 text-xs font-semibold text-[#4CC0D8] hover:underline"
+              >
+                <Plus className="h-4 w-4" />
+                Add Certification
+              </button>
+            </div>
             {data.certifications.length === 0 ? (
               <p className="text-sm text-[#9CA3AF]">No certifications.</p>
             ) : (
               <div className="flex flex-wrap gap-3">
                 {data.certifications.map((cert) => (
-                  <a
-                    key={cert.id}
-                    href={cert.file}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg border border-[#D1E9F0] bg-[#EBF7F9] px-3 py-1.5 text-xs font-medium text-[#4CC0D8] transition-colors hover:bg-[#D7F1F7]"
-                  >
-                    <Paperclip className="h-3.5 w-3.5" />
-                    {cert.title}
-                    <span className="text-[#9CA3AF]">· {cert.issued_year}</span>
-                    <ExternalLink className="h-3 w-3 opacity-60" />
-                  </a>
+                  <div key={cert.id} className="group relative">
+                    <a
+                      href={cert.file}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-lg border border-[#D1E9F0] bg-[#EBF7F9] px-3 py-1.5 text-xs font-medium text-[#4CC0D8] transition-colors hover:bg-[#D7F1F7]"
+                    >
+                      <Paperclip className="h-3.5 w-3.5" />
+                      {cert.title}
+                      <span className="text-[#9CA3AF]">· {cert.issued_year}</span>
+                      <ExternalLink className="h-3 w-3 opacity-60" />
+                    </a>
+                    <button
+                      onClick={() => handleDeleteCertification(cert.id)}
+                      className="absolute -top-2 -right-2 hidden h-5 w-5 items-center justify-center rounded-full bg-white text-red-500 shadow-sm border border-red-100 group-hover:flex hover:bg-red-50"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
@@ -377,7 +499,16 @@ export default function TeacherProfilePage() {
       {!profileQuery.isLoading && data && (
         <Card className="border-gray-100 shadow-none">
           <CardContent>
-            <h3 className="mb-4 font-bold text-[#1D1D1D]">Contact Details</h3>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-bold text-[#1D1D1D]">Contact Details</h3>
+              <button
+                onClick={() => setContactModalOpen(true)}
+                className="flex items-center gap-1 text-xs font-semibold text-[#4CC0D8] hover:underline"
+              >
+                <Plus className="h-4 w-4" />
+                Add Contact
+              </button>
+            </div>
 
             {/* Primary contacts */}
             {data.contact_details.length > 0 ? (
@@ -461,130 +592,37 @@ export default function TeacherProfilePage() {
           </CardContent>
         </Card>
       )}
-    </div>
-  )
-}
 
-// ─── edit mode (UI-only, no API wiring yet) ───────────────────────────────────
+      {/* Modals */}
+      {profile && (
+        <EditBasicInfoModal
+          open={basicInfoOpen}
+          onOpenChange={setBasicInfoOpen}
+          profile={profile}
+        />
+      )}
 
-function EditMode({ onCancel }: { onCancel: () => void }) {
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-[#1D1D1D]">Edit Profile</h2>
-        <div className="flex gap-3">
-          <button
-            onClick={onCancel}
-            className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-[#666666] transition-colors hover:bg-gray-50"
-          >
-            <X className="h-4 w-4" />
-            Cancel
-          </button>
-          <button
-            onClick={onCancel}
-            className="flex items-center gap-2 rounded-lg bg-[#4CC0D8] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#3AB0C8]"
-          >
-            <Save className="h-4 w-4" />
-            Save Changes
-          </button>
-        </div>
-      </div>
+      <EducationModal
+        open={eduModal.open}
+        onOpenChange={(open) => setEduModal({ open, data: open ? eduModal.data : undefined })}
+        education={eduModal.data}
+      />
 
-      {/* Basic Info Edit */}
-      <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
-          <h3 className="mb-4 font-bold text-[#1D1D1D]">Basic Information</h3>
-          <div className="mb-6 flex items-center gap-4">
-            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-gray-200" />
-            <button className="rounded-lg border border-[#4CC0D8] px-4 py-2 text-sm font-semibold text-[#4CC0D8] transition-colors hover:bg-[#EBF7F9]">
-              Change Photo
-            </button>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              { label: "Display Name", key: "display_name" },
-              { label: "Phone Number", key: "phone_number" },
-              { label: "Email", key: "email" },
-              { label: "Address", key: "address" },
-            ].map((field) => (
-              <div key={field.key}>
-                <label className="mb-1 block text-xs font-medium text-[#666666]">
-                  {field.label}
-                </label>
-                <input
-                  type={field.key === "email" ? "email" : "text"}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
-                />
-              </div>
-            ))}
-            <div className="sm:col-span-2">
-              <label className="mb-1 block text-xs font-medium text-[#666666]">
-                Bio
-              </label>
-              <textarea
-                rows={3}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <ExperienceModal
+        open={expModal.open}
+        onOpenChange={(open) => setExpModal({ open, data: open ? expModal.data : undefined })}
+        experience={expModal.data}
+      />
 
-      {/* Education Edit */}
-      <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-bold text-[#1D1D1D]">Education</h3>
-            <button className="flex items-center gap-1 text-sm font-semibold text-[#4CC0D8] hover:underline">
-              <Plus className="h-4 w-4" />
-              Add Education
-            </button>
-          </div>
-          <p className="text-sm text-[#9CA3AF]">
-            Education editing coming soon.
-          </p>
-        </CardContent>
-      </Card>
+      <CertificationModal
+        open={certModalOpen}
+        onOpenChange={setCertModalOpen}
+      />
 
-      {/* Experience Edit */}
-      <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-bold text-[#1D1D1D]">Experience</h3>
-            <button className="flex items-center gap-1 text-sm font-semibold text-[#4CC0D8] hover:underline">
-              <Plus className="h-4 w-4" />
-              Add Experience
-            </button>
-          </div>
-          <p className="text-sm text-[#9CA3AF]">
-            Experience editing coming soon.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Social Links Edit */}
-      <Card className="border-gray-100 shadow-none">
-        <CardContent className="p-6">
-          <h3 className="mb-4 font-bold text-[#1D1D1D]">Social Links</h3>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {["Facebook", "Twitter", "LinkedIn", "YouTube", "Instagram"].map(
-              (platform) => (
-                <div key={platform}>
-                  <label className="mb-1 block text-xs font-medium text-[#666666]">
-                    {platform}
-                  </label>
-                  <input
-                    type="url"
-                    placeholder={`https://${platform.toLowerCase()}.com/...`}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
-                  />
-                </div>
-              )
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <ContactDetailModal
+        open={contactModalOpen}
+        onOpenChange={setContactModalOpen}
+      />
     </div>
   )
 }
