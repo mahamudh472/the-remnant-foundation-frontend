@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { CheckCircle2 } from "lucide-react"
 import { useTeacherStudentDetailsQuery } from "@/hooks/api/use-students"
 import { getApiErrorMessage } from "@/lib/api/client"
+import fallback from "@/assets/pngs/avatar-fallback.png"
 
 export default function StudentDetailPage() {
   const params = useParams<{ slug: string }>()
@@ -51,7 +52,7 @@ export default function StudentDetailPage() {
       <div className="relative inline-block">
         <div className="h-24 w-24 overflow-hidden rounded-full bg-gray-200">
           <Image
-            src={student.avatar || "/assets/pngs/student.png"}
+            src={student.avatar || fallback}
             alt={
               `${student.first_name} ${student.last_name}`.trim() || "Student"
             }

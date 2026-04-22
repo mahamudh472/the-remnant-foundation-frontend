@@ -1,157 +1,227 @@
 "use client"
 
-import { useState } from "react"
+import React from "react"
 import {
-  Search,
-  Plus,
+  Calendar,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ChevronUp,
   Paperclip,
-  Calendar,
+  Plus,
+  Search,
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useDebounce } from "@/hooks/use-debounce"
+import {
+  useCreateSupportReplyMutation,
+  useCreateSupportTicketMutation,
+  useSupportRequestTypesQuery,
+  useSupportTicketDetailQuery,
+  useSupportTicketMessagesQuery,
+  useSupportTicketsQuery,
+  type SupportTicketStatus,
+} from "@/hooks/api/use-support"
+import { getApiErrorMessage } from "@/lib/api/client"
+import { useAuthStore } from "@/lib/store/auth-store"
+import type {
+  SupportAttachment,
+  SupportTicketMessage,
+  SupportTicketSummary,
+} from "@/lib/api/support"
+import { Card, CardContent } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
-
-type TicketStatus = "On Hold" | "In Progress" | "Completed"
 type TabKey = "my-tickets" | "knowledgebase" | "announcement"
-type FilterKey = "ALL" | "ON HOLD" | "IN PROGRESS" | "COMPLETED"
+type FilterKey = "ALL" | "ON_HOLD" | "IN_PROGRESS" | "COMPLETED"
 
-interface Comment {
-  id: number
-  author: string
-  isYou: boolean
-  text: string
-  time: string
+const TICKET_PAGE_SIZE = 6
+const MESSAGE_PAGE_SIZE = 20
+
+const FILTERS: FilterKey[] = ["ALL", "ON_HOLD", "IN_PROGRESS", "COMPLETED"]
+
+const FILTER_TO_STATUS: Partial<Record<FilterKey, SupportTicketStatus>> = {
+  ON_HOLD: "ON_HOLD",
+  IN_PROGRESS: "IN_PROGRESS",
+  COMPLETED: "COMPLETED",
 }
 
-interface Ticket {
-  id: string
-  subject: string
-  status: TicketStatus
-  lastUpdate: string
-  support: string
-  comments: Comment[]
+const STATUS_DOT: Record<SupportTicketStatus, string> = {
+  ON_HOLD: "bg-[#4CC0D8]",
+  IN_PROGRESS: "bg-green-500",
+  COMPLETED: "bg-gray-400",
 }
 
-// ─── Data ──────────────────────────────────────────────────────────────────────
+function formatDate(dateValue: string, withTime = false) {
+  const date = new Date(dateValue)
 
-const REQUEST_TYPES = [
-  "Technical Issue",
-  "Course Access Problem",
-  "Assignment Issue",
-  "Grading Query",
-  "Account / Login Problem",
-  "Other",
-]
+  if (Number.isNaN(date.getTime())) {
+    return dateValue
+  }
 
-const DUMMY_COMMENTS: Comment[] = [
-  {
-    id: 1,
-    author: "Albert",
-    isYou: false,
-    text: "Students To Stay Consistent, Improves Learning Discipline, And Allows Teachers To Monitor Performance And Provide Proper Guidance Students To Stay Consistent, Improves Learning Discipline, And Allows Teachers To Monitor Performance And Provide Proper Guidance.",
-    time: "13 Hours Ago",
-  },
-  {
-    id: 2,
-    author: "You",
-    isYou: true,
-    text: "Students To Stay Consistent, Improves Learning Discipline, And Allows Teachers To Monitor Performance And Provide Proper Guidance Students To Stay Consistent, Improves Learning Discipline, And Allows Teachers To Monitor Performance And Provide Proper Guidance.",
-    time: "11 Hours Ago",
-  },
-  {
-    id: 3,
-    author: "Albert",
-    isYou: false,
-    text: "Students To Stay Consistent, Improves Learning Discipline, And Allows Teachers To Monitor Performance And Provide Proper Guidance Students To Stay Consistent, Improves Learning Discipline, And Allows Teachers To Monitor Performance And Provide Proper Guidance.",
-    time: "13 Hours Ago",
-  },
-  {
-    id: 4,
-    author: "You",
-    isYou: true,
-    text: "Students To Stay Consistent, Improves Learning Discipline, And Allows Teachers To Monitor Performance And Provide Proper Guidance Students To Stay Consistent, Improves Learning Discipline, And Allows Teachers To Monitor Performance And Provide Proper Guidance.",
-    time: "15 Hours Ago",
-  },
-]
-
-const INITIAL_TICKETS: Ticket[] = [
-  {
-    id: "7685",
-    subject: "Problem Starting Campaign",
-    status: "On Hold",
-    lastUpdate: "Jan 10, 2026",
-    support: "Karl",
-    comments: [],
-  },
-  {
-    id: "3410",
-    subject: "Fund Not Received",
-    status: "On Hold",
-    lastUpdate: "31 Jan, 2026",
-    support: "Albert",
-    comments: DUMMY_COMMENTS,
-  },
-  {
-    id: "3410",
-    subject: "Fund Not Received",
-    status: "In Progress",
-    lastUpdate: "31 Jan, 2026",
-    support: "Albert",
-    comments: [],
-  },
-  {
-    id: "3410",
-    subject: "Fund Not Received",
-    status: "On Hold",
-    lastUpdate: "31 Jan, 2026",
-    support: "Albert",
-    comments: [],
-  },
-]
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
-const STATUS_DOT: Record<TicketStatus, string> = {
-  "On Hold": "bg-[#4CC0D8]",
-  "In Progress": "bg-green-500",
-  Completed: "bg-gray-400",
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    ...(withTime
+      ? {
+          hour: "numeric",
+          minute: "2-digit",
+        }
+      : {}),
+  }).format(date)
 }
 
-function Avatar({ name, size = 8 }: { name: string; size?: number }) {
+function formatStatusLabel(status: SupportTicketStatus) {
+  return status
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ")
+}
+
+function resolveAttachmentUrl(filePath: string) {
+  if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+    return filePath
+  }
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
+  if (!apiUrl) {
+    return filePath
+  }
+
+  try {
+    const origin = new URL(apiUrl).origin
+    const normalizedPath = filePath.startsWith("/") ? filePath : `/${filePath}`
+    return `${origin}${normalizedPath}`
+  } catch {
+    return filePath
+  }
+}
+
+function Avatar({ name }: { name: string }) {
   const initials = name
     .split(" ")
-    .map((w) => w[0])
+    .map((word) => word[0] ?? "")
     .join("")
     .slice(0, 2)
     .toUpperCase()
+
   return (
-    <div
-      className={`flex h-${size} w-${size} shrink-0 items-center justify-center rounded-full bg-[#4CC0D8] text-xs font-bold text-white`}
-    >
-      {initials}
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#4CC0D8] text-xs font-bold text-white">
+      {initials || "U"}
     </div>
   )
 }
 
-// ─── Ticket Row ────────────────────────────────────────────────────────────────
+function AttachmentLinks({
+  attachments,
+}: {
+  attachments: SupportAttachment[]
+}) {
+  if (attachments.length === 0) {
+    return null
+  }
 
-function TicketRow({ ticket }: { ticket: Ticket }) {
-  const [open, setOpen] = useState(
-    ticket.comments.length > 0 &&
-      ticket.id === "3410" &&
-      ticket.status === "On Hold" &&
-      ticket.comments.length > 0
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {attachments.map((attachment, index) => (
+        <a
+          key={attachment.id}
+          href={resolveAttachmentUrl(attachment.file)}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-xs text-[#4CC0D8] hover:text-[#3AB0C8]"
+        >
+          <Paperclip className="h-3 w-3" />
+          Attachment {index + 1}
+        </a>
+      ))}
+    </div>
   )
-  const [reply, setReply] = useState("")
+}
+
+function TicketThreadMessage({
+  message,
+  isYou,
+}: {
+  message: SupportTicketMessage
+  isYou: boolean
+}) {
+  const authorLabel = isYou ? "You" : message.sender_email
+
+  return (
+    <div className="flex gap-3">
+      <Avatar name={authorLabel} />
+      <div className="flex-1">
+        <div className="mb-1 flex items-center justify-between">
+          <span className="text-sm font-semibold text-[#1D1D1D]">
+            {authorLabel}
+          </span>
+          <span className="text-xs text-[#9CA3AF]">
+            {formatDate(message.created_at, true)}
+          </span>
+        </div>
+        <p className="text-sm leading-relaxed text-[#666666]">
+          {message.message}
+        </p>
+        <AttachmentLinks attachments={message.attachments} />
+      </div>
+    </div>
+  )
+}
+
+function TicketRow({ ticket }: { ticket: SupportTicketSummary }) {
+  const [open, setOpen] = React.useState(false)
+  const [reply, setReply] = React.useState("")
+  const [replyFiles, setReplyFiles] = React.useState<File[]>([])
+  const [replyInputKey, setReplyInputKey] = React.useState(0)
+
+  const currentUser = useAuthStore((state) => state.user)
+  const detailQuery = useSupportTicketDetailQuery(ticket.ticket_id, open)
+  const messagesQuery = useSupportTicketMessagesQuery(
+    ticket.ticket_id,
+    {
+      page: 1,
+      page_size: MESSAGE_PAGE_SIZE,
+    },
+    open
+  )
+  const createReplyMutation = useCreateSupportReplyMutation()
+
+  const threadMessages =
+    messagesQuery.data?.results ?? detailQuery.data?.messages ?? []
+
+  async function onPostReply() {
+    const trimmedReply = reply.trim()
+
+    if (!trimmedReply && replyFiles.length === 0) {
+      return
+    }
+
+    try {
+      await createReplyMutation.mutateAsync({
+        ticketId: ticket.ticket_id,
+        message: trimmedReply || undefined,
+        attachments: replyFiles.length > 0 ? replyFiles : undefined,
+      })
+
+      setReply("")
+      setReplyFiles([])
+      setReplyInputKey((key) => key + 1)
+    } catch {
+      // Error state is shown via mutation error UI below.
+    }
+  }
 
   return (
     <>
       <tr
         className="cursor-pointer border-b border-gray-100 hover:bg-[#F8F9FC]"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen((value) => !value)}
       >
-        <td className="px-4 py-3 text-sm text-[#9CA3AF]">{ticket.id}</td>
+        <td className="px-4 py-3 text-sm text-[#9CA3AF]">{ticket.ticket_id}</td>
         <td className="px-4 py-3 text-sm font-medium text-[#1D1D1D]">
           {ticket.subject}
         </td>
@@ -160,13 +230,17 @@ function TicketRow({ ticket }: { ticket: Ticket }) {
             <span
               className={`h-2 w-2 rounded-full ${STATUS_DOT[ticket.status]}`}
             />
-            <span className="text-sm text-[#666666]">{ticket.status}</span>
+            <span className="text-sm text-[#666666]">
+              {formatStatusLabel(ticket.status)}
+            </span>
           </div>
         </td>
         <td className="px-4 py-3 text-sm text-[#9CA3AF]">
-          {ticket.lastUpdate}
+          {formatDate(ticket.last_update, true)}
         </td>
-        <td className="px-4 py-3 text-sm text-[#666666]">{ticket.support}</td>
+        <td className="px-4 py-3 text-sm text-[#666666]">
+          {ticket.responding_admin || "Unassigned"}
+        </td>
         <td className="px-4 py-3 text-right">
           {open ? (
             <ChevronUp className="ml-auto h-4 w-4 text-[#9CA3AF]" />
@@ -182,56 +256,146 @@ function TicketRow({ ticket }: { ticket: Ticket }) {
             colSpan={6}
             className="border-b border-gray-100 bg-[#F8F9FC] px-4 py-4"
           >
-            {/* Reply composer */}
+            {detailQuery.data && (
+              <div className="mb-3 flex flex-wrap gap-4 rounded-xl bg-white px-4 py-3 text-xs text-[#666666]">
+                <span>
+                  <span className="text-[#9CA3AF]">Request Type:</span>{" "}
+                  {detailQuery.data.request_type_name}
+                </span>
+                <span>
+                  <span className="text-[#9CA3AF]">Issue Reason:</span>{" "}
+                  {detailQuery.data.issue_reason_name}
+                </span>
+                <span>
+                  <span className="text-[#9CA3AF]">Updated:</span>{" "}
+                  {formatDate(detailQuery.data.updated_at, true)}
+                </span>
+              </div>
+            )}
+
             <div className="mb-4 flex gap-3">
               <Avatar name="You" />
               <div className="flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white">
                 <textarea
                   rows={3}
                   value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  placeholder="Write post Here"
+                  onChange={(event) => setReply(event.target.value)}
+                  placeholder="Write your reply"
                   className="w-full resize-none px-4 py-3 text-sm text-[#1D1D1D] outline-none placeholder:text-[#9CA3AF]"
                 />
-                <div className="flex items-center justify-between border-t border-gray-100 px-3 py-2">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-3 py-2">
                   <div className="flex items-center gap-2 text-xs text-[#9CA3AF]">
                     <span>.jpg .gif .jpeg .txt .pdf</span>
-                    <button className="text-[#9CA3AF] hover:text-[#4CC0D8]">
+                    <label className="cursor-pointer text-[#9CA3AF] hover:text-[#4CC0D8]">
                       <Paperclip className="h-4 w-4" />
-                      <input type="file" className="hidden" />
-                    </button>
+                      <input
+                        key={replyInputKey}
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={(event) => {
+                          const files = Array.from(event.target.files ?? [])
+
+                          if (files.length === 0) {
+                            return
+                          }
+
+                          setReplyFiles((current) => [...current, ...files])
+                        }}
+                      />
+                    </label>
                   </div>
+
                   <div className="flex gap-2">
-                    <button className="rounded-lg border border-gray-200 px-4 py-1.5 text-xs font-semibold text-[#666666] hover:bg-gray-50">
-                      Save Draft
-                    </button>
-                    <button className="rounded-lg bg-[#4CC0D8] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#3AB0C8]">
-                      Post
-                    </button>
+                    <Button
+                      type="button"
+                      variant="brandOutline"
+                      size="sm"
+                      onClick={() => {
+                        setReply("")
+                        setReplyFiles([])
+                        setReplyInputKey((key) => key + 1)
+                      }}
+                    >
+                      Clear
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="brand"
+                      size="sm"
+                      onClick={onPostReply}
+                      disabled={
+                        createReplyMutation.isPending ||
+                        (reply.trim().length === 0 && replyFiles.length === 0)
+                      }
+                    >
+                      {createReplyMutation.isPending ? "Posting..." : "Post"}
+                    </Button>
                   </div>
                 </div>
+
+                {replyFiles.length > 0 && (
+                  <div className="border-t border-gray-100 px-3 py-2 text-xs text-[#666666]">
+                    {replyFiles.map((file) => file.name).join(", ")}
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Comment thread */}
-            {ticket.comments.length > 0 && (
-              <div className="space-y-4 pl-11">
-                {ticket.comments.map((c) => (
-                  <div key={c.id} className="flex gap-3">
-                    <Avatar name={c.isYou ? "You" : c.author} />
-                    <div className="flex-1">
-                      <div className="mb-1 flex items-center justify-between">
-                        <span className="text-sm font-semibold text-[#1D1D1D]">
-                          {c.author}
-                        </span>
-                        <span className="text-xs text-[#9CA3AF]">{c.time}</span>
-                      </div>
-                      <p className="text-sm leading-relaxed text-[#666666]">
-                        {c.text}
-                      </p>
-                    </div>
-                  </div>
+            {createReplyMutation.isError && (
+              <div className="mb-4 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-500">
+                {getApiErrorMessage(
+                  createReplyMutation.error,
+                  "Failed to post reply"
+                )}
+              </div>
+            )}
+
+            {detailQuery.isError && (
+              <div className="mb-4 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-500">
+                {getApiErrorMessage(
+                  detailQuery.error,
+                  "Failed to load ticket details"
+                )}
+              </div>
+            )}
+
+            {messagesQuery.isError && (
+              <div className="mb-4 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-500">
+                {getApiErrorMessage(
+                  messagesQuery.error,
+                  "Failed to load ticket messages"
+                )}
+              </div>
+            )}
+
+            {(detailQuery.isLoading || messagesQuery.isLoading) && (
+              <div className="space-y-3 pl-11">
+                {[1, 2].map((skeleton) => (
+                  <div
+                    key={skeleton}
+                    className="h-16 animate-pulse rounded-xl bg-white"
+                  />
                 ))}
+              </div>
+            )}
+
+            {!detailQuery.isLoading && !messagesQuery.isLoading && (
+              <div className="space-y-4 pl-11">
+                {threadMessages.length === 0 ? (
+                  <p className="text-sm text-[#9CA3AF]">No messages yet.</p>
+                ) : (
+                  threadMessages.map((message) => (
+                    <TicketThreadMessage
+                      key={message.id}
+                      message={message}
+                      isYou={
+                        currentUser?.email?.toLowerCase() ===
+                        message.sender_email.toLowerCase()
+                      }
+                    />
+                  ))
+                )}
               </div>
             )}
           </td>
@@ -241,270 +405,479 @@ function TicketRow({ ticket }: { ticket: Ticket }) {
   )
 }
 
-// ─── Create Ticket Form ────────────────────────────────────────────────────────
-
 function CreateTicketForm() {
-  const [form, setForm] = useState({
-    requestType: "",
-    searchRef: "",
-    studentName: "",
-    ticketNumber: "",
-    reason: "",
-    date: "",
+  const [form, setForm] = React.useState({
+    subject: "",
+    requestTypeId: "",
+    issueReasonId: "",
     courseId: "",
     remarks: "",
   })
+  const [files, setFiles] = React.useState<File[]>([])
+  const [formMessage, setFormMessage] = React.useState<string | null>(null)
+  const [fileInputKey, setFileInputKey] = React.useState(0)
+
+  const requestTypesQuery = useSupportRequestTypesQuery()
+  const createTicketMutation = useCreateSupportTicketMutation()
+
+  const requestTypes =
+    requestTypesQuery.data?.filter((requestType) => requestType.is_active) ?? []
+
+  const selectedRequestType = requestTypes.find(
+    (requestType) => String(requestType.id) === form.requestTypeId
+  )
+
+  const issueReasons =
+    selectedRequestType?.issue_reasons.filter((reason) => reason.is_active) ??
+    []
 
   const inputCls =
     "w-full border-b border-gray-200 pb-1.5 pt-0.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8] placeholder:text-[#9CA3AF] bg-transparent"
 
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setFormMessage(null)
+
+    if (!form.subject.trim() || !form.requestTypeId || !form.issueReasonId) {
+      setFormMessage("Subject, request type, and issue reason are required.")
+      return
+    }
+
+    const parsedCourseId =
+      form.courseId.trim().length > 0 ? Number(form.courseId.trim()) : undefined
+
+    if (form.courseId.trim().length > 0 && Number.isNaN(parsedCourseId)) {
+      setFormMessage("Course ID must be a valid number.")
+      return
+    }
+
+    try {
+      const response = await createTicketMutation.mutateAsync({
+        subject: form.subject.trim(),
+        request_type: Number(form.requestTypeId),
+        issue_reason: Number(form.issueReasonId),
+        course_id: parsedCourseId,
+        remarks: form.remarks.trim() || undefined,
+        attachments: files.length > 0 ? files : undefined,
+      })
+
+      setForm({
+        subject: "",
+        requestTypeId: "",
+        issueReasonId: "",
+        courseId: "",
+        remarks: "",
+      })
+      setFiles([])
+      setFileInputKey((key) => key + 1)
+      setFormMessage(response.message)
+    } catch (error) {
+      setFormMessage(
+        getApiErrorMessage(error, "Failed to create support ticket")
+      )
+    }
+  }
+
   return (
-    <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-6">
-      <h3 className="mb-1 font-bold text-[#1D1D1D]">Create New Ticket</h3>
-      <p className="mb-5 text-xs text-[#9CA3AF]">
-        Fill up all the information now, then open support tickets
-      </p>
+    <Card>
+      <CardContent className="flex flex-wrap items-center justify-between gap-4">
+        <form id="create-ticket-form" onSubmit={onSubmit}>
+          <h3 className="mb-1 font-bold text-[#1D1D1D]">Create New Ticket</h3>
+          <p className="mb-5 text-xs text-[#9CA3AF]">
+            Fill up all required fields and submit your support request.
+          </p>
 
-      <div className="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Request Type */}
-        <div>
-          <p className="mb-1 text-xs text-[#9CA3AF]">Select Request Type*</p>
-          <div className="relative">
-            <select
-              value={form.requestType}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, requestType: e.target.value }))
-              }
-              className={`${inputCls} appearance-none pr-5`}
+          {requestTypesQuery.isError && (
+            <div className="mb-4 rounded-xl border border-red-100 bg-red-50 p-3 text-xs text-red-500">
+              {getApiErrorMessage(
+                requestTypesQuery.error,
+                "Failed to load request types"
+              )}
+            </div>
+          )}
+
+          {formMessage && (
+            <div
+              className={`mb-4 rounded-xl border p-3 text-xs ${
+                createTicketMutation.isError
+                  ? "border-red-100 bg-red-50 text-red-500"
+                  : "border-green-100 bg-green-50 text-green-600"
+              }`}
             >
-              <option value="">Select type</option>
-              {REQUEST_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute top-1 right-0 h-3.5 w-3.5 text-[#9CA3AF]" />
+              {formMessage}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <p className="mb-1 text-xs text-[#9CA3AF]">Subject*</p>
+              <input
+                value={form.subject}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, subject: event.target.value }))
+                }
+                placeholder="Payment issue for enrolled course"
+                className={inputCls}
+                required
+              />
+            </div>
+
+            <div>
+              <p className="mb-1 text-xs text-[#9CA3AF]">
+                Select Request Type*
+              </p>
+              <div className="relative">
+                <select
+                  value={form.requestTypeId}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      requestTypeId: event.target.value,
+                      issueReasonId: "",
+                    }))
+                  }
+                  className={`${inputCls} appearance-none pr-5`}
+                  required
+                  disabled={requestTypesQuery.isLoading}
+                >
+                  <option value="">
+                    {requestTypesQuery.isLoading ? "Loading..." : "Select type"}
+                  </option>
+                  {requestTypes.map((requestType) => (
+                    <option key={requestType.id} value={String(requestType.id)}>
+                      {requestType.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute top-1 right-0 h-3.5 w-3.5 text-[#9CA3AF]" />
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-1 text-xs text-[#9CA3AF]">
+                Choose Issue Reason*
+              </p>
+              <div className="relative">
+                <select
+                  value={form.issueReasonId}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      issueReasonId: event.target.value,
+                    }))
+                  }
+                  className={`${inputCls} appearance-none pr-5`}
+                  required
+                  disabled={!selectedRequestType}
+                >
+                  <option value="">
+                    {selectedRequestType
+                      ? "Select reason"
+                      : "Select request type first"}
+                  </option>
+                  {issueReasons.map((issueReason) => (
+                    <option key={issueReason.id} value={String(issueReason.id)}>
+                      {issueReason.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute top-1 right-0 h-3.5 w-3.5 text-[#9CA3AF]" />
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-1 text-xs text-[#9CA3AF]">Course ID</p>
+              <input
+                value={form.courseId}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, courseId: event.target.value }))
+                }
+                placeholder="10"
+                className={inputCls}
+                inputMode="numeric"
+              />
+            </div>
+
+            <div className="col-span-full">
+              <p className="mb-1 text-xs text-[#9CA3AF]">Remarks</p>
+              <textarea
+                value={form.remarks}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, remarks: event.target.value }))
+                }
+                placeholder="Need help with enrollment."
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
+                rows={3}
+              />
+            </div>
+
+            {/* <div>
+              <p className="mb-1 text-xs text-[#9CA3AF]">Attachments</p>
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-[#666666] hover:bg-gray-50">
+                <Paperclip className="h-3.5 w-3.5" />
+                Add Files
+                <input
+                  key={fileInputKey}
+                  type="file"
+                  className="hidden"
+                  multiple
+                  onChange={(event) => {
+                    const selectedFiles = Array.from(event.target.files ?? [])
+
+                    if (selectedFiles.length === 0) {
+                      return
+                    }
+
+                    setFiles((current) => [...current, ...selectedFiles])
+                  }}
+                />
+              </label>
+              {files.length > 0 && (
+                <p className="mt-2 text-xs text-[#666666]">
+                  {files.map((file) => file.name).join(", ")}
+                </p>
+              )}
+            </div> */}
           </div>
-        </div>
 
-        {/* Student Name */}
-        <div>
-          <p className="mb-1 text-xs text-[#9CA3AF]">Student Name</p>
-          <input
-            value={form.studentName}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, studentName: e.target.value }))
-            }
-            placeholder="Rahul Hossein"
-            className={inputCls}
-          />
-        </div>
-
-        {/* Reason */}
-        <div>
-          <p className="mb-1 text-xs text-[#9CA3AF]">Choose Issue Reason</p>
-          <div className="relative">
-            <select
-              value={form.reason}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, reason: e.target.value }))
-              }
-              className={`${inputCls} appearance-none pr-5`}
+          <div className="mt-6 flex items-center gap-3">
+            <Button
+              type="submit"
+              variant="brand"
+              className="px-6"
+              disabled={createTicketMutation.isPending}
             >
-              <option value="">Select reason</option>
-              <option>Access Denied</option>
-              <option>Grade Dispute</option>
-              <option>Video Not Loading</option>
-              <option>Other</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute top-1 right-0 h-3.5 w-3.5 text-[#9CA3AF]" />
+              {createTicketMutation.isPending
+                ? "Submitting..."
+                : "Submit Ticket"}
+            </Button>
+            {files.length > 0 && (
+              <Button
+                type="button"
+                variant="brandOutline"
+                onClick={() => {
+                  setFiles([])
+                  setFileInputKey((key) => key + 1)
+                }}
+              >
+                Clear Files
+              </Button>
+            )}
           </div>
-        </div>
-
-        {/* Course ID */}
-        <div>
-          <p className="mb-1 text-xs text-[#9CA3AF]">Course ID</p>
-          <input
-            value={form.courseId}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, courseId: e.target.value }))
-            }
-            placeholder="BG730"
-            className={inputCls}
-          />
-        </div>
-
-        {/* Remarks */}
-        <div>
-          <p className="mb-1 text-xs text-[#9CA3AF]">Remarks (Optional)</p>
-          <input
-            value={form.remarks}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, remarks: e.target.value }))
-            }
-            placeholder="Write your remarks"
-            className={inputCls}
-          />
-        </div>
-      </div>
-
-      <button className="mt-6 rounded-lg bg-[#4CC0D8] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#3AB0C8]">
-        Submit Ticket
-      </button>
-    </div>
+        </form>
+      </CardContent>
+    </Card>
   )
-}
-
-// ─── Help Panel ────────────────────────────────────────────────────────────────
-
-const FILTERS: FilterKey[] = ["ALL", "ON HOLD", "IN PROGRESS", "COMPLETED"]
-
-const FILTER_TO_STATUS: Partial<Record<FilterKey, TicketStatus>> = {
-  "ON HOLD": "On Hold",
-  "IN PROGRESS": "In Progress",
-  COMPLETED: "Completed",
 }
 
 function HelpPanel() {
-  const [tab, setTab] = useState<TabKey>("my-tickets")
-  const [search, setSearch] = useState("")
-  const [activeFilter, setActiveFilter] = useState<FilterKey>("ALL")
+  const [tab, setTab] = React.useState<TabKey>("my-tickets")
+  const [search, setSearch] = React.useState("")
+  const [activeFilter, setActiveFilter] = React.useState<FilterKey>("ALL")
+  const [page, setPage] = React.useState(1)
 
-  const filtered = INITIAL_TICKETS.filter((t) => {
-    const matchSearch =
-      t.subject.toLowerCase().includes(search.toLowerCase()) ||
-      t.id.includes(search)
-    const matchFilter =
-      activeFilter === "ALL" || t.status === FILTER_TO_STATUS[activeFilter]
-    return matchSearch && matchFilter
-  })
+  const debouncedSearch = useDebounce(search, 400)
+
+  const ticketsQuery = useSupportTicketsQuery(
+    {
+      page,
+      page_size: TICKET_PAGE_SIZE,
+      status: FILTER_TO_STATUS[activeFilter],
+      search: debouncedSearch || undefined,
+    },
+    tab === "my-tickets"
+  )
+
+  const tickets = ticketsQuery.data?.results ?? []
+  const count = ticketsQuery.data?.count ?? 0
+  const totalPages = Math.max(1, Math.ceil(count / TICKET_PAGE_SIZE))
+
+  React.useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch, activeFilter])
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6">
-      {/* Tabs */}
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-1">
-          <h3 className="mr-4 text-lg">Help</h3>
-          {(["my-tickets", "knowledgebase", "announcement"] as TabKey[]).map(
-            (t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`rounded-lg px-4 py-2 text-sm transition-colors ${
-                  tab === t
-                    ? "text-[#1D1D1D]"
-                    : "text-[#9CA3AF] hover:text-[#666666]"
-                }`}
-              >
-                {t === "my-tickets"
-                  ? "My Tickets"
-                  : t === "knowledgebase"
-                    ? "Knowledgebase"
-                    : "Announcement"}
-              </button>
-            )
-          )}
-        </div>
+    <Card>
+      <CardContent className="flex flex-wrap items-center justify-between gap-4">
+        <Tabs defaultValue="my-tickets" className="w-full">
+          {/* TAB HEADER */}
+          <TabsList
+            variant="line"
+            className="mb-4 w-full justify-start gap-6 bg-transparent"
+          >
+            <TabsTrigger
+              value="my-tickets"
+              className="px-0 data-[state=active]:text-[#4CC0D8] data-[state=active]:after:bg-[#4CC0D8]"
+            >
+              My Tickets
+            </TabsTrigger>
+            <TabsTrigger
+              value="knowledgebase"
+              className="px-0 data-[state=active]:text-[#4CC0D8] data-[state=active]:after:bg-[#4CC0D8]"
+            >
+              Knowledgebase
+            </TabsTrigger>
+            <TabsTrigger
+              value="announcement"
+              className="px-0 data-[state=active]:text-[#4CC0D8] data-[state=active]:after:bg-[#4CC0D8]"
+            >
+              Announcement
+            </TabsTrigger>
+            <span className="text-xs text-[#9CA3AF]">
+              {count} Tickets Available
+            </span>
+          </TabsList>
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Find tickets"
-              className="rounded-lg border border-gray-200 py-2 pr-4 pl-9 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
-            />
-          </div>
-          <span className="text-xs text-[#9CA3AF]">
-            {filtered.length} Tickets Available
-          </span>
-          <button className="flex items-center gap-2 rounded-lg bg-[#4CC0D8] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#3AB0C8]">
-            <Plus className="h-4 w-4" />
-            Add New Tickets
-          </button>
-        </div>
-      </div>
+          {/* TAB 1 */}
+          <TabsContent value="my-tickets">
+            <div className="mb-4 flex flex-wrap items-center gap-5 px-4">
+              {FILTERS.map((filter) => (
+                <label
+                  key={filter}
+                  className="flex cursor-pointer items-center gap-1.5"
+                >
+                  <Checkbox
+                    checked={activeFilter === filter}
+                    onCheckedChange={() => setActiveFilter(filter)}
+                  />
+                  <span className="text-xs font-medium text-[#666666]">
+                    {filter === "ALL" ? "ALL" : filter.replace("_", " ")}
+                  </span>
+                </label>
+              ))}
+            </div>
 
-      {tab === "my-tickets" && (
-        <>
-          {/* Filter checkboxes */}
-          <div className="mb-4 flex items-center gap-5">
-            {FILTERS.map((f) => (
-              <label
-                key={f}
-                className="flex cursor-pointer items-center gap-1.5"
-              >
-                <input
-                  type="checkbox"
-                  checked={activeFilter === f}
-                  onChange={() => setActiveFilter(f)}
-                  className="accent-[#4CC0D8]"
-                />
-                <span className="text-xs font-medium text-[#666666]">{f}</span>
-              </label>
-            ))}
-          </div>
-
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="px-4 pb-3 text-left text-xs font-semibold text-[#9CA3AF]">
-                    Ticket ID
-                  </th>
-                  <th className="px-4 pb-3 text-left text-xs font-semibold text-[#9CA3AF]">
-                    Subject
-                  </th>
-                  <th className="px-4 pb-3 text-left text-xs font-semibold text-[#9CA3AF]">
-                    Status
-                  </th>
-                  <th className="px-4 pb-3 text-left text-xs font-semibold text-[#9CA3AF]">
-                    Last Update
-                  </th>
-                  <th className="px-4 pb-3 text-left text-xs font-semibold text-[#9CA3AF]">
-                    Support
-                  </th>
-                  <th className="px-4 pb-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((t, i) => (
-                  <TicketRow key={`${t.id}-${i}`} ticket={t} />
-                ))}
-                {filtered.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="py-10 text-center text-sm text-[#9CA3AF]"
-                    >
-                      No tickets found.
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="px-4 pb-3 text-left text-xs font-semibold text-[#9CA3AF]">
+                      Ticket ID
+                    </th>
+                    <th className="px-4 pb-3 text-left text-xs font-semibold text-[#9CA3AF]">
+                      Subject
+                    </th>
+                    <th className="px-4 pb-3 text-left text-xs font-semibold text-[#9CA3AF]">
+                      Status
+                    </th>
+                    <th className="px-4 pb-3 text-left text-xs font-semibold text-[#9CA3AF]">
+                      Last Update
+                    </th>
+                    <th className="px-4 pb-3 text-left text-xs font-semibold text-[#9CA3AF]">
+                      Support
+                    </th>
+                    <th className="px-4 pb-3" />
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+                </thead>
 
-      {tab === "knowledgebase" && (
-        <div className="py-10 text-center text-sm text-[#9CA3AF]">
-          Knowledgebase coming soon.
-        </div>
-      )}
-      {tab === "announcement" && (
-        <div className="py-10 text-center text-sm text-[#9CA3AF]">
-          No announcements yet.
-        </div>
-      )}
-    </div>
+                <tbody>
+                  {ticketsQuery.isLoading && (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-6">
+                        <div className="h-10 animate-pulse rounded-xl bg-gray-100" />
+                      </td>
+                    </tr>
+                  )}
+
+                  {ticketsQuery.isError && (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="py-10 text-center text-sm text-red-500"
+                      >
+                        {getApiErrorMessage(
+                          ticketsQuery.error,
+                          "Failed to load tickets"
+                        )}
+                      </td>
+                    </tr>
+                  )}
+
+                  {!ticketsQuery.isLoading &&
+                    !ticketsQuery.isError &&
+                    tickets.map((ticket) => (
+                      <TicketRow key={ticket.ticket_id} ticket={ticket} />
+                    ))}
+
+                  {!ticketsQuery.isLoading &&
+                    !ticketsQuery.isError &&
+                    tickets.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          className="py-10 text-center text-sm text-[#9CA3AF]"
+                        >
+                          No tickets found.
+                        </td>
+                      </tr>
+                    )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {!ticketsQuery.isLoading &&
+              !ticketsQuery.isError &&
+              tickets.length > 0 &&
+              totalPages > 1 && (
+                <div className="mt-5 flex items-center justify-center gap-2">
+                  <Button
+                    type="button"
+                    variant="brandOutline"
+                    size="icon-sm"
+                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (pageNumber) => (
+                      <Button
+                        key={pageNumber}
+                        type="button"
+                        variant={pageNumber === page ? "brand" : "brandOutline"}
+                        size="icon-sm"
+                        onClick={() => setPage(pageNumber)}
+                      >
+                        {pageNumber}
+                      </Button>
+                    )
+                  )}
+
+                  <Button
+                    type="button"
+                    variant="brandOutline"
+                    size="icon-sm"
+                    onClick={() =>
+                      setPage((prev) => Math.min(totalPages, prev + 1))
+                    }
+                    disabled={page === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+          </TabsContent>
+
+          {/* TAB 2 */}
+          <TabsContent value="knowledgebase">
+            <div className="py-10 text-center text-sm text-[#9CA3AF]">
+              Knowledgebase coming soon.
+            </div>
+          </TabsContent>
+
+          {/* TAB 3 */}
+          <TabsContent value="announcement">
+            <div className="py-10 text-center text-sm text-[#9CA3AF]">
+              No announcements yet.
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   )
 }
-
-// ─── Page ───────────────────────────────────────────────────────────────────────
 
 export default function SupportTicketsPage() {
   return (
