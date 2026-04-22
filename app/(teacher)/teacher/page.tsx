@@ -8,7 +8,7 @@ import StatCard from "@/components/common/stat-card"
 import { useTeacherDashboardQuery } from "@/hooks/api/use-teachers"
 import { getApiErrorMessage } from "@/lib/api/client"
 
-const FALLBACK_THUMBNAIL = "/assets/pngs/For web/web course image.png"
+import FALLBACK_THUMBNAIL from "@/assets/pngs/thumbnail-fallback.png"
 
 function getStatusBadgeClass(status: string) {
   const normalizedStatus = status.toLowerCase()
@@ -105,7 +105,7 @@ export default function TeacherDashboardPage() {
                     Popular
                   </span>
                 </div>
-                <CardContent className="space-y-2 px-4 pb-4">
+                <CardContent className="space-y-2 p-4">
                   <h3 className="line-clamp-2 text-sm font-bold text-[#1D1D1D]">
                     {course.title}
                   </h3>

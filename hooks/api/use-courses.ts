@@ -12,6 +12,8 @@ import {
   getCourseCategoryOptions,
   getCourseProgramOptions,
   getCourses,
+  getCourseDetails,
+  getCourseWorkflow,
   updateCourseStep,
   type CourseChoiceOptionsResponse,
   type CreateCourseAssignmentPayload,
@@ -28,6 +30,7 @@ export const coursesKeys = {
   categoryOptions: () => ["courses", "category-options"] as const,
   programOptions: () => ["courses", "program-options"] as const,
   ageGroupChoiceOptions: () => ["courses", "age-group-choice-option"] as const,
+  detail: (courseId: number | string) => ["courses", "detail", courseId] as const,
 }
 
 export function useCoursesQuery(params: GetCoursesParams = {}) {
@@ -134,5 +137,27 @@ export function useUpdateCourseStepMutation() {
         queryKey: ["courses", variables.courseId],
       })
     },
+  })
+}
+
+export function useCourseDetailsQuery(
+  courseId: number | string | null,
+  options: { enabled?: boolean } = {}
+) {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const isTeacherPath =
+    typeof window !== "undefined" && window.location.pathname.includes("/teacher")
+
+  return useQuery({
+    queryKey: coursesKeys.detail(courseId || "unknown"),
+    queryFn: () => {
+      if (!courseId) throw new Error("Missing course id")
+
+      if (isTeacherPath && accessToken) {
+        return getCourseWorkflow(accessToken, courseId)
+      }
+      return getCourseDetails(courseId)
+    },
+    enabled: !!courseId && (options.enabled ?? true),
   })
 }

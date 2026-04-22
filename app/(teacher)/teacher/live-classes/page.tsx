@@ -204,14 +204,14 @@ export default function LiveClassesPage() {
         <div className="space-y-4">
           {results.map((cls) => (
             <Card key={cls.id} className="border-gray-100 shadow-none">
-              <CardContent className="p-5">
+              <CardContent>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EBF7F9]">
                       <Video className="h-5 w-5 text-[#4CC0D8]" />
                     </div>
                     <div>
-                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                      <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                         <p className="font-semibold text-[#1D1D1D]">
                           {cls.title}
                         </p>

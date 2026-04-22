@@ -20,7 +20,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/teacher": "Dashboard",
   "/teacher/profile": "My Profile",
   "/teacher/courses": "Courses",
-  "/teacher/courses/add": "Add Course",
+  "/teacher/courses/new": "Add Course",
   "/teacher/assignments": "Assignments",
   "/teacher/assignments/add": "Add Assignment",
   "/teacher/students": "Students",

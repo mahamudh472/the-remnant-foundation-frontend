@@ -85,9 +85,9 @@ export default function AddAssignmentPage() {
 
       {/* Step Content */}
       {currentStep === 0 && <StepBasicInfo />}
-      {currentStep === 1 && <StepAssignTo />}
+      {/* {currentStep === 1 && <StepAssignTo />} */}
       {currentStep === 2 && <StepContent />}
-      {currentStep === 3 && <StepEvaluation />}
+      {/* {currentStep === 3 && <StepEvaluation />} */}
       {currentStep === 4 && <StepReview />}
 
       {/* Navigation */}
@@ -117,9 +117,7 @@ export default function AddAssignmentPage() {
   )
 }
 
-/* ------------------------------------------------------------------ */
-/*  Step 1: Basic Info                                                  */
-/* ------------------------------------------------------------------ */
+//  Step 1: Basic Info
 function StepBasicInfo() {
   return (
     <div className="space-y-5">
@@ -185,39 +183,35 @@ function StepBasicInfo() {
   )
 }
 
-/* ------------------------------------------------------------------ */
-/*  Step 2: Assign To                                                   */
-/* ------------------------------------------------------------------ */
-function StepAssignTo() {
-  return (
-    <div className="space-y-5">
-      <div>
-        <h3 className="text-base font-bold text-[#1D1D1D]">Assign To</h3>
-        <p className="text-sm text-[#666666]">
-          Select which course this assignment belongs to
-        </p>
-      </div>
+//  Step 2: Assign To
+// function StepAssignTo() {
+//   return (
+//     <div className="space-y-5">
+//       <div>
+//         <h3 className="text-base font-bold text-[#1D1D1D]">Assign To</h3>
+//         <p className="text-sm text-[#666666]">
+//           Select which course this assignment belongs to
+//         </p>
+//       </div>
 
-      <div>
-        <label className="mb-1 block text-xs font-medium text-[#666666]">
-          Search Course *
-        </label>
-        <div className="relative">
-          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
-          <input
-            type="text"
-            placeholder="Search assignments.."
-            className="w-full rounded-lg border border-gray-200 py-2.5 pr-3 pl-9 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
-          />
-        </div>
-      </div>
-    </div>
-  )
-}
+//       <div>
+//         <label className="mb-1 block text-xs font-medium text-[#666666]">
+//           Search Course *
+//         </label>
+//         <div className="relative">
+//           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
+//           <input
+//             type="text"
+//             placeholder="Search assignments.."
+//             className="w-full rounded-lg border border-gray-200 py-2.5 pr-3 pl-9 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
+//           />
+//         </div>
+//       </div>
+//     </div>
+//   )
+// }
 
-/* ------------------------------------------------------------------ */
-/*  Step 3: Content                                                     */
-/* ------------------------------------------------------------------ */
+//  Step 3: Content
 function StepContent() {
   const [files, setFiles] = React.useState([])
 
@@ -304,38 +298,34 @@ function StepContent() {
   )
 }
 
-/* ------------------------------------------------------------------ */
-/*  Step 4: Evaluation                                                  */
-/* ------------------------------------------------------------------ */
-function StepEvaluation() {
-  return (
-    <div className="space-y-5">
-      <div>
-        <h3 className="text-base font-bold text-[#1D1D1D]">
-          Assignment Content
-        </h3>
-        <p className="text-sm text-[#666666]">
-          Add description and files for students
-        </p>
-      </div>
+//  Step 4: Evaluation
+// function StepEvaluation() {
+//   return (
+//     <div className="space-y-5">
+//       <div>
+//         <h3 className="text-base font-bold text-[#1D1D1D]">
+//           Assignment Content
+//         </h3>
+//         <p className="text-sm text-[#666666]">
+//           Add description and files for students
+//         </p>
+//       </div>
 
-      <div>
-        <label className="mb-1 block text-xs font-medium text-[#666666]">
-          Total Marks *
-        </label>
-        <input
-          type="number"
-          defaultValue={100}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
-        />
-      </div>
-    </div>
-  )
-}
+//       <div>
+//         <label className="mb-1 block text-xs font-medium text-[#666666]">
+//           Total Marks *
+//         </label>
+//         <input
+//           type="number"
+//           defaultValue={100}
+//           className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
+//         />
+//       </div>
+//     </div>
+//   )
+// }
 
-/* ------------------------------------------------------------------ */
-/*  Step 5: Review & Publish                                            */
-/* ------------------------------------------------------------------ */
+// Step 5: Review & Publish
 function StepReview() {
   const summary = [
     { label: "Title:", value: "The beginning" },

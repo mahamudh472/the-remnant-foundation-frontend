@@ -267,7 +267,7 @@ export default function TeacherAssignmentsPage() {
               assignment={{
                 id: assignment.id,
                 title: assignment.title,
-                grade: assignment.grade.label,
+                grade: assignment.grade?.label,
                 course: assignment.course_name,
                 type: assignment.assignment_type_label,
                 dueDate: formatDate(assignment.due_date),

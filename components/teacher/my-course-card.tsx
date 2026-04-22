@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 import { Card, CardContent } from "../ui/card"
 import { Loader2, Pencil, Trash2 } from "lucide-react"
 interface MyCourseCardCourse {
@@ -71,9 +72,12 @@ export default function MyCourseCard({
                 <Trash2 className="h-4 w-4" />
               )}
             </button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-[#666666] transition-colors hover:border-[#4CC0D8] hover:text-[#4CC0D8]">
+            <Link
+              href={`/teacher/courses/${course.id}`}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-[#666666] transition-colors hover:border-[#4CC0D8] hover:text-[#4CC0D8]"
+            >
               <Pencil className="h-4 w-4" />
-            </button>
+            </Link>
           </div>
         </div>
       </CardContent>

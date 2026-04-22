@@ -387,9 +387,138 @@ export function updateCourseStep(
   courseId: number | string,
   payload: UpdateCourseStepPayload
 ) {
+  if (payload.step === "course_info" && (payload.payload as any).thumbnail) {
+    const formData = new FormData()
+    formData.append("step", payload.step)
+
+    const { thumbnail, ...restPayload } = payload.payload as any
+    formData.append("payload", JSON.stringify(restPayload))
+
+    if (thumbnail instanceof File) {
+      formData.append("thumbnail", thumbnail)
+    }
+
+    if (payload.save_as_draft !== undefined) {
+      formData.append("save_as_draft", String(payload.save_as_draft))
+    }
+
+    if (payload.publish !== undefined) {
+      formData.append("publish", String(payload.publish))
+    }
+
+    return apiRequest<UpdateCourseStepResponse>(`courses/${courseId}/update/`, {
+      method: "PATCH",
+      body: formData,
+      token: accessToken,
+    })
+  }
+
   return apiRequest<UpdateCourseStepResponse>(`courses/${courseId}/update/`, {
     method: "PATCH",
     body: payload,
+    token: accessToken,
+  })
+}
+
+export interface CourseDetailTeacher {
+  id: number
+  name: string
+  headline: string | null
+  avatar: string | null
+}
+
+export interface CourseDetailPricing {
+  currency: string | null
+  is_free: boolean
+  current_price: number
+  original_price: number | null
+  discount_percent: number | null
+  cta_label: string | null
+}
+
+export interface CourseDetailStats {
+  lessons_count: number
+  modules_count: number
+  students_count: number
+  review_count: number
+  rating: number
+  duration_hours: number
+}
+
+export interface CourseDetailImages {
+  card: string | null
+  cover: string | null
+}
+
+export interface CourseFeature {
+  label: string
+  value: string
+}
+
+export interface CourseDetailLesson {
+  id: number
+  title: string
+  order: number
+}
+
+export interface CourseDetailSection {
+  id: number
+  title: string
+  order: number
+  lessons_count: number
+  lessons: CourseDetailLesson[]
+}
+
+export interface CourseContent {
+  total_sections: number
+  total_lectures: number
+  total_duration: string | null
+  sections: CourseDetailSection[]
+}
+
+export interface AboutInstructor {
+  bio: string
+  stats: {
+    courses: number
+    lessons: number
+    students: number
+    rating: number
+  }
+}
+
+export interface CourseDetailResponse {
+  id: number
+  title: string
+  subtitle: string | null
+  description: string
+  status: string
+  level: string
+  language: string
+  visibility: string
+  category_id: number
+  category: string
+  program_id: number
+  program: string
+  teacher: CourseDetailTeacher
+  pricing: CourseDetailPricing
+  stats: CourseDetailStats
+  images: CourseDetailImages
+  includes: string[] | null
+  course_features: CourseFeature[]
+  overview: string
+  course_content: CourseContent
+  about_instructor: AboutInstructor
+}
+
+export function getCourseDetails(courseId: number | string) {
+  return apiRequest<CourseDetailResponse>(`courses/${courseId}/details/`, {
+    method: "GET",
+  })
+}
+
+export function getCourseWorkflow(accessToken: string, courseId: number | string) {
+  return apiRequest<CourseWorkflowEntity>(`courses/${courseId}/update/`, {
+    method: "GET",
     token: accessToken,
   })
 }
