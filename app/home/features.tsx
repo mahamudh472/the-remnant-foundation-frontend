@@ -1,3 +1,4 @@
+import { Card } from "@/components/ui/card"
 import Image from "next/image"
 
 const FEATURES = [
@@ -41,9 +42,9 @@ export function Features() {
         </div>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((feature) => (
-            <div
+            <Card
               key={feature.title}
-              className="group flex flex-col items-center space-y-6 rounded-[2rem] border border-gray-50 bg-white p-8 text-center transition-all hover:border-[#4CC0D8] hover:shadow-xl hover:shadow-[#4CC0D8]/5"
+              className="group flex flex-col items-center space-y-6 p-8 text-center transition-all hover:border-[#4CC0D8] hover:shadow-xl hover:shadow-[#4CC0D8]/5"
             >
               <div className="flex h-32 w-full items-center justify-center transition-transform group-hover:scale-110">
                 <Image
@@ -57,7 +58,7 @@ export function Features() {
               <h3 className="text-lg font-bold text-[#1D1D1D]">
                 {feature.title}
               </h3>
-            </div>
+            </Card>
           ))}
         </div>
       </div>

@@ -17,6 +17,8 @@ import {
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+import { Card, CardContent } from "@/components/ui/card"
+import BottomCta from "@/components/common/newslatter"
 
 function Hero() {
   return (
@@ -41,13 +43,10 @@ function Hero() {
             <div className="flex flex-wrap items-center gap-4">
               <Button
                 asChild
-                className="h-12 rounded-lg bg-[#4CC0D8] px-8 font-semibold text-white shadow-lg shadow-[#4CC0D8]/20 hover:bg-[#3AB0C8]"
+                className="p-6"
               >
                 <Link href="/signup">Enroll Now — Free</Link>
               </Button>
-              <span className="rounded-full bg-[#F59E0B] px-5 py-2 text-sm font-bold text-white">
-                100% FREE
-              </span>
             </div>
           </div>
 
@@ -120,15 +119,6 @@ function OurMission() {
                 className="h-auto w-full object-cover"
               />
             </div>
-            {/* See a demo CTA */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-              <button className="flex items-center gap-2 rounded-full bg-white/90 px-5 py-2.5 text-sm font-semibold text-[#1D1D1D] shadow-lg backdrop-blur-sm transition hover:bg-white">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#4CC0D8] text-white">
-                  <Play className="h-3.5 w-3.5 fill-white" />
-                </span>
-                See a Demo
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -179,18 +169,17 @@ function WhyReformNeeded() {
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {CHALLENGES.map(({ icon: Icon, title, desc, color }) => (
-            <div
-              key={title}
-              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-md"
-            >
-              <div
-                className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${color}`}
-              >
-                <Icon className="h-6 w-6" />
-              </div>
-              <h3 className="mb-2 font-bold text-[#1D1D1D]">{title}</h3>
-              <p className="text-sm text-[#666666]">{desc}</p>
-            </div>
+            <Card key={title}>
+              <CardContent>
+                <div
+                  className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${color}`}
+                >
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="mb-2 font-bold text-[#1D1D1D]">{title}</h3>
+                <p className="text-sm text-[#666666]">{desc}</p>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
@@ -257,15 +246,17 @@ function ReformJourney() {
           {JOURNEY_STEPS.map((step) => (
             <div key={step.number} className="relative flex gap-6 pl-16">
               {/* Circle */}
-              <div className="absolute left-0 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#4CC0D8] font-bold text-white shadow-lg shadow-[#4CC0D8]/30">
+              <div className="absolute left-0 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#4CC0D8] font-bold text-white shadow-lg">
                 {step.number}
               </div>
-              <div className="flex-1 rounded-2xl border border-gray-100 bg-[#F8F9FC] p-6 shadow-sm">
-                <h3 className="mb-2 text-lg font-bold text-[#1D1D1D]">
-                  {step.title}
-                </h3>
-                <p className="text-[#666666]">{step.desc}</p>
-              </div>
+              <Card>
+                <CardContent>
+                  <h3 className="mb-2 text-lg font-bold text-[#1D1D1D]">
+                    {step.title}
+                  </h3>
+                  <p className="text-[#666666]">{step.desc}</p>
+                </CardContent>
+              </Card>
             </div>
           ))}
         </div>
@@ -330,7 +321,7 @@ function AgePathways() {
           {PATHWAYS.map((p) => (
             <div
               key={p.title}
-              className="group relative overflow-hidden rounded-2xl shadow-lg transition hover:-translate-y-1 hover:shadow-xl"
+              className="group relative overflow-hidden rounded-xl shadow-lg"
             >
               {/* Image */}
               <div className="relative h-64 w-full">
@@ -347,11 +338,11 @@ function AgePathways() {
               />
               {/* Content */}
               <div className="absolute right-0 bottom-0 left-0 p-6">
-                <span
+                {/* <span
                   className={`mb-2 inline-block rounded-full ${p.badgeColor} px-3 py-1 text-xs font-semibold text-white`}
                 >
                   {p.ages}
-                </span>
+                </span> */}
                 <h3 className="mb-1 text-xl font-bold text-white">{p.title}</h3>
                 <p className="mb-4 text-sm text-white/80">{p.desc}</p>
                 <Button
@@ -359,7 +350,7 @@ function AgePathways() {
                   size="sm"
                   className={`rounded-lg font-semibold ${p.btnClass}`}
                 >
-                  <Link href={p.href}>Learn More</Link>
+                  {/* <Link href={p.href}>Learn More</Link> */}
                 </Button>
               </div>
             </div>
@@ -404,10 +395,7 @@ function TechSupport() {
                 </li>
               ))}
             </ul>
-            <Button
-              asChild
-              className="h-11 rounded-lg bg-[#4CC0D8] px-7 font-semibold text-white hover:bg-[#3AB0C8]"
-            >
+            <Button asChild>
               <Link href="/ai-guide">Explore AI Guide</Link>
             </Button>
           </div>
@@ -462,46 +450,38 @@ function Testimonials() {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {TESTIMONIALS.map((t) => (
-            <div
-              key={t.name}
-              className="flex flex-col gap-6 rounded-2xl border border-gray-100 bg-white p-8 shadow-sm"
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#4CC0D8] font-bold text-white">
-                  {t.avatar}
+            <Card key={t.name}>
+              <CardContent className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#4CC0D8] font-bold text-white">
+                    {t.avatar}
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#1D1D1D]">{t.name}</p>
+                    <p className="text-sm text-[#666666]">{t.role}</p>
+                  </div>
+                  <div className="ml-auto flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-4 w-4 fill-[#F59E0B] text-[#F59E0B]"
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <p className="font-bold text-[#1D1D1D]">{t.name}</p>
-                  <p className="text-sm text-[#666666]">{t.role}</p>
-                </div>
-                <div className="ml-auto flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-4 w-4 fill-[#F59E0B] text-[#F59E0B]"
-                    />
+                <p className="text-[#1D1D1D] italic">&ldquo;{t.quote}&rdquo;</p>
+                <div className="flex flex-wrap gap-2">
+                  {t.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full bg-[#EBF7F9] px-3 py-1 text-xs font-semibold text-[#4CC0D8]"
+                    >
+                      {tag}
+                    </span>
                   ))}
                 </div>
-              </div>
-              <p className="text-[#1D1D1D] italic">&ldquo;{t.quote}&rdquo;</p>
-              <div className="flex flex-wrap gap-2">
-                {t.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-[#EBF7F9] px-3 py-1 text-xs font-semibold text-[#4CC0D8]"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="self-start rounded-lg border-[#4CC0D8] text-[#4CC0D8] hover:bg-[#EBF7F9]"
-              >
-                View Full Story
-              </Button>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -553,58 +533,23 @@ function JoinMovement() {
         <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
           {JOIN_CARDS.map(
             ({ icon: Icon, title, desc, cta, href, btnClass }) => (
-              <div
-                key={title}
-                className="flex flex-col gap-5 rounded-2xl border border-gray-100 bg-[#F8F9FC] p-8 shadow-sm transition hover:shadow-md"
-              >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
-                  <Icon className="h-7 w-7 text-[#4CC0D8]" />
-                </div>
-                <h3 className="text-xl font-bold text-[#1D1D1D]">{title}</h3>
-                <p className="flex-1 text-[#666666]">{desc}</p>
-                <Button
-                  asChild
-                  className={`self-start rounded-lg font-semibold ${btnClass}`}
-                >
-                  <Link href={href}>{cta}</Link>
-                </Button>
-              </div>
+              <Card key={title}>
+                <CardContent className="flex h-full flex-col gap-6">
+                  <div className="flex h-14 w-14 items-center justify-center">
+                    <Icon className="h-7 w-7 text-[#4CC0D8]" />
+                  </div>
+                  <h3 className="text-xl font-bold text-[#1D1D1D]">{title}</h3>
+                  <p className="flex-1 text-[#666666]">{desc}</p>
+                  <Button
+                    asChild
+                    className={`self-start rounded-lg font-semibold ${btnClass}`}
+                  >
+                    <Link href={href}>{cta}</Link>
+                  </Button>
+                </CardContent>
+              </Card>
             )
           )}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function BottomCta() {
-  return (
-    <section className="bg-[#1D1D1D] py-20">
-      <div className="mx-auto max-w-3xl px-4 text-center">
-        <h2 className="text-3xl font-bold text-white md:text-4xl">
-          Be Part of a Generation Being{" "}
-          <span className="text-[#4CC0D8]">Spiritually Renewed</span>
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl text-[#9CA3AF]">
-          The next generation is waiting. Join the Reform movement and help us
-          build a generation anchored in faith, purpose, and transformation.
-        </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button
-            asChild
-            className="h-12 rounded-lg bg-[#4CC0D8] px-8 font-semibold text-white shadow-lg shadow-[#4CC0D8]/20 hover:bg-[#3AB0C8]"
-          >
-            <Link href="/signup">Sign Up — It&apos;s Free</Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="h-12 rounded-lg border-white/20 px-8 font-semibold text-white hover:bg-white/10"
-          >
-            <Link href="/programs">
-              Explore Other Programs <ChevronRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
         </div>
       </div>
     </section>

@@ -3,19 +3,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import {
-  Check,
-  ArrowRight,
-  Monitor,
-  Users,
-  Palette,
-  Cpu,
-  Heart,
-  GraduationCap,
-  TrendingUp,
-  Infinity,
-  ChevronRight,
-} from "lucide-react"
+import { GraduationCap, TrendingUp, Infinity, ChevronRight } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 
 export default function ProgramsPage() {
   return (
@@ -43,10 +32,7 @@ export default function ProgramsPage() {
               programs combining cutting-edge technology, hands-on training, and
               expert mentorship.
             </p>
-            <Button
-              asChild
-              className="h-12 rounded-lg bg-[#4CC0D8] px-10 font-bold text-white shadow-lg shadow-[#4CC0D8]/20 hover:bg-[#3AB0C8]"
-            >
+            <Button asChild className="px-12 py-6">
               <Link href="/signup">Enroll Now</Link>
             </Button>
           </div>
@@ -156,40 +142,40 @@ export default function ProgramsPage() {
                   href: "/courses?age=young-adults",
                 },
               ].map((card) => (
-                <div
+                <Card
                   key={card.title}
-                  className="flex flex-col gap-5 rounded-2xl border border-gray-100 bg-primary/10 p-7 shadow-sm transition-shadow hover:shadow-lg"
+                  className="flex flex-col gap-5 bg-primary/10"
                 >
-                  <div className="space-y-1">
-                    <h3 className="mt-2 text-xl text-[#1D1D1D]">
-                      {card.title}
-                    </h3>
-                    <span className={`inline-block py-0.5 text-xs`}>
-                      {card.age}
-                    </span>
-                    <p className="text-sm text-[#666666]">{card.desc}</p>
-                  </div>
-                  <span className="text-sm text-gray-500">Skills you'll learn: </span>
-                  <div className="flex flex-wrap gap-2">
-                    {card.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium bg-white text-[#666666]"
-                      >
-                        {tag}
+                  <CardContent className="space-y-4">
+                    <div className="space-y-1">
+                      <h3 className="mt-2 text-xl text-[#1D1D1D]">
+                        {card.title}
+                      </h3>
+                      <span className={`inline-block py-0.5 text-xs`}>
+                        {card.age}
                       </span>
-                    ))}
-                  </div>
-                  <Button
-                    asChild
-                    size="sm"
-                    className="py-6"
-                  >
-                    <Link href={card.href}>
-                      View Courses <ChevronRight className="ml-1 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
+                      <p className="text-sm text-[#666666]">{card.desc}</p>
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      Skills you'll learn:{" "}
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {card.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-[#666666]"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <Button asChild>
+                      <Link href={card.href}>
+                        View Courses <ChevronRight className="ml-1 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>
@@ -200,7 +186,7 @@ export default function ProgramsPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
               {/* Left image */}
-              <div className="flex justify-center border-gray-200 rounded-lg border-2">
+              <div className="flex justify-center rounded-lg border-2 border-gray-200">
                 <Image
                   src="/assets/pngs/For web/certifications.png"
                   alt="Certifications"
@@ -237,7 +223,10 @@ export default function ProgramsPage() {
                       desc: "Keep your certificates forever and showcase them on LinkedIn and your resume.",
                     },
                   ].map(({ icon: Icon, title, desc }) => (
-                    <div key={title} className="flex items-start gap-5 rounded-lg p-4">
+                    <div
+                      key={title}
+                      className="flex items-start gap-5 rounded-lg p-4"
+                    >
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EBF7F9] text-[#4CC0D8]">
                         <Icon className="h-5 w-5" />
                       </div>
@@ -278,7 +267,7 @@ export default function ProgramsPage() {
         </section>
 
         {/* ── Footer CTA ── */}
-        <section className="py-20 text-center">
+        {/* <section className="py-20 text-center">
           <div className="mx-auto max-w-2xl space-y-6 px-4">
             <h2 className="text-3xl font-extrabold text-[#1D1D1D] md:text-4xl">
               Skills Development School
@@ -293,7 +282,7 @@ export default function ProgramsPage() {
               <Link href="/signup">Sign up now</Link>
             </Button>
           </div>
-        </section>
+        </section> */}
       </main>
 
       <Footer />

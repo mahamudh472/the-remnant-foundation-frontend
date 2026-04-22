@@ -1,3 +1,4 @@
+import { Card } from "@/components/ui/card"
 import { RefreshCw } from "lucide-react"
 
 const TIERS = [
@@ -37,9 +38,9 @@ export function AgeLearning() {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {TIERS.map((tier) => (
-            <div
+            <Card
               key={tier.title}
-              className="overflow-hidden rounded-2xl border border-gray-200 bg-[#FFF8EE]"
+              className="overflow-hidden bg-[#FFF8EE]"
             >
               {/* Colored top bar */}
               <div className={`h-2 w-full ${tier.barColor}`} />
@@ -59,7 +60,7 @@ export function AgeLearning() {
                   ))}
                 </ul>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       </div>

@@ -19,10 +19,9 @@ import {
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+import { Card, CardContent } from "@/components/ui/card"
+import BottomCta from "@/components/common/newslatter"
 
-// ─────────────────────────────────────────────
-// Hero
-// ─────────────────────────────────────────────
 function Hero() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-[#EBF7F9] to-white pt-20 pb-24">
@@ -30,7 +29,7 @@ function Hero() {
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
           {/* Left */}
           <div className="space-y-6">
-            <div className="flex flex-wrap items-center gap-3">
+            {/* <div className="flex flex-wrap items-center gap-3">
               <span className="text-sm font-medium text-[#666666]">
                 Programs
               </span>
@@ -38,7 +37,7 @@ function Hero() {
               <span className="rounded-full bg-[#4CC0D8]/10 px-4 py-1 text-sm font-semibold text-[#4CC0D8]">
                 Ignite
               </span>
-            </div>
+            </div> */}
             <h1 className="text-4xl leading-[1.1] font-bold tracking-tight text-[#1D1D1D] md:text-5xl lg:text-[3.25rem]">
               Ignite your Faith,{" "}
               <span className="text-[#4CC0D8]">Discover Your Purpose</span>
@@ -49,10 +48,7 @@ function Hero() {
               take their first confident steps toward purpose.
             </p>
             <div className="flex flex-wrap items-center gap-4">
-              <Button
-                asChild
-                className="h-12 rounded-lg bg-[#4CC0D8] px-8 font-semibold text-white shadow-lg shadow-[#4CC0D8]/20 hover:bg-[#3AB0C8]"
-              >
+              <Button asChild className="p-6">
                 <Link href="/signup">Start Ignite — Free</Link>
               </Button>
               {/* Stat badge */}
@@ -83,9 +79,6 @@ function Hero() {
   )
 }
 
-// ─────────────────────────────────────────────
-// Beginner-Friendly Program
-// ─────────────────────────────────────────────
 const PROGRAM_FEATURES = [
   {
     icon: Flame,
@@ -134,10 +127,7 @@ function BeginnerProgram() {
               mentorship, Ignite gives every seeker the tools they need to build
               a lasting spiritual foundation.
             </p>
-            <Button
-              asChild
-              className="h-11 rounded-lg bg-[#4CC0D8] px-7 font-semibold text-white hover:bg-[#3AB0C8]"
-            >
+            <Button asChild className="p-6">
               <Link href="/signup">Join Ignite Today</Link>
             </Button>
           </div>
@@ -145,18 +135,17 @@ function BeginnerProgram() {
           {/* Right feature grid */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {PROGRAM_FEATURES.map(({ icon: Icon, title, desc, color }) => (
-              <div
-                key={title}
-                className="rounded-2xl border border-gray-100 bg-[#F8F9FC] p-5 shadow-sm"
-              >
-                <div
-                  className={`mb-3 flex h-11 w-11 items-center justify-center rounded-xl ${color}`}
-                >
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="mb-1.5 font-bold text-[#1D1D1D]">{title}</h3>
-                <p className="text-sm text-[#666666]">{desc}</p>
-              </div>
+              <Card key={title}>
+                <CardContent>
+                  <div
+                    className={`mb-3 flex h-11 w-11 items-center justify-center rounded-xl ${color}`}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mb-1.5 font-bold text-[#1D1D1D]">{title}</h3>
+                  <p className="text-sm text-[#666666]">{desc}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
@@ -165,9 +154,6 @@ function BeginnerProgram() {
   )
 }
 
-// ─────────────────────────────────────────────
-// Every Young Person Deserves Guidance
-// ─────────────────────────────────────────────
 const CHALLENGES = [
   {
     icon: SearchCheck,
@@ -207,16 +193,15 @@ function EveryoneDeserves() {
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {CHALLENGES.map(({ icon: Icon, title, desc }) => (
-            <div
-              key={title}
-              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
-            >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#EBF7F9] text-[#4CC0D8]">
-                <Icon className="h-6 w-6" />
-              </div>
-              <h3 className="mb-2 font-bold text-[#1D1D1D]">{title}</h3>
-              <p className="text-sm text-[#666666]">{desc}</p>
-            </div>
+            <Card key={title}>
+              <CardContent>
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#EBF7F9] text-[#4CC0D8]">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="mb-2 font-bold text-[#1D1D1D]">{title}</h3>
+                <p className="text-sm text-[#666666]">{desc}</p>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
@@ -233,9 +218,6 @@ function EveryoneDeserves() {
   )
 }
 
-// ─────────────────────────────────────────────
-// Four Steps to Spiritual Awakening
-// ─────────────────────────────────────────────
 const AWAKENING_STEPS = [
   {
     number: "01",
@@ -301,9 +283,6 @@ function AwakeningSteps() {
   )
 }
 
-// ─────────────────────────────────────────────
-// Designed for Every Seeker
-// ─────────────────────────────────────────────
 const SEEKERS = [
   {
     title: "New Believers",
@@ -380,9 +359,6 @@ function EverySeeker() {
   )
 }
 
-// ─────────────────────────────────────────────
-// Modern Learning, Timeless Truth
-// ─────────────────────────────────────────────
 const LEARNING_FEATURES = [
   { icon: Video, text: "Short Video Lessons (5–10 mins)" },
   { icon: Compass, text: "Interactive Spiritual Discovery Activities" },
@@ -434,9 +410,6 @@ function ModernLearning() {
   )
 }
 
-// ─────────────────────────────────────────────
-// AI Guide
-// ─────────────────────────────────────────────
 const AI_FEATURES = [
   "Daily AI Spiritual Guide & Verse",
   "Personalized Spiritual Growth Content",
@@ -520,9 +493,6 @@ function AiGuide() {
   )
 }
 
-// ─────────────────────────────────────────────
-// Stats
-// ─────────────────────────────────────────────
 const STATS = [
   {
     value: "2,547+",
@@ -581,9 +551,6 @@ function Stats() {
   )
 }
 
-// ─────────────────────────────────────────────
-// Path Beyond Ignite
-// ─────────────────────────────────────────────
 const PATHS = [
   {
     stage: "Ignite",
@@ -681,46 +648,6 @@ function PathBeyond() {
   )
 }
 
-// ─────────────────────────────────────────────
-// Footer CTA
-// ─────────────────────────────────────────────
-function BottomCta() {
-  return (
-    <section className="bg-[#1D1D1D] py-20">
-      <div className="mx-auto max-w-3xl px-4 text-center">
-        <h2 className="text-3xl font-bold text-white md:text-4xl">
-          Be Part of a Generation Being{" "}
-          <span className="text-[#4CC0D8]">Spiritually Renewed</span>
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl text-[#9CA3AF]">
-          Your journey starts with a single spark. Join Ignite today and
-          discover what faith, purpose, and community can look like for you.
-        </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button
-            asChild
-            className="h-12 rounded-lg bg-[#4CC0D8] px-8 font-semibold text-white shadow-lg shadow-[#4CC0D8]/20 hover:bg-[#3AB0C8]"
-          >
-            <Link href="/signup">Sign Up — It&apos;s Free</Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="h-12 rounded-lg border-white/20 px-8 font-semibold text-white hover:bg-white/10"
-          >
-            <Link href="/programs/reform">
-              Explore Reform Next <ChevronRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// ─────────────────────────────────────────────
-// Page
-// ─────────────────────────────────────────────
 export default function IgnitePage() {
   return (
     <main>

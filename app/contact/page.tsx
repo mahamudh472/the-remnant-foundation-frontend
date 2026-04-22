@@ -4,13 +4,52 @@ import React from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
-import { Mail, Phone, MapPin, Send, HelpCircle, ChevronRight } from "lucide-react"
+import { Mail, Phone, MapPin, Send, HelpCircle, ChevronRight, Loader2, CheckCircle2 } from "lucide-react"
+import { useContactMutation } from "@/hooks/api/use-public"
+import { toast } from "sonner"
+import { getApiErrorMessage } from "@/lib/api/client"
 
 export default function ContactPage() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [form, setForm] = React.useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    subject: "",
+    message: "",
+  })
+  const [isSuccess, setIsSuccess] = React.useState(false)
+
+  const contactMutation = useContactMutation()
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement contact form submission
-    console.log("Form submitted")
+    
+    try {
+      await contactMutation.mutateAsync({
+        first_name: form.firstName,
+        last_name: form.lastName,
+        email: form.email,
+        subject: form.subject,
+        message: form.message,
+      })
+      
+      setIsSuccess(true)
+      setForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        subject: "",
+        message: "",
+      })
+      toast.success("Message sent successfully!")
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to send message"))
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target
+    setForm(prev => ({ ...prev, [id]: value }))
   }
 
   return (
@@ -38,63 +77,105 @@ export default function ContactPage() {
               {/* Send Us a Message Form */}
               <div className="bg-white rounded-xl p-8 border border-gray-100 transition-all">
                 <h2 className="text-2xl font-bold text-[#1D1D1D] mb-8">Send Us a Message</h2>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {isSuccess ? (
+                  <div className="py-12 text-center space-y-6 animate-in fade-in zoom-in duration-300">
+                    <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-50 text-green-500">
+                      <CheckCircle2 className="h-10 w-10" />
+                    </div>
                     <div className="space-y-2">
-                      <label htmlFor="firstName" className="text-sm font-medium text-[#1D1D1D]">First Name</label>
+                      <h3 className="text-xl font-bold text-[#1D1D1D]">Thank You!</h3>
+                      <p className="text-[#666666]">Your message has been received. Our team will get back to you shortly.</p>
+                    </div>
+                    <Button 
+                      onClick={() => setIsSuccess(false)}
+                      variant="outline" 
+                      className="rounded-xl"
+                    >
+                      Send Another Message
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label htmlFor="firstName" className="text-sm font-medium text-[#1D1D1D]">First Name</label>
+                        <input
+                          type="text"
+                          id="firstName"
+                          value={form.firstName}
+                          onChange={handleChange}
+                          placeholder="John"
+                          className="w-full h-11 px-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#4CC0D8] transition-all"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="lastName" className="text-sm font-medium text-[#1D1D1D]">Last Name</label>
+                        <input
+                          type="text"
+                          id="lastName"
+                          value={form.lastName}
+                          onChange={handleChange}
+                          placeholder="Doe"
+                          className="w-full h-11 px-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#4CC0D8] transition-all"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="text-sm font-medium text-[#1D1D1D]">Email</label>
                       <input
-                        type="text"
-                        id="firstName"
-                        placeholder="John"
+                        type="email"
+                        id="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        placeholder="john@example.com"
                         className="w-full h-11 px-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#4CC0D8] transition-all"
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <label htmlFor="lastName" className="text-sm font-medium text-[#1D1D1D]">Last Name</label>
+                      <label htmlFor="subject" className="text-sm font-medium text-[#1D1D1D]">Subject</label>
                       <input
                         type="text"
-                        id="lastName"
-                        placeholder="Doe"
+                        id="subject"
+                        value={form.subject}
+                        onChange={handleChange}
+                        placeholder="How can we help?"
                         className="w-full h-11 px-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#4CC0D8] transition-all"
                         required
                       />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium text-[#1D1D1D]">Email</label>
-                    <input
-                      type="email"
-                      id="email"
-                      placeholder="john@example.com"
-                      className="w-full h-11 px-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#4CC0D8] transition-all"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="subject" className="text-sm font-medium text-[#1D1D1D]">Subject</label>
-                    <input
-                      type="text"
-                      id="subject"
-                      placeholder="How can we help?"
-                      className="w-full h-11 px-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#4CC0D8] transition-all"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="message" className="text-sm font-medium text-[#1D1D1D]">Message</label>
-                    <textarea
-                      id="message"
-                      placeholder="Tell us more..."
-                      className="w-full h-32 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#4CC0D8] transition-all resize-none"
-                      required
-                    ></textarea>
-                  </div>
-                  <Button type="submit" className="w-full h-12 bg-[#4CC0D8] hover:bg-[#3AB0C8] text-white rounded-xl font-bold gap-2">
-                    <span>Send Message</span>
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </form>
+                    <div className="space-y-2">
+                      <label htmlFor="message" className="text-sm font-medium text-[#1D1D1D]">Message</label>
+                      <textarea
+                        id="message"
+                        value={form.message}
+                        onChange={handleChange}
+                        placeholder="Tell us more..."
+                        className="w-full h-32 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#4CC0D8] transition-all resize-none"
+                        required
+                      ></textarea>
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className="w-full h-12 bg-[#4CC0D8] hover:bg-[#3AB0C8] text-white rounded-xl font-bold gap-2"
+                      disabled={contactMutation.isPending}
+                    >
+                      {contactMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Sending...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Send Message</span>
+                          <Send className="h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                )}
               </div>
 
               {/* Contact Information */}

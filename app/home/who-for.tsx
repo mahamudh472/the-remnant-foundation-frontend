@@ -1,3 +1,4 @@
+import { Card } from "@/components/ui/card"
 import Image from "next/image"
 
 const CARDS = [
@@ -35,9 +36,9 @@ export function WhoFor() {
         </div>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {CARDS.map((card) => (
-            <div
+            <Card
               key={card.title}
-              className={`${card.bg} flex flex-col items-center space-y-6 rounded-2xl p-8 text-center transition-all hover:-translate-y-2 hover:shadow-xl`}
+              className={`${card.bg} flex flex-col items-center space-y-6 p-8`}
             >
               <div className="flex h-40 w-full items-center justify-center">
                 <Image
@@ -56,7 +57,7 @@ export function WhoFor() {
                   {card.desc}
                 </p>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       </div>

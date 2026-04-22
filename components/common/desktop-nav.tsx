@@ -99,6 +99,7 @@ export function DesktopNav() {
   return (
     <div className="hidden lg:flex lg:items-center">
       <NavLink href="/" label="Home" />
+      <NavLink href="/courses" label="Courses" />
 
       <NavDropdown
         label="Programs"
@@ -107,15 +108,15 @@ export function DesktopNav() {
         width="w-64"
       />
 
-      <NavLink href="/partnership" label="Partnership" />
       <NavLink href="/events" label="Events" />
+      <NavLink href="/partnership" label="Partnership" />
 
-      <NavDropdown
+      {/* <NavDropdown
         label="Courses"
         active={pathname.startsWith("/courses")}
         items={COURSES_ITEMS}
         width="w-56"
-      />
+      /> */}
 
       <NavLink href="/contact" label="Contact" />
     </div>

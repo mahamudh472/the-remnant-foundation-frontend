@@ -2,12 +2,13 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 
 export function AiBanner() {
   return (
     <section className="py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="group relative overflow-hidden rounded-[2rem] bg-[#4CC0D8] p-8 md:p-12">
+      <div className="mx-auto max-w-7xl">
+        <Card className="group relative overflow-hidden bg-[#4CC0D8] p-8 md:p-12">
           <div className="relative z-10 flex flex-col items-center justify-between gap-8 md:flex-row">
             <div className="max-w-xl space-y-4 text-center text-white md:text-left">
               <h2 className="text-3xl font-bold md:text-4xl">
@@ -40,7 +41,7 @@ export function AiBanner() {
           </div>
           <div className="pointer-events-none absolute top-0 right-0 h-64 w-64 translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
           <div className="pointer-events-none absolute bottom-0 left-0 h-48 w-48 -translate-x-1/2 translate-y-1/2 rounded-full bg-black/5 blur-2xl" />
-        </div>
+        </Card>
       </div>
     </section>
   )
