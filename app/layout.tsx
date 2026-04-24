@@ -5,6 +5,7 @@ import { QueryProvider } from "@/components/providers/query-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 import { Metadata } from "next"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 const urbanist = Urbanist({ subsets: ["latin"], variable: "--font-urbanist" })
@@ -40,8 +41,8 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <QueryProvider>
-            {children}
-            <Toaster position="top-center" />
+            <TooltipProvider>{children}</TooltipProvider>
+            <Toaster position="bottom-right" />
           </QueryProvider>
         </ThemeProvider>
       </body>

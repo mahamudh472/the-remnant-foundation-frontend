@@ -246,15 +246,15 @@ export default function TeacherQuizPage() {
             <QuizCard
               key={quiz.id}
               quiz={{
-                id: quiz.id,
-                title: quiz.title,
-                grade: quiz.grade.label,
-                course: quiz.course_name,
-                program: quiz.program_name,
-                category: quiz.category_name,
-                questionsCount: quiz.questions_count,
-                passingScore: quiz.passing_score,
-                status: quiz.status,
+                id: quiz.id || 0,
+                title: quiz.title || "Untitled Quiz",
+                grade: quiz.grade?.label || "-",
+                course: quiz.course_name || "-",
+                program: quiz.program_name || "-",
+                category: quiz.category_name || "-",
+                questionsCount: quiz.questions_count || 0,
+                passingScore: quiz.passing_score || 0,
+                status: quiz.status || "draft",
               }}
             />
           ))}

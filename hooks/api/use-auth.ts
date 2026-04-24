@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   changePassword,
@@ -201,6 +202,7 @@ export function useChangePasswordMutation() {
 }
 
 export function useLogoutMutation() {
+  const router = useRouter()
   const queryClient = useQueryClient()
   const accessToken = useAuthStore((state) => state.accessToken)
   const refreshToken = useAuthStore((state) => state.refreshToken)
@@ -215,6 +217,7 @@ export function useLogoutMutation() {
     onSettled: () => {
       clearAuth()
       queryClient.removeQueries({ queryKey: ["auth"] })
+      router.replace("/login")
     },
   })
 }

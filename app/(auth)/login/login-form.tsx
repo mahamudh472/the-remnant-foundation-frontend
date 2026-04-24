@@ -16,6 +16,27 @@ export function LoginForm() {
   const router = useRouter()
   const loginMutation = useLoginMutation()
 
+  const AUTH_ROUTE_PREFIXES = [
+    "/login",
+    "/signup",
+    "/create-account",
+    "/forgot-password",
+    "/otp",
+  ]
+
+  const isAllowedRedirectPath = (path: string) => {
+    if (!path.startsWith("/") || path.startsWith("//")) {
+      return false
+    }
+
+    return !AUTH_ROUTE_PREFIXES.some(
+      (prefix) =>
+        path === prefix ||
+        path.startsWith(`${prefix}/`) ||
+        path.startsWith(`${prefix}?`)
+    )
+  }
+
   const getPostLoginRedirectPath = () => {
     if (typeof window === "undefined") {
       return "/dashboard"
@@ -25,11 +46,7 @@ export function LoginForm() {
       "redirectTo"
     )
 
-    if (
-      redirectToParam &&
-      redirectToParam.startsWith("/") &&
-      !redirectToParam.startsWith("//")
-    ) {
+    if (redirectToParam && isAllowedRedirectPath(redirectToParam)) {
       return redirectToParam
     }
 

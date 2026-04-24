@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
+import { clearAuthTokenCookie, setAuthTokenCookie } from "../auth/cookies"
 
 export interface User {
   id: string
@@ -49,6 +50,7 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       ...initialAuthState,
       setTokens: ({ access, refresh }) => {
+        setAuthTokenCookie(access)
         set({
           accessToken: access,
           refreshToken: refresh,
@@ -71,6 +73,7 @@ export const useAuthStore = create<AuthState>()(
         set({ pendingEmail: null })
       },
       logout: () => {
+        clearAuthTokenCookie()
         set({
           ...initialAuthState,
         })
@@ -109,6 +112,14 @@ export const useAuthStore = create<AuthState>()(
             persisted.accessToken ?? currentState.accessToken
           ),
         }
+      },
+      onRehydrateStorage: () => (state) => {
+        if (state?.accessToken) {
+          setAuthTokenCookie(state.accessToken)
+          return
+        }
+
+        clearAuthTokenCookie()
       },
     }
   )

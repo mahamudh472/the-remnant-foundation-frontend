@@ -1,3 +1,5 @@
+import { clearAuthTokenCookie, setAuthTokenCookie } from "@/lib/auth/cookies"
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "")
 const AUTH_STORAGE_KEY = "remnant-auth-store"
 const TOKEN_REFRESH_PATH = "accounts/token/refresh"
@@ -34,15 +36,20 @@ export class ApiError extends Error {
 export interface ApiRequestOptions extends Omit<RequestInit, "body"> {
   body?: unknown
   token?: string | null
+  baseUrl?: string
 }
 
-function buildUrl(path: string) {
-  if (!API_BASE_URL) {
-    throw new Error("Missing NEXT_PUBLIC_API_URL environment variable")
+function buildUrl(path: string, baseUrl?: string) {
+  const base = baseUrl || API_BASE_URL
+
+  if (!base) {
+    throw new Error(
+      `Missing ${baseUrl ? "custom base URL" : "NEXT_PUBLIC_API_URL"} environment variable`
+    )
   }
 
   const normalizedPath = path.replace(/^\//, "")
-  return `${API_BASE_URL}/${normalizedPath}`
+  return `${base.replace(/\/$/, "")}/${normalizedPath}`
 }
 
 function normalizeApiPath(path: string) {
@@ -186,6 +193,7 @@ function persistRefreshedTokens(tokens: RefreshedTokens) {
     }
 
     window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextPersisted))
+    setAuthTokenCookie(tokens.access)
   } catch {
     // Ignore localStorage persistence errors.
   }
@@ -199,6 +207,8 @@ function clearPersistedAuthState() {
   } catch {
     // Ignore localStorage cleanup errors.
   }
+
+  clearAuthTokenCookie()
 }
 
 async function syncInMemoryAuthState(tokens: RefreshedTokens) {
@@ -298,7 +308,7 @@ async function refreshAccessToken() {
 
 async function executeRequest(
   path: string,
-  { body, headers, ...init }: ApiRequestOptions,
+  { body, headers, baseUrl, ...init }: ApiRequestOptions,
   token: string | null
 ): Promise<RequestExecutionResult> {
   const requestHeaders = new Headers(headers)
@@ -327,7 +337,7 @@ async function executeRequest(
     requestHeaders.set("Authorization", `Bearer ${token}`)
   }
 
-  const response = await fetch(buildUrl(path), {
+  const response = await fetch(buildUrl(path, baseUrl), {
     ...init,
     headers: requestHeaders,
     body:

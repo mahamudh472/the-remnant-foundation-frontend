@@ -37,11 +37,7 @@ export default function EnrolledCard({
     removeWishlistMutation.variables === courseId
   const isWishlistUpdating = isAddingThisCourse || isRemovingThisCourse
 
-  const avatar = !course.teacher_avatar.startsWith(
-    process.env.NEXT_PUBLIC_MEDIA_URL
-  )
-    ? process.env.NEXT_PUBLIC_MEDIA_URL + course.teacher_avatar
-    : course.teacher_avatar
+  const avatar = course.teacher_avatar || avatarFallback
 
   async function handleToggleWishlist(
     event: React.MouseEvent<HTMLButtonElement>
@@ -106,11 +102,11 @@ export default function EnrolledCard({
         </button>
       </div>
       <CardContent className="px-4">
-        <div className="mb-2 flex items-center gap-2 justify-between">
+        <div className="mb-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
             <div className="h-5 w-5 overflow-hidden rounded-full bg-gray-200">
               <Image
-                src={avatar || avatarFallback}
+                src={avatar}
                 alt={course.teacher_name}
                 width={20}
                 height={20}
@@ -132,7 +128,6 @@ export default function EnrolledCard({
           {course.course_title}
         </h3>
 
-        
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-1">
             <Star className="h-3.5 w-3.5 fill-[#F59E0B] text-[#F59E0B]" />

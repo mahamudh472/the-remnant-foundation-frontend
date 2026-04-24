@@ -22,6 +22,7 @@ import { useAuthStore } from "@/lib/store/auth-store"
 import { useGetMeQuery, useLogoutMutation } from "@/hooks/api/use-auth"
 
 import fallback from "@/assets/pngs/avatar-fallback.png"
+import { Card } from "./ui/card"
 
 const PUBLIC_NAV_ITEMS = [
   { name: "Home", href: "/", icon: Compass, hasDropdown: false },
@@ -52,7 +53,7 @@ const AUTH_NAV_ITEMS = [
     icon: Users,
     hasDropdown: false,
   },
-  { name: "AI Guide", href: "/ai-guide", icon: HelpCircle, hasDropdown: false },
+  { name: "AI Guide", href: "/chat", icon: HelpCircle, hasDropdown: false },
 ]
 
 const MOBILE_SUB_ITEMS: Record<string, { name: string; href: string }[]> = {
@@ -178,9 +179,10 @@ export function Navbar() {
               <div className="flex items-center gap-3">
                 {/* Profile */}
                 <div className="relative">
-                  <button
+                  <Button
+                    variant={"ghost"}
                     onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                    className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-[#F8F9FC] p-1.5 pr-4 transition-all hover:border-[#4CC0D8]/30"
+                    className="flex items-center gap-3 p-6 transition-all hover:border-[#4CC0D8]/30"
                   >
                     <div className="relative h-9 w-9">
                       <Image
@@ -190,7 +192,6 @@ export function Navbar() {
                         height={36}
                         className="rounded-full border-2 border-white shadow-sm"
                       />
-                      <div className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-red-400" />
                     </div>
                     <div className="hidden text-left md:block">
                       <p className="text-xs font-bold text-[#1D1D1D]">
@@ -206,37 +207,33 @@ export function Navbar() {
                         showProfileDropdown && "rotate-180"
                       )}
                     />
-                  </button>
+                  </Button>
 
                   {showProfileDropdown && (
-                    <div className="absolute right-0 mt-4 flex w-60 animate-in flex-col gap-1 rounded-3xl border border-gray-100 bg-white p-3 shadow-2xl ring-1 shadow-gray-200/50 ring-black/5 duration-200 fade-in zoom-in">
+                    <Card className="absolute right-0 mt-4 flex w-60 animate-in flex-col gap-1 border border-gray-100 bg-white p-3 shadow-2xl ring-1 shadow-gray-200/50 ring-black/5 duration-200 fade-in">
                       {navItems.map((item) => (
                         <Link
                           key={item.name}
                           href={item.href}
-                          className="group flex items-center gap-3 rounded-xl p-3 text-sm font-bold text-[#1D1D1D] transition-colors hover:bg-[#F8F9FC]"
+                          className="group flex items-center gap-3 rounded-lg p-3 text-sm transition-colors hover:bg-[#F8F9FC]"
                         >
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-50 bg-white text-[#9CA3AF] transition-all group-hover:border-[#4CC0D8]/20 group-hover:text-[#4CC0D8]">
-                            {item.icon && <item.icon className="h-4 w-4" />}
-                          </div>
+                          {item.icon && <item.icon className="h-4 w-4" />}
                           {item.name}
                         </Link>
                       ))}
                       <div className="my-2 h-px bg-gray-50" />
-                      <button
+                      <Button
+                        variant={"destructive"}
                         onClick={() => {
                           logoutMutation.mutate()
                           setShowProfileDropdown(false)
                         }}
                         disabled={logoutMutation.isPending}
-                        className="group flex w-full items-center gap-3 rounded-xl p-3 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-50"
                       >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-50 bg-white text-red-400 transition-all group-hover:bg-red-500 group-hover:text-white">
-                          <LogOut className="h-4 w-4" />
-                        </div>
+                        <LogOut className="h-4 w-4" />
                         Logout
-                      </button>
-                    </div>
+                      </Button>
+                    </Card>
                   )}
                 </div>
               </div>

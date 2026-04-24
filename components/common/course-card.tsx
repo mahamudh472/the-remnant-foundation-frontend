@@ -3,6 +3,7 @@ import { BookOpen, ChevronRight, FileText, Star } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import fallback from "@/assets/pngs/thumbnail-fallback.png"
+import avatarFallback from "@/assets/pngs/avatar-fallback.png"
 
 interface CourseCardProps {
   id: number | string
@@ -125,7 +126,7 @@ export default function CourseCard({
         <div>
           <div className="mb-3 flex items-center gap-2 text-[10px] ">
             <Image
-              src={teacher_avatar || fallback}
+              src={teacher_avatar || avatarFallback}
               alt={teacher_name || "Instructor"}
               width={24}
               height={24}
