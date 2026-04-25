@@ -6,6 +6,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+import Link from "next/link"
+
 export function NavMain({
   items,
 }: {
@@ -22,7 +24,7 @@ export function NavMain({
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton asChild isActive={item.isActive}>
-            <a 
+            <Link 
               href={item.url} 
               onClick={(e) => {
                 if (item.onClick) {
@@ -33,7 +35,7 @@ export function NavMain({
             >
               {item.icon}
               <span>{item.title}</span>
-            </a>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}

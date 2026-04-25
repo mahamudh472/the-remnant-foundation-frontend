@@ -2,11 +2,9 @@
 
 import * as React from "react"
 
-import { Button } from "@/components/ui/button"
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
 } from "@/components/ui/popover"
 import {
   Sidebar,
@@ -21,9 +19,6 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
 } from "lucide-react"
-import Image from "next/image"
-import { useGetMeQuery } from "@/hooks/api/use-auth"
-import fallback from "@/assets/pngs/avatar-fallback.png"
 
 const data = [
   [
@@ -40,7 +35,6 @@ const data = [
 
 export function NavActions() {
   const [isOpen, setIsOpen] = React.useState(false)
-  const { data: me } = useGetMeQuery()
 
   React.useEffect(() => {
     setIsOpen(true)
@@ -49,7 +43,7 @@ export function NavActions() {
   return (
     <div className="flex items-center gap-2 text-sm">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
+        {/* <PopoverTrigger asChild>
           <Button
             variant="outline"
             className="rounded-full border border-primary p-0"
@@ -62,7 +56,7 @@ export function NavActions() {
               className="rounded-full"
             />
           </Button>
-        </PopoverTrigger>
+        </PopoverTrigger> */}
         <PopoverContent
           className="w-56 overflow-hidden rounded-lg p-0"
           align="end"

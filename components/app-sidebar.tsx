@@ -10,9 +10,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import {
-  SquarePen,
-} from "lucide-react"
+import { SquarePen } from "lucide-react"
 import Logo from "./common/logo"
 import { useCreateConversationMutation } from "@/hooks/api/use-ai"
 import { useRouter } from "next/navigation"
@@ -27,23 +25,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: "New Chat",
         url: "/chat",
         icon: <SquarePen />,
-        onClick: async () => {
-          try {
-            const newConv = await createConversation.mutateAsync("Hello Dear, How can I help you today?")
-            router.push(`/chat?id=${newConv.conversation_id}`)
-          } catch (error) {
-            console.error("Failed to create conversation:", error)
-            router.push("/chat")
-          }
-        }
-      }
+      },
     ],
   }
 
   return (
-    <Sidebar className="border-r-0" {...props}>
+    <Sidebar
+      className="border-r-0"
+      style={
+        {
+          "--sidebar": "var(--primary)",
+          "--sidebar-foreground": "var(--primary-foreground)",
+          "--sidebar-accent": "oklch(1 0 0 / 10%)",
+          "--sidebar-accent-foreground": "var(--primary-foreground)",
+          "--sidebar-border": "oklch(1 0 0 / 10%)",
+          "--sidebar-ring": "var(--ring)",
+        } as React.CSSProperties
+      }
+      {...props}
+    >
       <SidebarHeader>
-        <Logo />
+        <Logo className="text-primary-foreground" />
         <NavMain items={data.navMain} />
       </SidebarHeader>
       <SidebarContent>
