@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   getConversations,
   createConversation,
@@ -18,14 +18,18 @@ export const aiKeys = {
 export function useConversationsQuery() {
   const accessToken = useAuthStore((state) => state.accessToken)
 
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: aiKeys.conversations(),
-    queryFn: () => {
+    queryFn: ({ pageParam = 1 }) => {
       if (!accessToken) {
         throw new Error("Missing access token")
       }
-      return getConversations(accessToken)
+      return getConversations(accessToken, pageParam)
     },
+    getNextPageParam: (lastPage) => {
+      return lastPage.pagination.has_next ? lastPage.pagination.page + 1 : undefined
+    },
+    initialPageParam: 1,
     enabled: !!accessToken,
   })
 }

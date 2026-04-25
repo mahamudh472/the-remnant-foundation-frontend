@@ -23,10 +23,18 @@ import Link from "next/link"
 
 export function NavChats() {
   const { isMobile } = useSidebar()
-  const { data: conversations, isLoading } = useConversationsQuery()
+  const {
+    data: infiniteData,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useConversationsQuery()
+
+  const conversations = infiniteData?.pages.flatMap((page) => page.items) || []
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup className="group-data-[collapsible=icon]:hidden pb-20">
       <SidebarGroupLabel>Recent chats</SidebarGroupLabel>
       <SidebarMenu>
         {isLoading ? (
@@ -38,7 +46,7 @@ export function NavChats() {
             </SidebarMenuItem>
           ))
         ) : (
-          conversations?.items.map((item) => (
+          conversations.map((item) => (
             <SidebarMenuItem key={item.conversation_id}>
               <SidebarMenuButton asChild>
                 <Link href={`/chat?id=${item.conversation_id}`} title={item.title}>
@@ -49,7 +57,7 @@ export function NavChats() {
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuAction
                     showOnHover
-                    className="aria-expanded:bg-muted"
+                    className="aria-expanded:bg-sidebar-accent"
                   >
                     <MoreHorizontalIcon />
                     <span className="sr-only">More</span>
@@ -61,21 +69,12 @@ export function NavChats() {
                   align={isMobile ? "end" : "start"}
                 >
                   <DropdownMenuItem>
-                    <StarOffIcon className="text-muted-foreground" />
-                    <span>Remove from Favorites</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <LinkIcon className="text-muted-foreground" />
-                    <span>Copy Link</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <ArrowUpRightIcon className="text-muted-foreground" />
+                    <ArrowUpRightIcon className="text-sidebar-foreground/70" />
                     <span>Open in New Tab</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
-                    <Trash2Icon className="text-muted-foreground" />
+                    <Trash2Icon className="text-sidebar-foreground/70" />
                     <span>Delete</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -83,13 +82,18 @@ export function NavChats() {
             </SidebarMenuItem>
           ))
         )}
-        <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontalIcon
-            />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+        {hasNextPage && (
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              className="text-sidebar-foreground/70"
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+            >
+              <MoreHorizontalIcon />
+              <span>{isFetchingNextPage ? "Loading..." : "More"}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )}
       </SidebarMenu>
     </SidebarGroup>
   )

@@ -44,7 +44,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
       {...props}
     >
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-black">
         <Logo className="text-primary-foreground" />
         <NavMain items={data.navMain} />
       </SidebarHeader>

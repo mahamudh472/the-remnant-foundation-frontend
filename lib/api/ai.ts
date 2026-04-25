@@ -54,10 +54,20 @@ export interface SendMessageResponse {
   assistant_message: MessageItem
 }
 
+export interface CreateConversationResponse {
+  conversation_id: number
+  title: string
+  created_at: string
+  message: string
+  reply: string
+  user_message: MessageItem
+  assistant_message: MessageItem
+}
+
 const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_API_URL
 
-export function getConversations(accessToken: string) {
-  return apiRequest<ConversationsResponse>("conversations/", {
+export function getConversations(accessToken: string, page: number = 1) {
+  return apiRequest<ConversationsResponse>(`conversations/?page=${page}`, {
     method: "GET",
     token: accessToken,
     baseUrl: AI_BASE_URL,
@@ -65,7 +75,7 @@ export function getConversations(accessToken: string) {
 }
 
 export function createConversation(accessToken: string, message: string) {
-  return apiRequest<ConversationItem & { created_at: string }>("conversations/", {
+  return apiRequest<CreateConversationResponse>("conversations/", {
     method: "POST",
     token: accessToken,
     baseUrl: AI_BASE_URL,
