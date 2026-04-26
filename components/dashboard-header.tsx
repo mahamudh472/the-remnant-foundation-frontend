@@ -42,7 +42,7 @@ export function DashboardHeader() {
 
   const handleSwitch = () => {
     switchRole()
-    router.push(pathname === "/teacher" ? "/dashboard" : "/teacher")
+    router.push(isTeacher ? "/dashboard" : "/teacher")
   }
 
   // Find the best matching title
