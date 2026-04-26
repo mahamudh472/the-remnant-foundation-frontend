@@ -12,13 +12,8 @@ import {
 } from "@/components/ui/sidebar"
 import { SquarePen } from "lucide-react"
 import Logo from "./common/logo"
-import { useCreateConversationMutation } from "@/hooks/api/use-ai"
-import { useRouter } from "next/navigation"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const router = useRouter()
-  const createConversation = useCreateConversationMutation()
-
   const data = {
     navMain: [
       {
@@ -44,8 +39,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
       {...props}
     >
-      <SidebarHeader className="border-b border-black">
-        <Logo className="text-primary-foreground" />
+      <SidebarHeader className="border-b border-primary-foreground py-4">
+        <Logo single />
         <NavMain items={data.navMain} />
       </SidebarHeader>
       <SidebarContent>

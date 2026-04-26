@@ -123,9 +123,9 @@ export default function AiInput() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-120px)] w-full flex-col">
+    <div>
       {/* Messages Area */}
-      <div className="mb-4 flex flex-1 flex-col overflow-hidden">
+      <div className="mb-4 flex flex-1 flex-col overflow-hidden mb-24">
         {!conversationId ? (
           <div className="flex flex-1 animate-in flex-col items-center justify-center duration-500 fade-in">
             <h1 className="mx-auto mb-8 max-w-2xl px-1 text-center text-3xl leading-9 font-bold text-balance text-pretty whitespace-pre-wrap text-foreground">
@@ -182,17 +182,13 @@ export default function AiInput() {
               ))}
               {(sendMessageMutation.isPending ||
                 createConversationMutation.isPending) && (
-                <div className="flex animate-pulse gap-4">
+                <div className="flex animate-pulse items-center justify-start">
                   <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
                     <Bot className="size-4" />
                   </div>
-                  {/* <div className="h-2 w-2 animate-bounce rounded-full bg-black [animation-delay:-0.3s]"></div>
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-black [animation-delay:-0.15s]"></div>
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-black"></div> */}
-
-                  <Dot className="animate-bounce [animation-delay:-0.3s]" />
-                  <Dot className="animate-bounce [animation-delay:-0.3s]" />
-                  <Dot className="animate-bounce [animation-delay:-0.3s]" />
+                  <div className="flex items-center gap-1">
+                     <Dot className="animate-pulse w-24 h-24" color="#4CC0D8" />
+                  </div>
                 </div>
               )}
             </div>
@@ -200,7 +196,7 @@ export default function AiInput() {
         )}
       </div>
 
-      <div className="shrink-0 pb-4">
+      <div className="shrink-0 pb-4 sticky bottom-10 w-full">
         <form onSubmit={handleSubmit} className="group/composer w-full">
           {/* <input
             ref={fileInputRef}
