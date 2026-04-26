@@ -2,7 +2,6 @@
 
 import React from "react"
 import Image from "next/image"
-import Link from "next/link"
 import { useParams, usePathname, useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -11,18 +10,11 @@ import {
   Star,
   Clock,
   Users,
-  Globe,
   BarChart,
   ChevronDown,
   Check,
   Play,
   FileText,
-  Lock,
-  MessageCircle,
-  ThumbsUp,
-  ChevronLeft,
-  ChevronRight,
-  Heart,
   Grid,
   Video,
   PlaySquare,
@@ -40,14 +32,13 @@ import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 
 import fallback from "@/assets/pngs/thumbnail-fallback.png"
-import { Input } from "@/components/ui/input"
+import RichTextContent from "@/components/common/rich-text-content"
 
 export default function CourseDetailsPage() {
   const params = useParams<{ slug: string }>()
   const pathname = usePathname()
   const router = useRouter()
   const accessToken = useAuthStore((state) => state.accessToken)
-  const [activeTab, setActiveTab] = React.useState("Overview")
   const [openSections, setOpenSections] = React.useState<number[]>([])
 
   const enrollMutation = useEnrollStudentCourseMutation()
@@ -124,24 +115,6 @@ export default function CourseDetailsPage() {
       </div>
     )
   }
-
-  const instructorStats = [
-    {
-      label: "Courses",
-      value: course.about_instructor.stats.courses,
-      icon: PlaySquare,
-    },
-    {
-      label: "Lessons",
-      value: course.about_instructor.stats.lessons,
-      icon: FileText,
-    },
-    {
-      label: "Students",
-      value: course.about_instructor.stats.students,
-      icon: Users,
-    },
-  ]
 
   const courseIncludes = [
     {
@@ -268,9 +241,10 @@ export default function CourseDetailsPage() {
                       <h4 className="font-bold text-[#1D1D1D]">
                         Course Description
                       </h4>
-                      <p className="text-sm leading-relaxed text-[#666666]">
-                        {course.overview}
-                      </p>
+                      <RichTextContent
+                        value={course?.overview}
+                        emptyText="No description available"
+                      />
                     </div>
                   </div>
 

@@ -23,6 +23,7 @@ import { getApiErrorMessage } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
 import QuizAttemptModal from "@/components/student/quiz-attempt-modal"
 import AssignmentSubmitModal from "@/components/student/assignment-submit-modal"
+import RichTextContent from "@/components/common/rich-text-content"
 
 function extractYoutubeVideoId(rawUrl: string) {
   try {
@@ -83,10 +84,12 @@ export default function CoursePlayerPage() {
   const [activeAssignmentId, setActiveAssignmentId] = useState<number | null>(
     null
   )
-  const [activeAssignmentTitle, setActiveAssignmentTitle] =
-    useState<string | null>(null)
-  const [activeAssignmentModuleId, setActiveAssignmentModuleId] =
-    useState<number | null>(null)
+  const [activeAssignmentTitle, setActiveAssignmentTitle] = useState<
+    string | null
+  >(null)
+  const [activeAssignmentModuleId, setActiveAssignmentModuleId] = useState<
+    number | null
+  >(null)
 
   const slugValue = Array.isArray(params?.slug) ? params.slug[0] : params?.slug
   const courseId = Number(slugValue)
@@ -326,9 +329,10 @@ export default function CoursePlayerPage() {
               <h3 className="text-base font-bold text-[#1D1D1D]">
                 Lesson descriptions
               </h3>
-              <p className="text-sm leading-relaxed text-[#666666]">
-                {activeLesson?.description || "No description available."}
-              </p>
+              <RichTextContent
+                value={activeLesson?.description}
+                emptyText="No description available."
+              />
 
               <div className="flex flex-wrap items-center gap-2 pt-2">
                 <Badge className="border-0 bg-[#F8F9FC] text-[#666666]">

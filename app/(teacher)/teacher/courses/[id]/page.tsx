@@ -27,6 +27,8 @@ import {
   useUpdateCourseStepMutation,
 } from "@/hooks/api/use-courses"
 import { toast } from "sonner"
+import RichTextEditor from "@/components/common/rich-text-editor"
+import { isRichTextEmpty, normalizeRichText } from "@/lib/rich-text"
 
 const STEPS = [
   { key: "course_info", label: "Course Info", subtitle: "Basic details" },
@@ -166,7 +168,8 @@ function transformApiToModules(apiModules: any[]): ModuleFormValues[] {
 
 export default function AddCoursePage() {
   const params = useParams()
-  const initialCourseId = params?.id && params.id !== "new" ? Number(params.id) : null
+  const initialCourseId =
+    params?.id && params.id !== "new" ? Number(params.id) : null
 
   const [currentStep, setCurrentStep] = React.useState(0)
   const [courseId, setCourseId] = React.useState<number | null>(initialCourseId)
@@ -196,10 +199,20 @@ export default function AddCoursePage() {
     if (!courseDetailsQuery.data) return
     // Prevent overwriting if user has already started editing
     // Only preload if we are in edit mode and the form is currently empty/default
-    if (courseId && (courseInfo.title !== "" || modules.length > 1 || (modules[0] && modules[0].lessons.length > 1))) {
-       // If we already have data, we might want to skip, but usually we want to load it once.
-       // The user said: if (courseId && modules.length > 1) return // prevent overwrite
-       if (modules.length > 1 || modules[0]?.lessons.length > 1 || courseInfo.title !== "") return
+    if (
+      courseId &&
+      (courseInfo.title !== "" ||
+        modules.length > 1 ||
+        (modules[0] && modules[0].lessons.length > 1))
+    ) {
+      // If we already have data, we might want to skip, but usually we want to load it once.
+      // The user said: if (courseId && modules.length > 1) return // prevent overwrite
+      if (
+        modules.length > 1 ||
+        modules[0]?.lessons.length > 1 ||
+        courseInfo.title !== ""
+      )
+        return
     }
 
     const course = courseDetailsQuery.data as any
@@ -219,7 +232,7 @@ export default function AddCoursePage() {
     if (course.modules && course.modules.length > 0) {
       setModules(transformApiToModules(course.modules))
     }
-    
+
     setCourseStatus(course.status)
   }, [courseDetailsQuery.data, courseId])
 
@@ -271,7 +284,6 @@ export default function AddCoursePage() {
             "Unable to load age group options"
           )
         : null
-
 
   const isSubmitting =
     createCourseMutation.isPending || updateCourseStepMutation.isPending
@@ -327,7 +339,7 @@ export default function AddCoursePage() {
       return "Course title is required"
     }
 
-    if (!courseInfo.description.trim()) {
+    if (isRichTextEmpty(courseInfo.description)) {
       return "Short description is required"
     }
 
@@ -387,7 +399,7 @@ export default function AddCoursePage() {
       if (!courseId) {
         const createResponse = await createCourseMutation.mutateAsync({
           title: courseInfo.title.trim(),
-          description: courseInfo.description.trim(),
+          description: normalizeRichText(courseInfo.description),
           category_id: categoryId,
           program_id: programId,
           age_group: courseInfo.ageGroup,
@@ -418,7 +430,7 @@ export default function AddCoursePage() {
           step: "course_info",
           payload: {
             title: courseInfo.title.trim(),
-            description: courseInfo.description.trim(),
+            description: normalizeRichText(courseInfo.description),
             category_id: categoryId,
             program_id: programId,
             price: normalizePriceValue(courseInfo.price),
@@ -452,11 +464,11 @@ export default function AddCoursePage() {
     return {
       modules: modules.map((courseModule, courseModuleIndex) => ({
         title: courseModule.title.trim() || `Module ${courseModuleIndex + 1}`,
-        description: courseModule.description.trim(),
+        description: normalizeRichText(courseModule.description),
         order: courseModuleIndex,
         lessons: courseModule.lessons.map((lessonItem, lessonIndex) => ({
           title: lessonItem.title.trim() || `Lesson ${lessonIndex + 1}`,
-          content: lessonItem.description.trim(),
+          content: normalizeRichText(lessonItem.description),
           video_url: lessonItem.videoLink.trim(),
           offline_download_enabled: false,
           quiz_ids: lessonItem.quizIds,
@@ -595,7 +607,9 @@ export default function AddCoursePage() {
     return (
       <div className="flex h-[60vh] flex-col items-center justify-center gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-[#4CC0D8]" />
-        <p className="text-sm font-medium text-[#666666]">Loading course details...</p>
+        <p className="text-sm font-medium text-[#666666]">
+          Loading course details...
+        </p>
       </div>
     )
   }
@@ -811,14 +825,11 @@ function StepCourseInfo({
             <label className="mb-1 block text-xs font-medium text-[#666666]">
               Short Description
             </label>
-            <textarea
-              rows={3}
+            <RichTextEditor
               value={values.description}
-              onChange={(event) =>
-                onFieldChange("description", event.target.value)
-              }
+              onChange={(value) => onFieldChange("description", value)}
               placeholder="Brief overview of the course..."
-              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
+              minHeightClassName="min-h-[110px]"
             />
           </div>
 
@@ -1311,19 +1322,18 @@ function StepContent({ modules, onModulesChange }: StepContentProps) {
                       <label className="mb-1 block text-xs font-medium text-[#666666]">
                         Lesson Description
                       </label>
-                      <textarea
-                        rows={4}
+                      <RichTextEditor
                         value={lessonItem.description}
-                        onChange={(event) =>
+                        onChange={(value) =>
                           updateLessonField(
                             courseModule.id,
                             lessonItem.id,
                             "description",
-                            event.target.value
+                            value
                           )
                         }
                         placeholder="Type lesson description..."
-                        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-[#1D1D1D] outline-none focus:border-[#4CC0D8]"
+                        minHeightClassName="min-h-[130px]"
                       />
                     </div>
                   </div>
