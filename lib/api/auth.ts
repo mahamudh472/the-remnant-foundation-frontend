@@ -86,6 +86,7 @@ export interface AccountMe {
   full_name: string
   avatar: string | null
   email: string
+  is_approved_teacher: boolean
 }
 
 export interface UpdateProfilePayload {

@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { ArrowLeftRight, ChevronRight } from "lucide-react"
 import { useAuthStore } from "@/lib/store/auth-store"
+import { useGetMeQuery } from "@/hooks/api/use-auth"
 import { Button } from "./ui/button"
 
 const PAGE_TITLES: Record<string, string> = {
@@ -35,10 +36,11 @@ const PAGE_TITLES: Record<string, string> = {
 export function DashboardHeader() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, switchRole } = useAuthStore()
+  const { switchRole } = useAuthStore()
+  const { data: me } = useGetMeQuery()
 
-  //   const isTeacher = user?.role === "teacher"
   const isTeacher = pathname.startsWith("/teacher")
+  const canSwitchToTeacher = Boolean(me?.is_approved_teacher)
 
   const handleSwitch = () => {
     switchRole()
@@ -72,15 +74,19 @@ export function DashboardHeader() {
             {isTeacher ? "Teacher" : "Student"}
           </span>
         </div>
-        <span className="text-gray-300">|</span>
-        <Button
-          onClick={handleSwitch}
-          variant={"ghost"}
-          className="text-gray-500"
-        >
-          <ArrowLeftRight className="h-3.5 w-3.5" />
-          Switch to {isTeacher ? "Student" : "Teacher"}
-        </Button>
+        {canSwitchToTeacher && (
+          <>
+            <span className="text-gray-300">|</span>
+            <Button
+              onClick={handleSwitch}
+              variant={"ghost"}
+              className="text-gray-500"
+            >
+              <ArrowLeftRight className="h-3.5 w-3.5" />
+              Switch to {isTeacher ? "Student" : "Teacher"}
+            </Button>
+          </>
+        )}
       </div>
     </div>
   )

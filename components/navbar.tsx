@@ -106,9 +106,9 @@ export function Navbar() {
   const logoutMutation = useLogoutMutation()
   const pathname = usePathname()
   const displayName = me?.full_name?.trim() || user?.name || "User"
-  const displayRole = user?.role || "student"
+  const displayRole = pathname.startsWith("/teacher") ? "teacher" : "student"
   const avatarSrc = me?.avatar || fallback
-  const isTeacher = user?.role === "teacher"
+  const isTeacher = pathname.startsWith("/teacher")
   const navItems = !isLoggedIn
     ? PUBLIC_NAV_ITEMS
     : isTeacher

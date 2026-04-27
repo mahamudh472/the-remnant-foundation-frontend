@@ -4,10 +4,13 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Pencil } from "lucide-react"
 import { useAuthStore } from "@/lib/store/auth-store"
+import { useGetMeQuery } from "@/hooks/api/use-auth"
 
 export function TeacherProfileBanner() {
   const { user, switchRole } = useAuthStore()
+  const { data: me } = useGetMeQuery()
   const router = useRouter()
+  const canSwitchToStudent = Boolean(me?.is_approved_teacher)
 
   const handleSwitch = () => {
     switchRole()
@@ -40,14 +43,16 @@ export function TeacherProfileBanner() {
           </div>
           <p className="text-sm text-[#666666]">Teacher</p>
         </div>
-        <div className="sm:ml-auto">
-          <button
-            onClick={handleSwitch}
-            className="rounded-lg bg-[#F59E0B] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#D97706]"
-          >
-            Switch to Student
-          </button>
-        </div>
+        {canSwitchToStudent && (
+          <div className="sm:ml-auto">
+            <button
+              onClick={handleSwitch}
+              className="rounded-lg bg-[#F59E0B] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#D97706]"
+            >
+              Switch to Student
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
