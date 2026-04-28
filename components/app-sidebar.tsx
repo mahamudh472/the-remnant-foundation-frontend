@@ -39,7 +39,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
       {...props}
     >
-      <SidebarHeader className="border-b border-primary-foreground py-4">
+      <SidebarHeader className="border-b border-b-foreground py-2">
         <Logo single />
         <NavMain items={data.navMain} />
       </SidebarHeader>

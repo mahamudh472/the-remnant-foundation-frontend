@@ -38,6 +38,28 @@ import { useSearchParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import fallback from "@/assets/pngs/avatar-fallback.png"
 import { useGetMeQuery } from "@/hooks/api/use-auth"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize"
+
+const markdownSchema = {
+  ...defaultSchema,
+  tagNames: [
+    ...(defaultSchema.tagNames || []),
+    "table",
+    "thead",
+    "tbody",
+    "tr",
+    "th",
+    "td",
+    "del",
+  ],
+  attributes: {
+    ...(defaultSchema.attributes || {}),
+    th: ["align"],
+    td: ["align"],
+  },
+}
 
 export default function AiInput() {
   const searchParams = useSearchParams()
@@ -48,6 +70,9 @@ export default function AiInput() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [conversationId, setConversationId] = useState<number | null>(
     idFromUrl ? Number(idFromUrl) : null
+  )
+  const [optimisticMessage, setOptimisticMessage] = useState<string | null>(
+    null
   )
 
   useEffect(() => {
@@ -60,7 +85,7 @@ export default function AiInput() {
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollEndRef = useRef<HTMLDivElement>(null)
 
   const { data: me } = useGetMeQuery()
   const { data: messagesData, isLoading: isLoadingMessages } =
@@ -70,10 +95,15 @@ export default function AiInput() {
   const createConversationMutation = useCreateConversationMutation()
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    if (scrollEndRef.current) {
+      scrollEndRef.current.scrollIntoView({ behavior: "smooth" })
     }
-  }, [messagesData])
+  }, [
+    messagesData,
+    optimisticMessage,
+    sendMessageMutation.isPending,
+    createConversationMutation.isPending,
+  ])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,6 +112,7 @@ export default function AiInput() {
       const content = message.trim()
       setMessage("")
       setIsExpanded(false)
+      setOptimisticMessage(content) // Show message immediately
 
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto"
@@ -93,13 +124,16 @@ export default function AiInput() {
           const newConv = await createConversationMutation.mutateAsync(content)
           currentId = newConv.conversation_id
           setConversationId(currentId)
+          setOptimisticMessage(null) // Clear optimistic message after conversation is created
           router.push(`/chat?id=${currentId}`)
           return // Exit early as the conversation was created WITH the message
         }
 
         await sendMessageMutation.mutateAsync({ message: content })
+        setOptimisticMessage(null) // Clear optimistic message after send succeeds
       } catch (error) {
         console.error("Failed to send message:", error)
+        setOptimisticMessage(null) // Clear optimistic message on error
       }
     }
   }
@@ -133,7 +167,7 @@ export default function AiInput() {
             </h1>
           </div>
         ) : (
-          <ScrollArea className="flex-1 px-4 pr-6" ref={scrollRef}>
+          <ScrollArea className="flex-1 px-4 pr-6">
             <div className="mx-auto max-w-6xl space-y-8 py-8">
               {messagesData?.messages.map((msg) => (
                 <div
@@ -176,10 +210,54 @@ export default function AiInput() {
                         : "rounded-tl-none border border-border bg-muted/50"
                     )}
                   >
-                    {msg.content}
+                    {msg.role === "user" ? (
+                      msg.content
+                    ) : (
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[[rehypeSanitize, markdownSchema]]}
+                        // className="text-sm leading-relaxed text-foreground [&_a]:text-[#4CC0D8] [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-3 [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-muted [&_pre]:p-2 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-border [&_td]:p-2 [&_th]:border [&_th]:border-border [&_th]:p-2 [&_ul]:list-disc [&_ul]:pl-5"
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    )}
                   </div>
                 </div>
               ))}
+              {optimisticMessage && (
+                <div
+                  className={cn(
+                    "flex animate-in flex-row-reverse gap-4 duration-300 slide-in-from-bottom-2"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                    )}
+                  >
+                    <Button
+                      variant="outline"
+                      className="rounded-full border border-primary p-0"
+                      disabled
+                    >
+                      <Image
+                        src={me?.avatar || fallback}
+                        alt="User Avatar"
+                        width={36}
+                        height={36}
+                        className="rounded-full"
+                      />
+                    </Button>
+                  </div>
+                  <div
+                    className={cn(
+                      "max-w-[80%] rounded-2xl rounded-tr-none bg-primary p-4 text-sm leading-relaxed text-primary-foreground"
+                    )}
+                  >
+                    {optimisticMessage}
+                  </div>
+                </div>
+              )}
               {(sendMessageMutation.isPending ||
                 createConversationMutation.isPending) && (
                 <div className="flex animate-pulse items-center justify-start">
@@ -191,6 +269,7 @@ export default function AiInput() {
                   </div>
                 </div>
               )}
+              <div ref={scrollEndRef} />
             </div>
           </ScrollArea>
         )}

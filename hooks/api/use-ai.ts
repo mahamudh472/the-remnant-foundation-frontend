@@ -1,10 +1,16 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import {
   getConversations,
   createConversation,
   getConversationMessages,
   sendMessage,
   type SendMessagePayload,
+  deleteConversation,
 } from "@/lib/api/ai"
 import { useAuthStore } from "@/lib/store/auth-store"
 
@@ -27,7 +33,9 @@ export function useConversationsQuery() {
       return getConversations(accessToken, pageParam)
     },
     getNextPageParam: (lastPage) => {
-      return lastPage.pagination.has_next ? lastPage.pagination.page + 1 : undefined
+      return lastPage.pagination.has_next
+        ? lastPage.pagination.page + 1
+        : undefined
     },
     initialPageParam: 1,
     enabled: !!accessToken,
@@ -44,6 +52,23 @@ export function useCreateConversationMutation() {
         throw new Error("Missing access token")
       }
       return createConversation(accessToken, message)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: aiKeys.conversations() })
+    },
+  })
+}
+
+export function useDeleteConversationMutation() {
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (conversationId: number) => {
+      if (!accessToken) {
+        throw new Error("Missing access token")
+      }
+      return deleteConversation(accessToken, conversationId)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: aiKeys.conversations() })

@@ -83,6 +83,14 @@ export function createConversation(accessToken: string, message: string) {
   })
 }
 
+export function deleteConversation(accessToken: string, conversationId: number) {
+  return apiRequest(`conversations/${conversationId}/`, {
+    method: "DELETE",
+    token: accessToken,
+    baseUrl: AI_BASE_URL,
+  })
+}
+
 export function getConversationMessages(
   accessToken: string,
   conversationId: number
