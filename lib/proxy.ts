@@ -4,7 +4,7 @@ import { AUTH_TOKEN_COOKIE_NAME } from "@/lib/auth/constants"
 
 const LOGIN_PATH = "/login"
 const DASHBOARD_PATH = "/dashboard"
-const PROTECTED_PATH_PREFIXES = ["/dashboard", "/teacher", "/ai-guide"]
+const PROTECTED_PATH_PREFIXES = ["/dashboard", "/teacher", "/chat"]
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "")
 
 function isProtectedPath(pathname: string) {
@@ -74,9 +74,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const proxyConfig = {
-  matcher: ["/dashboard/:path*", "/teacher/:path*", "/ai-guide/:path*"],
-}
-
-export const config = {
-  matcher: ["/dashboard/:path*", "/teacher/:path*", "/ai-guide/:path*"],
+  matcher: ["/dashboard/:path*", "/teacher/:path*", "/chat/:path*"],
 }

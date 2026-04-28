@@ -46,7 +46,6 @@ const AUTH_NAV_ITEMS = [
     hasDropdown: false,
   },
   { name: "All Courses", href: "/courses", icon: BookOpen, hasDropdown: false },
-  { name: "Grade", href: "#", icon: Compass, hasDropdown: true },
   {
     name: "Instructors",
     href: "/instructors",

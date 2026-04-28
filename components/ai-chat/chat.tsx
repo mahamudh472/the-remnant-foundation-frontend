@@ -123,9 +123,9 @@ export default function AiInput() {
   }
 
   return (
-    <div>
+    <div className="flex h-full min-h-0 flex-1 flex-col justify-between">
       {/* Messages Area */}
-      <div className="mb-4 flex flex-1 flex-col overflow-hidden mb-24">
+      <div className="mb-4 mb-24 flex min-h-0 flex-1 flex-col overflow-hidden">
         {!conversationId ? (
           <div className="flex flex-1 animate-in flex-col items-center justify-center duration-500 fade-in">
             <h1 className="mx-auto mb-8 max-w-2xl px-1 text-center text-3xl leading-9 font-bold text-balance text-pretty whitespace-pre-wrap text-foreground">
@@ -187,7 +187,7 @@ export default function AiInput() {
                     <Bot className="size-4" />
                   </div>
                   <div className="flex items-center gap-1">
-                     <Dot className="animate-pulse w-24 h-24" color="#4CC0D8" />
+                    <Dot className="h-24 w-24 animate-pulse" color="#4CC0D8" />
                   </div>
                 </div>
               )}
@@ -196,7 +196,7 @@ export default function AiInput() {
         )}
       </div>
 
-      <div className="shrink-0 pb-4 sticky bottom-10 w-full">
+      <div className="sticky bottom-10 w-full shrink-0 pb-4">
         <form onSubmit={handleSubmit} className="group/composer w-full">
           {/* <input
             ref={fileInputRef}
