@@ -236,7 +236,7 @@ export function LoginForm() {
       <p className="text-center text-sm text-[#666666]">
         New Registration?{" "}
         <Link
-          href="/signup"
+          href="/create-account"
           className="font-medium text-[#4CC0D8] hover:underline"
         >
           Create account here
