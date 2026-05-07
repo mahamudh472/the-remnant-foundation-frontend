@@ -15,6 +15,8 @@ import {
   register,
   resendOtp,
   verifyEmail,
+  getGoogleAuthUrl,
+  googleCallback,
   type AccountProfile,
   type ChangePasswordPayload,
   type CheckOtpPayload,
@@ -24,6 +26,7 @@ import {
   type RegisterPayload,
   type ResendOtpPayload,
   type VerifyEmailPayload,
+  type GoogleCallbackPayload,
 } from "@/lib/api/auth"
 import { useAuthStore, type User } from "@/lib/store/auth-store"
 
@@ -218,6 +221,40 @@ export function useLogoutMutation() {
       clearAuth()
       queryClient.removeQueries({ queryKey: ["auth"] })
       router.replace("/login")
+    },
+  })
+}
+
+export function useGoogleSignInUrlMutation() {
+  return useMutation({
+    mutationFn: () => getGoogleAuthUrl(),
+  })
+}
+
+export function useGoogleCallbackMutation() {
+  const queryClient = useQueryClient()
+  const setTokens = useAuthStore((state) => state.setTokens)
+  const setUser = useAuthStore((state) => state.setUser)
+
+  return useMutation({
+    mutationFn: (payload: GoogleCallbackPayload) => googleCallback(payload),
+    onSuccess: async (response) => {
+      // Store tokens using only access and refresh
+      setTokens({
+        access: response.access,
+        refresh: response.refresh,
+      })
+
+      try {
+        const profile = await queryClient.fetchQuery({
+          queryKey: profileQueryKey(response.access),
+          queryFn: () => getProfile(response.access),
+        })
+        setUser(mapProfileToUser(profile))
+      } catch {
+        // If we can't fetch profile, we can still continue with fallback user
+        // The user info will be fetched on next navigation to dashboard
+      }
     },
   })
 }

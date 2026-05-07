@@ -195,3 +195,32 @@ export function updateProfile(
     token: accessToken,
   })
 }
+
+export interface GoogleAuthUrlResponse {
+  url: string
+  state: string
+}
+
+export interface GoogleCallbackPayload {
+  code: string
+  state: string
+}
+
+export interface GoogleCallbackResponse {
+  access: string
+  refresh: string
+  created: boolean
+}
+
+export function getGoogleAuthUrl() {
+  return apiRequest<GoogleAuthUrlResponse>("accounts/google/url/", {
+    method: "GET",
+  })
+}
+
+export function googleCallback(payload: GoogleCallbackPayload) {
+  return apiRequest<GoogleCallbackResponse>("accounts/google/callback/", {
+    method: "POST",
+    body: payload,
+  })
+}

@@ -6,8 +6,13 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { getApiErrorMessage } from "@/lib/api/client"
-import { useLoginMutation } from "@/hooks/api/use-auth"
+import {
+  useLoginMutation,
+  useGoogleSignInUrlMutation,
+} from "@/hooks/api/use-auth"
 import { toast } from "sonner"
+
+const GOOGLE_STATE_STORAGE_KEY = "google-auth-state"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -15,6 +20,7 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const loginMutation = useLoginMutation()
+  const googleSignInUrlMutation = useGoogleSignInUrlMutation()
 
   const AUTH_ROUTE_PREFIXES = [
     "/login",
@@ -65,6 +71,30 @@ export function LoginForm() {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    try {
+      const response = await googleSignInUrlMutation.mutateAsync()
+
+      // Store the state in sessionStorage for the callback
+      sessionStorage.setItem(GOOGLE_STATE_STORAGE_KEY, response.state)
+
+      // Also store redirectTo if it exists
+      const redirectToParam = new URLSearchParams(window.location.search).get(
+        "redirectTo"
+      )
+      if (redirectToParam) {
+        sessionStorage.setItem("google-auth-redirect", redirectToParam)
+      }
+
+      // Redirect to Google's OAuth URL
+      window.location.href = response.url
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, "Failed to initiate Google sign-in")
+      )
+    }
+  }
+
   return (
     <div className="w-full max-w-[400px] space-y-8">
       {/* Logo */}
@@ -90,18 +120,31 @@ export function LoginForm() {
 
       {/* Google Login */}
       <Button
+        type="button"
         variant="outline"
-        className="flex h-11 w-full items-center justify-center gap-2 border-[#E5E7EB] transition-colors hover:bg-gray-50"
-        onClick={() => console.log("Google login")}
+        disabled={googleSignInUrlMutation.isPending}
+        className="flex h-11 w-full items-center justify-center gap-2 border-[#E5E7EB] transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+        onClick={handleGoogleSignIn}
       >
-        <Image
-          src="/assets/svgs/google.svg"
-          alt="Login Illustration"
-          width={20}
-          height={20}
-          priority
-        />
-        <span className="font-medium text-[#1D1D1D]">Sign up with Google</span>
+        {googleSignInUrlMutation.isPending ? (
+          <>
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#4CC0D8]"></div>
+            <span className="font-medium text-[#1D1D1D]">Signing in...</span>
+          </>
+        ) : (
+          <>
+            <Image
+              src="/assets/svgs/google.svg"
+              alt="Google Logo"
+              width={20}
+              height={20}
+              priority
+            />
+            <span className="font-medium text-[#1D1D1D]">
+              Sign up with Google
+            </span>
+          </>
+        )}
       </Button>
 
       {/* Divider */}
