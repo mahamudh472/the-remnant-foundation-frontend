@@ -7,7 +7,7 @@ import {
   KeyboardEvent,
   ClipboardEvent,
 } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -26,10 +26,9 @@ const OTP_LENGTH = 4
 export function OtpForm() {
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""))
   const [resendCooldown, setResendCooldown] = useState(0)
+  const [source, setSource] = useState<string | null>(null)
   const inputsRef = useRef<Array<HTMLInputElement | null>>([])
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const source = searchParams.get("from")
   const pendingEmail = useAuthStore((state) => state.pendingEmail)
   const otpFlow = useAuthStore((state) => state.otpFlow)
   const setOtpFlow = useAuthStore((state) => state.setOtpFlow)
@@ -41,6 +40,11 @@ export function OtpForm() {
     source === "forgot-password" || source === "register"
       ? source
       : otpFlow || "register"
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    setSource(params.get("from"))
+  }, [])
 
   useEffect(() => {
     if (resendCooldown <= 0) return

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ import {
   useForgotPasswordMutation,
   usePasswordResetConfirmMutation,
 } from "@/hooks/api/use-auth"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/lib/store/auth-store"
 import { toast } from "sonner"
 
@@ -19,7 +19,6 @@ const PASSWORD_RULE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
 export function ForgotPasswordForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const pendingEmail = useAuthStore((state) => state.pendingEmail)
   const otpFlow = useAuthStore((state) => state.otpFlow)
   const verifiedResetOtp = useAuthStore((state) => state.verifiedResetOtp)
@@ -33,8 +32,14 @@ export function ForgotPasswordForm() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [step, setStep] = useState<string | null>(null)
 
-  const isResetStep = searchParams.get("step") === "reset"
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    setStep(params.get("step"))
+  }, [])
+
+  const isResetStep = step === "reset"
   const canResetPassword =
     isResetStep &&
     otpFlow === "forgot-password" &&

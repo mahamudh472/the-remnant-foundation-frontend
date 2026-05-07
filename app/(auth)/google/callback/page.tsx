@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { useGoogleCallbackMutation } from "@/hooks/api/use-auth"
 import { getApiErrorMessage } from "@/lib/api/client"
@@ -32,15 +32,21 @@ function isAllowedRedirectPath(path: string) {
 
 export default function GoogleCallbackPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const googleCallbackMutation = useGoogleCallbackMutation()
   const [isProcessing, setIsProcessing] = useState(true)
+  const hasProcessedRef = useRef(false)
 
   useEffect(() => {
+    if (hasProcessedRef.current) {
+      return
+    }
+    hasProcessedRef.current = true
+
     const handleCallback = async () => {
       try {
         // Extract code from query params
-        const code = searchParams.get("code")
+        const params = new URLSearchParams(window.location.search)
+        const code = params.get("code")
         if (!code) {
           toast.error("No authorization code received from Google")
           setIsProcessing(false)
@@ -136,7 +142,7 @@ export default function GoogleCallbackPage() {
     }
 
     handleCallback()
-  }, [searchParams, googleCallbackMutation, router])
+  }, [googleCallbackMutation, router])
 
   return (
     <div className="flex h-screen items-center justify-center">
