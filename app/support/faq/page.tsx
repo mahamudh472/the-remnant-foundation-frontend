@@ -111,14 +111,14 @@ export default function FAQPage() {
           </div>
 
           {/* Bottom CTA */}
-          <div className="mt-24 text-center space-y-8">
+          {/* <div className="mt-24 text-center space-y-8">
             <p className="text-sm font-medium text-[#666666]">Still need help? Contact our support team</p>
             <Link href="/support/contact">
               <Button className="h-12 bg-[#4CC0D8] hover:bg-[#3AB0C8] text-white px-10 rounded-xl font-bold shadow-lg shadow-[#4CC0D8]/20">
                 Contact Support
               </Button>
             </Link>
-          </div>
+          </div> */}
         </div>
       </main>
 

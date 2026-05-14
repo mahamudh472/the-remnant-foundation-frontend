@@ -23,7 +23,7 @@ export function AiBanner() {
                 asChild
                 className="h-12 rounded-full bg-white px-8 font-bold text-[#4CC0D8] hover:bg-white/90"
               >
-                <Link href="/ai-guide" className="flex items-center gap-2">
+                <Link href="/chat" className="flex items-center gap-2">
                   Explore AI Spiritual Guide{" "}
                   <ChevronRight className="h-5 w-5" />
                 </Link>

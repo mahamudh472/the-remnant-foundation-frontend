@@ -31,7 +31,7 @@ export function Hero() {
                 variant="outline"
                 className="h-12 rounded-lg border-[#C776EA] px-8 font-semibold text-[#C776EA] hover:bg-[#FDF6FF]"
               >
-                <Link href="/programs">Explore Programs</Link>
+                <Link href="/courses">Explore Programs</Link>
               </Button>
             </div>
           </div>
