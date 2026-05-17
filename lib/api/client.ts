@@ -6,6 +6,13 @@ const TOKEN_REFRESH_PATH = "accounts/token/refresh"
 const NGROK_SKIP_BROWSER_WARNING_HEADER = {
   "ngrok-skip-browser-warning": "1",
 }
+const AUTH_ROUTE_PREFIXES = [
+  "/login",
+  "/signup",
+  "/create-account",
+  "/forgot-password",
+  "/otp",
+]
 
 interface PersistedAuthEnvelope {
   state?: Record<string, unknown>
@@ -240,6 +247,34 @@ async function clearInMemoryAuthState() {
   }
 }
 
+function redirectToLogin() {
+  if (typeof window === "undefined") return
+
+  const loginUrl = new URL("/login", window.location.origin)
+  const currentPath = `${window.location.pathname}${window.location.search}`
+
+  if (
+    currentPath.startsWith("/") &&
+    !currentPath.startsWith("//") &&
+    !AUTH_ROUTE_PREFIXES.some(
+      (prefix) =>
+        currentPath === prefix ||
+        currentPath.startsWith(`${prefix}/`) ||
+        currentPath.startsWith(`${prefix}?`)
+    )
+  ) {
+    loginUrl.searchParams.set("redirectTo", currentPath)
+  }
+
+  window.location.replace(loginUrl.toString())
+}
+
+async function invalidateAuthAndRedirectToLogin() {
+  clearPersistedAuthState()
+  await clearInMemoryAuthState()
+  redirectToLogin()
+}
+
 async function getRefreshTokenForRefresh() {
   const persistedRefreshToken = getPersistedAuthToken("refreshToken")
   if (persistedRefreshToken) return persistedRefreshToken
@@ -263,46 +298,47 @@ async function refreshAccessToken() {
 
   refreshTokensPromise = (async () => {
     const refreshToken = await getRefreshTokenForRefresh()
-    if (!refreshToken) return null
+    if (!refreshToken) {
+      await invalidateAuthAndRedirectToLogin()
+      return null
+    }
 
-    const response = await fetch(buildUrl(`${TOKEN_REFRESH_PATH}/`), {
-      method: "POST",
-      headers: {
-      //   ...NGROK_SKIP_BROWSER_WARNING_HEADER,
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ refresh: refreshToken }),
-    })
+    try {
+      const response = await fetch(buildUrl(`${TOKEN_REFRESH_PATH}/`), {
+        method: "POST",
+        headers: {
+          //   ...NGROK_SKIP_BROWSER_WARNING_HEADER,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      })
 
-    const data = await parseResponseBody(response)
+      const data = await parseResponseBody(response)
 
-    if (!response.ok) {
-      if (response.status === 400 || response.status === 401) {
-        clearPersistedAuthState()
-        await clearInMemoryAuthState()
+      if (!response.ok) {
+        await invalidateAuthAndRedirectToLogin()
+        return null
       }
 
-      throw buildApiError(response, data, "Session refresh failed")
+      if (!isObjectRecord(data) || typeof data.access !== "string") {
+        await invalidateAuthAndRedirectToLogin()
+        return null
+      }
+
+      const refreshedTokens: RefreshedTokens = {
+        access: data.access,
+        refresh: typeof data.refresh === "string" ? data.refresh : undefined,
+      }
+
+      persistRefreshedTokens(refreshedTokens)
+      await syncInMemoryAuthState(refreshedTokens)
+
+      return refreshedTokens
+    } catch {
+      await invalidateAuthAndRedirectToLogin()
+      return null
     }
-
-    if (!isObjectRecord(data) || typeof data.access !== "string") {
-      throw new ApiError(
-        "Invalid token refresh response",
-        response.status,
-        data
-      )
-    }
-
-    const refreshedTokens: RefreshedTokens = {
-      access: data.access,
-      refresh: typeof data.refresh === "string" ? data.refresh : undefined,
-    }
-
-    persistRefreshedTokens(refreshedTokens)
-    await syncInMemoryAuthState(refreshedTokens)
-
-    return refreshedTokens
   })().finally(() => {
     refreshTokensPromise = null
   })
@@ -316,7 +352,7 @@ async function executeRequest(
   token: string | null
 ): Promise<RequestExecutionResult> {
   const requestHeaders = new Headers({
-   //  ...NGROK_SKIP_BROWSER_WARNING_HEADER,
+    //  ...NGROK_SKIP_BROWSER_WARNING_HEADER,
     ...(headers ?? {}),
   })
 
@@ -403,6 +439,10 @@ export async function apiRequest<T>(
       }
 
       throw buildApiError(retryResult.response, retryResult.data)
+    }
+
+    if (typeof window !== "undefined") {
+      return new Promise<T>(() => {})
     }
   }
 

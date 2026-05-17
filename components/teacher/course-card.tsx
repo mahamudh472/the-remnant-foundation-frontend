@@ -2,8 +2,10 @@ import Image from "next/image"
 import { Card, CardContent } from "../ui/card"
 import { Button } from "../ui/button"
 import { Pencil, Star } from "lucide-react"
+import { shimmerBlur } from "@/lib/image-shimmer"
+import { POPULAR_COURSES } from "@/constants/teacher"
 
-function CourseCard({ course } : { course: typeof POPULAR_COURSES[0] }) {
+function CourseCard({ course }: { course: (typeof POPULAR_COURSES)[0] }) {
   return (
     <Card
       key={course.title}
@@ -15,6 +17,8 @@ function CourseCard({ course } : { course: typeof POPULAR_COURSES[0] }) {
           alt={course.title}
           fill
           className="object-cover transition-transform group-hover:scale-105"
+          placeholder="blur"
+          blurDataURL={shimmerBlur(700, 475)}
         />
         <span className="absolute top-2 left-2 rounded bg-[#4CC0D8] px-2 py-0.5 text-xs font-semibold text-white">
           {course.tag}
