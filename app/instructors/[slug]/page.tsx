@@ -22,6 +22,7 @@ import {
 import { useTeacherDetailsQuery } from "@/hooks/api/use-teachers"
 import { getApiErrorMessage } from "@/lib/api/client"
 import fallback from "@/assets/pngs/avatar-fallback.png"
+import { shimmerBlur } from "@/lib/image-shimmer"
 import CourseCard from "@/components/common/course-card"
 
 export default function InstructorDetailPage() {
@@ -45,7 +46,6 @@ export default function InstructorDetailPage() {
       <Navbar />
 
       <main>
-
         <section className="py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {isLoading ? (
@@ -79,6 +79,8 @@ export default function InstructorDetailPage() {
                         src={teacher.avatar || fallback}
                         alt={teacher.name}
                         fill
+                        placeholder="blur"
+                        blurDataURL={shimmerBlur(160, 160)}
                         className="object-cover"
                       />
                       <button className="absolute top-2 left-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow-sm">
@@ -265,12 +267,10 @@ export default function InstructorDetailPage() {
                     ) : (
                       <div className="grid grid-cols-1 gap-4">
                         {certifications.slice(0, 8).map((certification) => (
-                          <div
-                            key={certification.id}
-                          >
-                              <h1>{certification.title}</h1>
-                              <h1>{certification.issued_by}</h1>
-                              <h1>{certification.issued_year}</h1>
+                          <div key={certification.id}>
+                            <h1>{certification.title}</h1>
+                            <h1>{certification.issued_by}</h1>
+                            <h1>{certification.issued_year}</h1>
                           </div>
                         ))}
                       </div>

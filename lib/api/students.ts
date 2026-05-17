@@ -503,12 +503,61 @@ export interface UpdateStudentProfilePayload {
   phone_number?: string
   age?: number
   gender?: string
+  avatar?: File | null
 }
 
 export function updateStudentProfile(
   accessToken: string,
   payload: UpdateStudentProfilePayload
 ) {
+  const hasAvatarUpload = payload.avatar instanceof File
+
+  if (hasAvatarUpload) {
+    const formData = new FormData()
+
+    if (payload.first_name !== undefined) {
+      formData.append("first_name", payload.first_name)
+    }
+
+    if (payload.last_name !== undefined) {
+      formData.append("last_name", payload.last_name)
+    }
+
+    if (payload.bio !== undefined) {
+      formData.append("bio", payload.bio)
+    }
+
+    if (payload.grade_level !== undefined) {
+      formData.append("grade_level", payload.grade_level)
+    }
+
+    if (payload.age_group !== undefined) {
+      formData.append("age_group", payload.age_group)
+    }
+
+    if (payload.phone_number !== undefined) {
+      formData.append("phone_number", payload.phone_number)
+    }
+
+    if (payload.age !== undefined) {
+      formData.append("age", String(payload.age))
+    }
+
+    if (payload.gender !== undefined) {
+      formData.append("gender", payload.gender)
+    }
+
+    if (payload.avatar instanceof File) {
+      formData.append("avatar", payload.avatar)
+    }
+
+    return apiRequest<StudentProfileResponse>("student/profile/", {
+      method: "PATCH",
+      body: formData,
+      token: accessToken,
+    })
+  }
+
   return apiRequest<StudentProfileResponse>("student/profile/", {
     method: "PATCH",
     body: payload,

@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import {
   Plus,
   Trash2,
-  Upload,
   Check,
   ChevronDown,
   ChevronRight,
@@ -13,7 +12,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import AssignmentManagementModal from "@/components/teacher/assignment-management-modal"
 import QuizManagementModal from "@/components/teacher/quiz-management-modal"
 import ImageUploader from "@/components/image-upload"
@@ -168,6 +167,7 @@ function transformApiToModules(apiModules: any[]): ModuleFormValues[] {
 
 export default function AddCoursePage() {
   const params = useParams()
+  const router = useRouter()
   const initialCourseId =
     params?.id && params.id !== "new" ? Number(params.id) : null
 
@@ -598,6 +598,7 @@ export default function AddCoursePage() {
       const successMessage = response.message || "Course submitted for review"
       setApiMessage(successMessage)
       toast.success(successMessage)
+      router.push(`/teacher/courses`)
     } catch (error) {
       showApiError(error, "Unable to publish course")
     }
@@ -988,7 +989,7 @@ function StepCourseInfo({
             <ImageUploader
               initialFile={thumbnailFile}
               onFileChange={onThumbnailChange}
-              maxSizeMB={5}
+              maxSizeMB={1}
               ariaLabel="Upload course thumbnail"
             />
           </div>

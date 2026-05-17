@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Pencil } from "lucide-react"
 import { useAuthStore } from "@/lib/store/auth-store"
 import { useGetMeQuery } from "@/hooks/api/use-auth"
+import { shimmerBlur } from "@/lib/image-shimmer"
 
 export function TeacherProfileBanner() {
   const { user, switchRole } = useAuthStore()
@@ -27,6 +28,8 @@ export function TeacherProfileBanner() {
               alt="Profile"
               width={96}
               height={96}
+              placeholder="blur"
+              blurDataURL={shimmerBlur(96, 96)}
               className="h-full w-full object-cover"
             />
           </div>

@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils"
 
 import thumbnailFallback from "@/assets/pngs/thumbnail-fallback.png"
 import avatarFallback from "@/assets/pngs/avatar-fallback.png"
+import { shimmerBlur } from "@/lib/image-shimmer"
 
 export default function EnrolledCard({
   course,
@@ -74,6 +75,8 @@ export default function EnrolledCard({
           alt={course.course_title}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          placeholder="blur"
+          blurDataURL={shimmerBlur(700, 392)}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-black/10" />
@@ -110,6 +113,8 @@ export default function EnrolledCard({
                 alt={course.teacher_name}
                 width={20}
                 height={20}
+                placeholder="blur"
+                blurDataURL={shimmerBlur(20, 20)}
                 className="h-5 w-5 object-cover"
               />
             </div>

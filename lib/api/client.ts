@@ -3,6 +3,9 @@ import { clearAuthTokenCookie, setAuthTokenCookie } from "@/lib/auth/cookies"
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "")
 const AUTH_STORAGE_KEY = "remnant-auth-store"
 const TOKEN_REFRESH_PATH = "accounts/token/refresh"
+const NGROK_SKIP_BROWSER_WARNING_HEADER = {
+  "ngrok-skip-browser-warning": "1",
+}
 
 interface PersistedAuthEnvelope {
   state?: Record<string, unknown>
@@ -265,6 +268,7 @@ async function refreshAccessToken() {
     const response = await fetch(buildUrl(`${TOKEN_REFRESH_PATH}/`), {
       method: "POST",
       headers: {
+      //   ...NGROK_SKIP_BROWSER_WARNING_HEADER,
         Accept: "application/json",
         "Content-Type": "application/json",
       },
@@ -311,7 +315,10 @@ async function executeRequest(
   { body, headers, baseUrl, ...init }: ApiRequestOptions,
   token: string | null
 ): Promise<RequestExecutionResult> {
-  const requestHeaders = new Headers(headers)
+  const requestHeaders = new Headers({
+   //  ...NGROK_SKIP_BROWSER_WARNING_HEADER,
+    ...(headers ?? {}),
+  })
 
   const isFormDataBody =
     typeof FormData !== "undefined" && body instanceof FormData

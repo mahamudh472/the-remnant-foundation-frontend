@@ -43,6 +43,7 @@ import { TeacherEducation, TeacherExperience } from "@/lib/api/teachers"
 import { toast } from "sonner"
 
 import fallback from "@/assets/pngs/avatar-fallback.png"
+import { shimmerBlur } from "@/lib/image-shimmer"
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -146,7 +147,7 @@ export default function TeacherProfilePage() {
     : []
 
   const handleDeleteEducation = async (id: number) => {
-   //  if (!confirm("Are you sure you want to delete this education record?")) return
+    //  if (!confirm("Are you sure you want to delete this education record?")) return
     try {
       await deleteEducation.mutateAsync(id)
       toast.success("Education record deleted")
@@ -156,7 +157,7 @@ export default function TeacherProfilePage() {
   }
 
   const handleDeleteExperience = async (id: number) => {
-   //  if (!confirm("Are you sure you want to delete this experience record?")) return
+    //  if (!confirm("Are you sure you want to delete this experience record?")) return
     try {
       await deleteExperience.mutateAsync(id)
       toast.success("Experience record deleted")
@@ -219,6 +220,8 @@ export default function TeacherProfilePage() {
                     src={avatarUrl}
                     alt={profile.display_name}
                     fill
+                    placeholder="blur"
+                    blurDataURL={shimmerBlur(96, 96)}
                     className="object-cover"
                   />
                 ) : (
@@ -279,7 +282,7 @@ export default function TeacherProfilePage() {
                   >
                     {profile.is_teacher_active ? "Active" : "Inactive"}
                   </Badge>
-                  <Badge className="border-0 bg-[#F3F4F6] capitalize text-[#6B7280]">
+                  <Badge className="border-0 bg-[#F3F4F6] text-[#6B7280] capitalize">
                     {profile.approval_status}
                   </Badge>
                 </div>
@@ -322,7 +325,9 @@ export default function TeacherProfilePage() {
                         <p className="text-sm font-semibold text-[#1D1D1D]">
                           {item.degree}
                         </p>
-                        <p className="text-xs text-[#666666]">{item.institution}</p>
+                        <p className="text-xs text-[#666666]">
+                          {item.institution}
+                        </p>
                         <p className="text-xs text-[#9CA3AF]">
                           {formatYear(item.start_year, item.end_year)}
                         </p>
@@ -334,7 +339,9 @@ export default function TeacherProfilePage() {
                       </div>
                       <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                         <button
-                          onClick={() => setEduModal({ open: true, data: item })}
+                          onClick={() =>
+                            setEduModal({ open: true, data: item })
+                          }
                           className="rounded p-1 text-[#666666] hover:bg-gray-100 hover:text-[#4CC0D8]"
                         >
                           <Pencil className="h-3.5 w-3.5" />
@@ -382,9 +389,15 @@ export default function TeacherProfilePage() {
                         <p className="text-sm font-semibold text-[#1D1D1D]">
                           {item.job_title}
                         </p>
-                        <p className="text-xs text-[#666666]">{item.organization}</p>
+                        <p className="text-xs text-[#666666]">
+                          {item.organization}
+                        </p>
                         <p className="text-xs text-[#9CA3AF]">
-                          {formatYear(item.start_year, item.end_year, item.is_current)}
+                          {formatYear(
+                            item.start_year,
+                            item.end_year,
+                            item.is_current
+                          )}
                         </p>
                         {item.description && (
                           <p className="mt-1 text-xs text-[#9CA3AF]">
@@ -394,7 +407,9 @@ export default function TeacherProfilePage() {
                       </div>
                       <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                         <button
-                          onClick={() => setExpModal({ open: true, data: item })}
+                          onClick={() =>
+                            setExpModal({ open: true, data: item })
+                          }
                           className="rounded p-1 text-[#666666] hover:bg-gray-100 hover:text-[#4CC0D8]"
                         >
                           <Pencil className="h-3.5 w-3.5" />
@@ -419,9 +434,7 @@ export default function TeacherProfilePage() {
       {!profileQuery.isLoading && teachingStats.length > 0 && (
         <Card className="border-gray-100 shadow-none">
           <CardContent>
-            <h3 className="mb-4 font-bold text-[#1D1D1D]">
-              Teaching Overview
-            </h3>
+            <h3 className="mb-4 font-bold text-[#1D1D1D]">Teaching Overview</h3>
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               {teachingStats.map((stat) => (
                 <div
@@ -478,12 +491,14 @@ export default function TeacherProfilePage() {
                     >
                       <Paperclip className="h-3.5 w-3.5" />
                       {cert.title}
-                      <span className="text-[#9CA3AF]">· {cert.issued_year}</span>
+                      <span className="text-[#9CA3AF]">
+                        · {cert.issued_year}
+                      </span>
                       <ExternalLink className="h-3 w-3 opacity-60" />
                     </a>
                     <button
                       onClick={() => handleDeleteCertification(cert.id)}
-                      className="absolute -top-2 -right-2 hidden h-5 w-5 items-center justify-center rounded-full bg-white text-red-500 shadow-sm border border-red-100 group-hover:flex hover:bg-red-50"
+                      className="absolute -top-2 -right-2 hidden h-5 w-5 items-center justify-center rounded-full border border-red-100 bg-white text-red-500 shadow-sm group-hover:flex hover:bg-red-50"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -604,13 +619,17 @@ export default function TeacherProfilePage() {
 
       <EducationModal
         open={eduModal.open}
-        onOpenChange={(open) => setEduModal({ open, data: open ? eduModal.data : undefined })}
+        onOpenChange={(open) =>
+          setEduModal({ open, data: open ? eduModal.data : undefined })
+        }
         education={eduModal.data}
       />
 
       <ExperienceModal
         open={expModal.open}
-        onOpenChange={(open) => setExpModal({ open, data: open ? expModal.data : undefined })}
+        onOpenChange={(open) =>
+          setExpModal({ open, data: open ? expModal.data : undefined })
+        }
         experience={expModal.data}
       />
 

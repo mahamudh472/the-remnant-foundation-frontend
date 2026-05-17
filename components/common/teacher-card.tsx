@@ -2,6 +2,7 @@ import { BookOpenIcon, Check, Star } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import fallback from "@/assets/pngs/avatar-fallback.png"
+import { shimmerBlur } from "@/lib/image-shimmer"
 
 export default function TeacherCard(
   inst: any,
@@ -20,6 +21,8 @@ export default function TeacherCard(
             alt={inst.name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            placeholder="blur"
+            blurDataURL={shimmerBlur(700, 525)}
             className="object-cover transition-transform duration-500 group-hover:scale-110"
           />
         </div>
@@ -69,6 +72,8 @@ export default function TeacherCard(
           alt={inst.name}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          placeholder="blur"
+          blurDataURL={shimmerBlur(700, 525)}
           className="object-cover transition-transform duration-500 group-hover:scale-110"
         />
       </div>

@@ -498,15 +498,6 @@ export default function TeacherApplyPage() {
       )}
 
       <div className="flex items-center gap-4">
-        <div className="h-14 w-14 overflow-hidden rounded-full border-2 border-gray-100 bg-gray-200">
-          <Image
-            src="/assets/pngs/Profile.png"
-            alt="Profile"
-            width={56}
-            height={56}
-            className="object-cover"
-          />
-        </div>
         <div>
           <h2 className="text-lg font-bold text-[#1D1D1D]">
             Apply as a Teacher

@@ -32,6 +32,8 @@ import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 
 import fallback from "@/assets/pngs/thumbnail-fallback.png"
+import avatarFallback from "@/assets/pngs/avatar-fallback.png"
+import { shimmerBlur } from "@/lib/image-shimmer"
 import RichTextContent from "@/components/common/rich-text-content"
 
 export default function CourseDetailsPage() {
@@ -142,6 +144,8 @@ export default function CourseDetailsPage() {
                   src={course.images.cover || fallback}
                   alt={course.title}
                   fill
+                  placeholder="blur"
+                  blurDataURL={shimmerBlur(920, 518)}
                   className="object-cover"
                 />
                 <div className="absolute top-4 right-4 rounded-lg bg-[#4CC0D8] px-3 py-1 text-[10px] font-bold text-white">
@@ -154,7 +158,10 @@ export default function CourseDetailsPage() {
                   <h1 className="text-3xl leading-tight font-extrabold text-[#1D1D1D] md:text-4xl">
                     {course.title}
                   </h1>
-                  <p className="text-sm text-[#666666]">{course.description}</p>
+                  <RichTextContent
+                    value={course?.description}
+                    emptyText="No description available"
+                  />
                 </div>
 
                 <div className="flex flex-wrap items-center gap-6">
@@ -185,9 +192,7 @@ export default function CourseDetailsPage() {
                   <div className="flex items-center gap-3">
                     <div className="relative h-10 w-10 overflow-hidden rounded-full shadow-sm">
                       <Image
-                        src={
-                          course.teacher.avatar || "/assets/pngs/Profile.png"
-                        }
+                        src={course.teacher.avatar || avatarFallback}
                         alt={course.teacher.name}
                         fill
                         className="object-cover"
@@ -337,9 +342,7 @@ export default function CourseDetailsPage() {
                   <div className="flex flex-col items-start gap-8 md:flex-row">
                     <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-3xl">
                       <Image
-                        src={
-                          course.teacher.avatar || "/assets/pngs/Profile.png"
-                        }
+                        src={course.teacher.avatar || avatarFallback}
                         alt={course.teacher.name}
                         fill
                         className="object-cover"

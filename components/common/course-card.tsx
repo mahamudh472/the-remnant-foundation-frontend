@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import fallback from "@/assets/pngs/thumbnail-fallback.png"
 import avatarFallback from "@/assets/pngs/avatar-fallback.png"
+import { shimmerBlur } from "@/lib/image-shimmer"
 
 interface CourseCardProps {
   id: number | string
@@ -59,6 +60,8 @@ export default function CourseCard({
               alt={title}
               fill
               sizes="96px"
+              placeholder="blur"
+              blurDataURL={shimmerBlur(96, 64)}
               className="object-cover"
             />
           </div>
@@ -118,18 +121,22 @@ export default function CourseCard({
           alt={title}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          placeholder="blur"
+          blurDataURL={shimmerBlur(700, 525)}
           className="object-cover transition-transform duration-500 group-hover:scale-110"
         />
       </div>
 
       <div className="flex flex-col justify-between space-y-4 p-6">
         <div>
-          <div className="mb-3 flex items-center gap-2 text-[10px] ">
+          <div className="mb-3 flex items-center gap-2 text-[10px]">
             <Image
               src={teacher_avatar || avatarFallback}
               alt={teacher_name || "Instructor"}
               width={24}
               height={24}
+              placeholder="blur"
+              blurDataURL={shimmerBlur(24, 24)}
               className="h-6 w-6 rounded-full object-cover"
             />
             <span className="text-[#1D1D1D]">

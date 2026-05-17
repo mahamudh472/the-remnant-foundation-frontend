@@ -80,8 +80,10 @@ export const studentsKeys = {
     ["students", "quiz-attempts", accessToken] as const,
   quizAttemptDetail: (attemptId: number | string, accessToken: string | null) =>
     ["students", "quiz-attempt-detail", accessToken, attemptId] as const,
-  assignmentDetail: (assignmentId: number | string, accessToken: string | null) =>
-    ["students", "assignment-detail", accessToken, assignmentId] as const,
+  assignmentDetail: (
+    assignmentId: number | string,
+    accessToken: string | null
+  ) => ["students", "assignment-detail", accessToken, assignmentId] as const,
 }
 
 export function useTeacherStudentsQuery(params: GetTeacherStudentsParams = {}) {
@@ -627,9 +629,13 @@ export function useUpdateStudentProfileMutation() {
       }
       return updateStudentProfile(accessToken, payload)
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(studentsKeys.profile(accessToken), data)
       queryClient.invalidateQueries({
         queryKey: studentsKeys.profile(accessToken),
+      })
+      queryClient.invalidateQueries({
+        queryKey: studentsKeys.teacherApplicationEligibility(accessToken),
       })
     },
   })

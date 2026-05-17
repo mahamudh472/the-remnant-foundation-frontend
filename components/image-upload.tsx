@@ -13,6 +13,18 @@ interface ImageUploaderProps {
   initialFile?: File | null
 }
 
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) {
+    return `${bytes} B`
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(bytes % 1024 === 0 ? 0 : 1)} KB`
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+}
+
 export default function ImageUploader({
   onFileChange,
   maxSizeMB = 5,
@@ -64,6 +76,9 @@ export default function ImageUploader({
   })
 
   const previewUrl = files[0]?.preview || null
+  const selectedFile = files[0]?.file
+  const selectedFileName = selectedFile?.name || null
+  const selectedFileSize = selectedFile?.size ?? null
 
   return (
     <div className="flex flex-col gap-2">
@@ -125,6 +140,13 @@ export default function ImageUploader({
           </div>
         )}
       </div>
+
+      {previewUrl && selectedFileName && selectedFileSize !== null && (
+        <div className="space-y-1 px-1 text-xs text-muted-foreground">
+          <p className="font-medium text-foreground">{selectedFileName}</p>
+          <p>{formatFileSize(selectedFileSize)}</p>
+        </div>
+      )}
 
       {errors.length > 0 && (
         <div

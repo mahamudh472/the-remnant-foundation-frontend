@@ -12,15 +12,21 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Pencil, LogOut, ChevronRight } from "lucide-react"
-import { useStudentProfileQuery } from "@/hooks/api/use-students"
+import {
+  useStudentProfileQuery,
+  useUpdateStudentProfileMutation,
+} from "@/hooks/api/use-students"
 import { getApiErrorMessage } from "@/lib/api/client"
 import fallback from "@/assets/pngs/avatar-fallback.png"
 import { EditStudentProfileModal } from "@/components/student/profile-edit-modals"
 import React from "react"
+import { toast } from "sonner"
 
 export default function ProfilePage() {
   const { data, isLoading, isError, error } = useStudentProfileQuery()
   const [isEditOpen, setIsEditOpen] = React.useState(false)
+  const avatarInputRef = React.useRef<HTMLInputElement>(null)
+  const updateProfileMutation = useUpdateStudentProfileMutation()
 
   const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL || ""
   const avatarUrl = data?.avatar
@@ -28,6 +34,27 @@ export default function ProfilePage() {
       ? data.avatar
       : mediaUrl + data.avatar
     : null
+
+  async function handleAvatarChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    try {
+      await updateProfileMutation.mutateAsync({ avatar: file })
+      toast.success("Profile picture updated successfully")
+    } catch (mutationError) {
+      toast.error(
+        getApiErrorMessage(mutationError, "Failed to update profile picture")
+      )
+    } finally {
+      event.target.value = ""
+    }
+  }
 
   if (isLoading) {
     return (
@@ -91,7 +118,21 @@ export default function ProfilePage() {
               height={80}
               className="rounded-full border-2 border-gray-100 object-cover"
             />
-            <button className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-[#4CC0D8] text-white">
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              aria-label="Upload profile picture"
+              onChange={handleAvatarChange}
+            />
+            <button
+              type="button"
+              aria-label="Upload profile picture"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={updateProfileMutation.isPending}
+              className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-[#4CC0D8] text-white disabled:cursor-not-allowed disabled:opacity-70"
+            >
               <Pencil className="h-3 w-3" />
             </button>
           </div>
