@@ -58,9 +58,6 @@ export function CreateAccountForm() {
         <h1 className="text-[28px] font-bold tracking-tight text-[#1D1D1D]">
           Create an account
         </h1>
-        <p className="text-sm text-[#666666]">
-          See what is going on with your business
-        </p>
       </div>
 
       {/* Google Signup */}
