@@ -228,7 +228,7 @@ export default function QuizAttemptModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="top-0 right-0 left-auto h-svh w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-none p-0 data-[state=closed]:zoom-out-100 data-[state=closed]:slide-out-to-right-full data-[state=open]:zoom-in-100 data-[state=open]:slide-in-from-right-full [&>button]:hidden">
-        <div className="flex h-full flex-col w-1/2 mx-auto bg-white">
+        <div className="flex h-screen pb-16 flex-col w-1/2 mx-auto bg-white">
           <div className="border-b border-gray-100 px-5 py-4 sm:px-7">
             <Button
               variant={"outline"}

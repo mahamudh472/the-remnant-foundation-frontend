@@ -120,7 +120,7 @@ export function LoginForm() {
         type="button"
         variant="outline"
         disabled={googleSignInUrlMutation.isPending}
-        className="flex h-11 w-full items-center justify-center gap-2 border-[#E5E7EB] transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-11 w-full hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
         onClick={handleGoogleSignIn}
       >
         {googleSignInUrlMutation.isPending ? (

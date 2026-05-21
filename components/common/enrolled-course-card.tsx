@@ -113,8 +113,8 @@ export default function EnrolledCard({
                 alt={course.teacher_name}
                 width={20}
                 height={20}
-                placeholder="blur"
-                blurDataURL={shimmerBlur(20, 20)}
+               //  placeholder="blur"
+               //  blurDataURL={shimmerBlur(20, 20)}
                 className="h-5 w-5 object-cover"
               />
             </div>
