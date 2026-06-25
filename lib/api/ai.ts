@@ -67,7 +67,7 @@ export interface CreateConversationResponse {
 const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_API_URL
 
 export function getConversations(accessToken: string, page: number = 1) {
-  return apiRequest<ConversationsResponse>(`conversations/?page=${page}`, {
+  return apiRequest<ConversationsResponse>(`conversations?page=${page}`, {
     method: "GET",
     token: accessToken,
     baseUrl: AI_BASE_URL,
@@ -75,7 +75,7 @@ export function getConversations(accessToken: string, page: number = 1) {
 }
 
 export function createConversation(accessToken: string, message: string) {
-  return apiRequest<CreateConversationResponse>("conversations/", {
+  return apiRequest<CreateConversationResponse>("conversations", {
     method: "POST",
     token: accessToken,
     baseUrl: AI_BASE_URL,
@@ -84,7 +84,7 @@ export function createConversation(accessToken: string, message: string) {
 }
 
 export function deleteConversation(accessToken: string, conversationId: number) {
-  return apiRequest(`conversations/${conversationId}/`, {
+  return apiRequest(`conversations/${conversationId}`, {
     method: "DELETE",
     token: accessToken,
     baseUrl: AI_BASE_URL,
@@ -95,7 +95,7 @@ export function getConversationMessages(
   accessToken: string,
   conversationId: number
 ) {
-  return apiRequest<ConversationDetailResponse>(`conversations/${conversationId}/`, {
+  return apiRequest<ConversationDetailResponse>(`conversations/${conversationId}`, {
     method: "GET",
     token: accessToken,
     baseUrl: AI_BASE_URL,
@@ -107,7 +107,7 @@ export function sendMessage(
   conversationId: number,
   payload: SendMessagePayload
 ) {
-  return apiRequest<SendMessageResponse>(`conversations/${conversationId}/messages/`, {
+  return apiRequest<SendMessageResponse>(`conversations/${conversationId}/messages`, {
     method: "POST",
     token: accessToken,
     baseUrl: AI_BASE_URL,
