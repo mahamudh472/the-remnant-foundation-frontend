@@ -2,7 +2,8 @@
 
 import React from "react"
 import Image from "next/image"
-import { useParams, usePathname, useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { useResolvedParams } from "@/hooks/use-resolved-params"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -37,7 +38,7 @@ import { shimmerBlur } from "@/lib/image-shimmer"
 import RichTextContent from "@/components/common/rich-text-content"
 
 export default function CourseDetailsPage() {
-  const params = useParams<{ slug: string }>()
+  const params = useResolvedParams<{ slug: string }>()
   const pathname = usePathname()
   const router = useRouter()
   const accessToken = useAuthStore((state) => state.accessToken)

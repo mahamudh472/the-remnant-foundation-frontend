@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useResolvedParams } from "@/hooks/use-resolved-params"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -68,7 +68,7 @@ function buildLessonVideoSrc(videoUrl: string | null | undefined) {
 }
 
 export default function CoursePlayerPage() {
-  const params = useParams<{ slug: string }>()
+  const params = useResolvedParams<{ slug: string }>()
   const [activeTab, setActiveTab] = useState<"description" | "review">(
     "description"
   )

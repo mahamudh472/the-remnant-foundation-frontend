@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useResolvedParams } from "@/hooks/use-resolved-params"
 import { ArrowLeft, Calendar, Mail, Paperclip, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { useTeacherFollowUpDetailsQuery } from "@/hooks/api/use-teachers"
@@ -62,7 +62,7 @@ function getProgressColor(progress: number) {
 }
 
 export default function FollowUpDetailPage() {
-  const params = useParams<{ id: string }>()
+  const params = useResolvedParams<{ id: string }>()
   const id = Number(params?.id)
 
   const { data, isLoading, isError, error } = useTeacherFollowUpDetailsQuery(

@@ -12,7 +12,8 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { useParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
+import { useResolvedParams } from "@/hooks/use-resolved-params"
 import AssignmentManagementModal from "@/components/teacher/assignment-management-modal"
 import QuizManagementModal from "@/components/teacher/quiz-management-modal"
 import ImageUploader from "@/components/image-upload"
@@ -166,7 +167,7 @@ function transformApiToModules(apiModules: any[]): ModuleFormValues[] {
 }
 
 export default function AddCoursePage() {
-  const params = useParams()
+  const params = useResolvedParams<{ id: string }>()
   const router = useRouter()
   const initialCourseId =
     params?.id && params.id !== "new" ? Number(params.id) : null

@@ -3,7 +3,7 @@
 import React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useResolvedParams } from "@/hooks/use-resolved-params"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import {
@@ -26,7 +26,7 @@ import { shimmerBlur } from "@/lib/image-shimmer"
 import CourseCard from "@/components/common/course-card"
 
 export default function InstructorDetailPage() {
-  const params = useParams<{ slug: string }>()
+  const params = useResolvedParams<{ slug: string }>()
   const slug = params?.slug
   const teacherId = Number(slug)
   const { data, isLoading, isError, error } = useTeacherDetailsQuery(

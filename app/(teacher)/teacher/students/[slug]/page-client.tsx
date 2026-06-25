@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useParams } from "next/navigation"
+import { useResolvedParams } from "@/hooks/use-resolved-params"
 import { Card, CardContent } from "@/components/ui/card"
 import { CheckCircle2 } from "lucide-react"
 import { useTeacherStudentDetailsQuery } from "@/hooks/api/use-students"
@@ -9,7 +9,7 @@ import { getApiErrorMessage } from "@/lib/api/client"
 import fallback from "@/assets/pngs/avatar-fallback.png"
 
 export default function StudentDetailPage() {
-  const params = useParams<{ slug: string }>()
+  const params = useResolvedParams<{ slug: string }>()
   const slug = params?.slug
   const studentId = Number(slug)
 

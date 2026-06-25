@@ -15,7 +15,7 @@ import {
 import { useStudentQuizAttemptDetailQuery } from "@/hooks/api/use-students"
 import { getApiErrorMessage } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
-import { useParams } from "next/navigation"
+import { useResolvedParams } from "@/hooks/use-resolved-params"
 import type { StudentQuizAttemptQuestion } from "@/lib/api/students"
 
 function formatDateTime(value: string) {
@@ -195,7 +195,7 @@ function QuestionCard({
 }
 
 export default function QuizAttemptDetailPage() {
-  const params = useParams<{ slug: string }>()
+  const params = useResolvedParams<{ slug: string }>()
   const slug = params?.slug
   const attemptId = Number(slug)
 
