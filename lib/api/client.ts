@@ -58,8 +58,15 @@ function buildUrl(path: string, baseUrl?: string) {
     )
   }
 
+  // Always upgrade http:// to https:// to avoid mixed-content blocking on HTTPS pages.
+  // Production envs sometimes ship an http:// base URL (e.g. legacy config); this
+  // ensures the browser never tries a downgraded request.
+  const normalizedBase = base.startsWith("http://")
+    ? base.replace(/^http:\/\//, "https://")
+    : base
+
   const normalizedPath = path.replace(/^\//, "")
-  return `${base.replace(/\/$/, "")}/${normalizedPath}`
+  return `${normalizedBase.replace(/\/$/, "")}/${normalizedPath}`
 }
 
 function normalizeApiPath(path: string) {
