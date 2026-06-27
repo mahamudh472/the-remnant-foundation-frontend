@@ -1,4 +1,4 @@
-import { apiRequest } from "@/lib/api/client"
+import { apiRequest, type ApiRequestOptions } from "@/lib/api/client"
 
 export interface Course {
   id: number
@@ -508,12 +508,18 @@ export interface CourseDetailResponse {
   overview: string
   course_content: CourseContent
   about_instructor: AboutInstructor
+  is_enrolled?: boolean
+  is_owned?: boolean
 }
 
-export function getCourseDetails(courseId: number | string) {
-  return apiRequest<CourseDetailResponse>(`courses/${courseId}/details/`, {
+export function getCourseDetails(courseId: number | string, accessToken?: string | null) {
+  const options: ApiRequestOptions = {
     method: "GET",
-  })
+  }
+  if (accessToken) {
+    options.token = accessToken
+  }
+  return apiRequest<CourseDetailResponse>(`courses/${courseId}/details/`, options)
 }
 
 export function getCourseWorkflow(accessToken: string, courseId: number | string) {

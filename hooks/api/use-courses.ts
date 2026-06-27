@@ -16,6 +16,7 @@ import {
   getCourseWorkflow,
   updateCourseStep,
   type CourseChoiceOptionsResponse,
+  type CourseDetailResponse,
   type CreateCourseAssignmentPayload,
   type CreateCourseQuizPayload,
   type CreateCoursePayload,
@@ -30,7 +31,7 @@ export const coursesKeys = {
   categoryOptions: () => ["courses", "category-options"] as const,
   programOptions: () => ["courses", "program-options"] as const,
   ageGroupChoiceOptions: () => ["courses", "age-group-choice-option"] as const,
-  detail: (courseId: number | string) => ["courses", "detail", courseId] as const,
+  detail: (courseId: number | string, token?: string | null) => ["courses", "detail", courseId, token] as const,
 }
 
 export function useCoursesQuery(params: GetCoursesParams = {}) {
@@ -149,14 +150,14 @@ export function useCourseDetailsQuery(
     typeof window !== "undefined" && window.location.pathname.includes("/teacher")
 
   return useQuery({
-    queryKey: coursesKeys.detail(courseId || "unknown"),
+    queryKey: coursesKeys.detail(courseId || "unknown", accessToken),
     queryFn: () => {
       if (!courseId) throw new Error("Missing course id")
 
       if (isTeacherPath && accessToken) {
-        return getCourseWorkflow(accessToken, courseId)
+        return getCourseWorkflow(accessToken, courseId) as any as CourseDetailResponse
       }
-      return getCourseDetails(courseId)
+      return getCourseDetails(courseId, accessToken)
     },
     enabled: !!courseId && (options.enabled ?? true),
   })

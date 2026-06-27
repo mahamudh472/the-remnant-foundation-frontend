@@ -55,7 +55,7 @@ export default function CourseDetailsPage() {
     isLoading,
     isError,
     error,
-  } = useCourseDetailsQuery(courseId, isValidCourseId)
+  } = useCourseDetailsQuery(courseId, { enabled: isValidCourseId })
 
   const toggleSection = (id: number) => {
     setOpenSections((prev) =>
@@ -70,6 +70,16 @@ export default function CourseDetailsPage() {
 
     if (!accessToken) {
       router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`)
+      return
+    }
+
+    if (course?.is_owned) {
+      toast.error("You own this course and cannot enroll in it")
+      return
+    }
+
+    if (course?.is_enrolled) {
+      router.push(`/dashboard/enrolled-courses/${course.id}`)
       return
     }
 
@@ -187,6 +197,17 @@ export default function CourseDetailsPage() {
                   <div className="rounded-lg bg-[#FFD966] px-3 py-1 text-[10px] font-bold text-[#1D1D1D] uppercase">
                     {course.category}
                   </div>
+                  {course.is_enrolled && (
+                    <div className="rounded-lg bg-[#EBF7F9] border border-[#4CC0D8]/30 px-3 py-1 text-[10px] font-bold text-[#4CC0D8] uppercase flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      Enrolled
+                    </div>
+                  )}
+                  {course.is_owned && (
+                    <div className="rounded-lg bg-[#FFF9EB] border border-[#FF9D00]/30 px-3 py-1 text-[10px] font-bold text-[#FF9D00] uppercase">
+                      Owned
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-8 pt-4">
@@ -474,17 +495,44 @@ export default function CourseDetailsPage() {
                           </>
                         )}
                       </div>
+                      {course.is_enrolled && (
+                        <div className="rounded-lg bg-[#EBF7F9] border border-[#4CC0D8]/30 px-2.5 py-1 text-[10px] font-bold text-[#4CC0D8] uppercase flex items-center gap-1">
+                          <Check className="h-3 w-3" />
+                          Enrolled
+                        </div>
+                      )}
+                      {course.is_owned && (
+                        <div className="rounded-lg bg-[#FFF9EB] border border-[#FF9D00]/30 px-2.5 py-1 text-[10px] font-bold text-[#FF9D00] uppercase">
+                          Owned
+                        </div>
+                      )}
                     </div>
 
-                    <Button
-                      onClick={handleEnrollNow}
-                      disabled={enrollMutation.isPending}
-                      className="h-14 w-full"
-                    >
-                      {enrollMutation.isPending
-                        ? "Enrolling..."
-                        : course.pricing.cta_label || "Enroll Now"}
-                    </Button>
+                    {course.is_owned ? (
+                      <Button
+                        onClick={() => router.push(`/teacher/courses/${course.id}`)}
+                        className="h-14 w-full bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 font-bold"
+                      >
+                        Manage Course
+                      </Button>
+                    ) : course.is_enrolled ? (
+                      <Button
+                        onClick={() => router.push(`/dashboard/enrolled-courses/${course.id}`)}
+                        className="h-14 w-full bg-[#4CC0D8] hover:bg-[#3AB0C8] text-white font-bold"
+                      >
+                        Go to Course
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleEnrollNow}
+                        disabled={enrollMutation.isPending}
+                        className="h-14 w-full font-bold"
+                      >
+                        {enrollMutation.isPending
+                          ? "Enrolling..."
+                          : course.pricing.cta_label || "Enroll Now"}
+                      </Button>
+                    )}
 
                     <div className="space-y-6">
                       <h5 className="font-bold text-[#1D1D1D]">Includes</h5>
