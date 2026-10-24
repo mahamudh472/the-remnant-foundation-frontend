@@ -63,7 +63,8 @@ export function Footer() {
             <ul className="space-y-4">
               {[
                 { name: "Support", href: "/support" },
-                { name: "FAQ", href: "/support/faq" }
+                { name: "FAQ", href: "/support/faq" },
+                { name: "Refund & Cancellation Policy", href: "/refund-and-cancellation-policy" }
               ].map((link) => (
                 <li key={link.name}>
                   <Link href={link.href} className="text-sm transition-colors">{link.name}</Link>
@@ -97,9 +98,12 @@ export function Footer() {
           <p className="text-sm">
             © 2024 All rights reserved.
           </p>
-          <div className="flex gap-8">
-            <a href="#" className="text-xs">Privacy Policy</a>
-            <a href="#" className="text-xs">Terms of Service</a>
+          <div className="flex flex-wrap items-center gap-6 md:gap-8">
+            <Link href="/refund-and-cancellation-policy" className="text-xs hover:underline">
+              Refund &amp; Cancellation Policy
+            </Link>
+            <a href="#" className="text-xs hover:underline">Privacy Policy</a>
+            <a href="#" className="text-xs hover:underline">Terms of Service</a>
           </div>
         </div>
       </div>

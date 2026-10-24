@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import Link from "next/link"
 import Image from "next/image"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -109,6 +110,18 @@ export default function DonatePage() {
               </div>
             </div>
           </div>
+
+          {/* Payment Acknowledgement */}
+          <p className="mx-auto max-w-md text-center text-xs leading-relaxed text-[#666666]">
+            By proceeding with payment, I confirm that I have reviewed and accepted The Remnant Foundation’s{" "}
+            <Link
+              href="/refund-and-cancellation-policy"
+              className="font-medium text-[#4CC0D8] underline hover:text-[#3AB0C8]"
+            >
+              Refund and Cancellation Policy
+            </Link>{" "}
+            and the applicable terms of the event, service or donation. This acknowledgement does not limit any rights available to me under the laws of Zambia.
+          </p>
 
           {/* Action Buttons */}
           <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
